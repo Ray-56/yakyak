@@ -291,6 +291,83 @@ All notable changes to YakYak will be documented in this file.
   - Troubleshooting guide
   - Performance tuning recommendations
 
+#### Phase 2.5 - WebSocket Event Streaming (COMPLETED)
+- **Real-time Event Broadcasting**
+  - EventBroadcaster with broadcast channel (1000 event capacity)
+  - SystemEvent enum with multiple event types
+  - Call events (Created, Ringing, Answered, Terminated, Failed, Hold, Resume, Transfer)
+  - Registration events (Registered, Unregistered, Expired)
+  - Authentication events (Success, Failure, Lockout, RateLimited)
+  - Conference events (Created, Started, Ended, ParticipantJoined/Left/Muted/Unmuted)
+  - Health update events
+  - Custom events support
+  - Unit tests (7 tests)
+
+- **WebSocket Handler**
+  - WebSocket upgrade handler
+  - Bidirectional WebSocket connection management
+  - Welcome message on connection
+  - JSON event serialization
+  - Ping/pong support
+  - Client disconnect handling
+  - Concurrent send/receive tasks
+
+#### Phase 3.1 - Conference PostgreSQL and API (COMPLETED)
+- **Conference PostgreSQL Repository**
+  - PgConferenceRepository implementation
+  - Conference room CRUD operations
+  - Participant management (add, remove, update, list)
+  - State filtering and queries
+  - Cascading deletes
+  - Integration tests (3 tests)
+
+- **Conference REST API**
+  - POST /conferences - Create conference
+  - GET /conferences - List conferences (with state filter)
+  - GET /conferences/:id - Get conference details
+  - PUT /conferences/:id - Update conference
+  - DELETE /conferences/:id - Delete conference
+  - POST /conferences/:id/start - Start conference
+  - POST /conferences/:id/end - End conference
+  - POST /conferences/:id/lock - Lock conference
+  - POST /conferences/:id/unlock - Unlock conference
+  - POST /conferences/:id/participants - Add participant
+  - GET /conferences/:id/participants - List participants
+  - DELETE /conferences/:id/participants/:pid - Remove participant
+  - POST /conferences/:id/participants/:pid/mute - Mute participant
+  - POST /conferences/:id/participants/:pid/unmute - Unmute participant
+  - PUT /conferences/:id/participants/:pid/role - Update participant role
+  - Full JSON request/response DTOs
+  - ConferenceApiState for dependency injection
+
+#### Phase 3.6 - Voicemail PostgreSQL (COMPLETED)
+- **Voicemail PostgreSQL Repository**
+  - PgVoicemailRepository implementation
+  - Voicemail message CRUD operations
+  - Mailbox configuration management
+  - Status updates (New, Read, Saved, Deleted)
+  - Message listing with status filtering
+  - Message counting
+  - Upsert support for mailboxes
+  - Automatic timestamp updates
+  - Integration tests (3 tests)
+
+#### Database Migrations
+- **20251106_02_create_conference_tables.sql**
+  - conference_rooms table (UUID primary key, state, PIN, recording)
+  - conference_participants table (role, state, mute, volume)
+  - Cascading deletes
+  - 5 performance indexes
+  - Comprehensive table/column comments
+
+- **20251106_03_create_voicemail_tables.sql**
+  - voicemail_mailboxes table (PIN, greetings, limits, email notification)
+  - voicemail_messages table (caller info, audio file, status, timestamps)
+  - Cascading deletes
+  - 5 performance indexes
+  - Automatic updated_at trigger
+  - Comprehensive table/column comments
+
 ### Changed
 
 #### Database Schema
@@ -357,6 +434,14 @@ New permission strings in format `resource:action`:
   - Adds role_id to users table
   - Inserts 3 default system roles
   - Creates indexes and triggers
+- `20251106_02_create_conference_tables.sql`
+  - Creates conference_rooms table
+  - Creates conference_participants table
+  - Adds indexes and comments
+- `20251106_03_create_voicemail_tables.sql`
+  - Creates voicemail_mailboxes table
+  - Creates voicemail_messages table
+  - Adds indexes, triggers, and comments
 
 #### Testing
 - Role management unit tests (6 tests)
@@ -377,7 +462,10 @@ New permission strings in format `resource:action`:
 - Audio mixer tests (8 tests)
 - STUN message tests (5 tests)
 - STUN client tests (3 tests)
-- **Total new tests: 96**
+- WebSocket event tests (7 tests)
+- Conference repository tests (3 tests)
+- Voicemail repository tests (3 tests)
+- **Total new tests: 109**
 
 ### TODO / In Progress
 
@@ -405,6 +493,7 @@ New permission strings in format `resource:action`:
 - [x] System health monitoring (completed)
 - [x] Extended metrics (completed)
 - [x] Metrics collector (completed)
+- [x] WebSocket event streaming (completed)
 - [ ] API authentication/authorization
 - [ ] Performance profiling
 - [ ] Grafana dashboards
@@ -414,9 +503,9 @@ New permission strings in format `resource:action`:
 - [x] Audio mixing (completed)
 - [x] Participant controls (completed)
 - [x] Conference domain model (completed)
+- [x] PostgreSQL repository implementation (completed)
+- [x] Conference API endpoints (completed)
 - [ ] Conference recording implementation
-- [ ] PostgreSQL repository implementation
-- [ ] Conference API endpoints
 - [ ] Music on hold for conferences
 
 #### Phase 3.2 - NAT Traversal
@@ -436,9 +525,10 @@ New permission strings in format `resource:action`:
 - [x] Voicemail domain model (completed)
 - [x] Voicemail repository trait (completed)
 - [x] Mailbox configuration (completed)
+- [x] PostgreSQL repository implementation (completed)
 - [ ] Voicemail recording implementation
 - [ ] Voicemail playback implementation
-- [ ] PostgreSQL repository implementation
+- [ ] Voicemail API endpoints
 - [ ] MWI (Message Waiting Indicator)
 
 #### Phase 3.7 - IVR System
@@ -463,7 +553,8 @@ New permission strings in format `resource:action`:
 - Network access required for cargo build (dependency download)
 - REFER transfer logic incomplete (framework only)
 - API endpoints lack authentication
-- WebSocket events not yet implemented
+- Conference recording not yet implemented
+- Voicemail recording/playback not yet implemented
 
 ### Performance Improvements
 - Role lookup optimization via database indexes
@@ -476,6 +567,10 @@ New permission strings in format `resource:action`:
 - STUN client with configurable timeout and UDP socket reuse
 - Metrics collector with RwLock for concurrent access
 - Conference room participant management with HashMap
+- WebSocket event broadcasting with tokio broadcast channel (1000 event capacity)
+- Conference PostgreSQL queries with appropriate indexes
+- Voicemail message filtering with indexed queries
+- Cascading deletes for referential integrity
 
 ### Security
 - bcrypt password hashing (cost factor 12)

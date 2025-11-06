@@ -11,6 +11,10 @@ pub mod user_repository;
 pub mod cdr_repository;
 #[cfg(feature = "postgres")]
 pub mod role_repository;
+#[cfg(feature = "postgres")]
+pub mod conference_repository;
+#[cfg(feature = "postgres")]
+pub mod voicemail_repository;
 
 #[cfg(feature = "postgres")]
 pub use database::{create_pool, run_migrations, DatabaseConfig};
@@ -20,3 +24,7 @@ pub use user_repository::PgUserRepository;
 pub use cdr_repository::PgCdrRepository;
 #[cfg(feature = "postgres")]
 pub use role_repository::PgRoleRepository;
+#[cfg(feature = "postgres")]
+pub use conference_repository::PgConferenceRepository;
+#[cfg(feature = "postgres")]
+pub use voicemail_repository::PgVoicemailRepository;
