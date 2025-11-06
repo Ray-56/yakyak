@@ -12,5 +12,6 @@ pub mod media;
 pub mod messaging;
 pub mod persistence;
 pub mod protocols;
+pub mod tls;
 
 // Placeholder modules

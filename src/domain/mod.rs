@@ -10,6 +10,7 @@
 
 pub mod billing;
 pub mod call;
+pub mod call_queue;
 pub mod cdr;
 pub mod conference;
 pub mod media;
@@ -17,6 +18,8 @@ pub mod registration;
 pub mod routing;
 pub mod session;
 pub mod shared;
+pub mod sip_trunk;
+pub mod tenant;
 pub mod user;
 pub mod voicemail;
 
