@@ -9,6 +9,8 @@ pub mod database;
 pub mod user_repository;
 #[cfg(feature = "postgres")]
 pub mod cdr_repository;
+#[cfg(feature = "postgres")]
+pub mod role_repository;
 
 #[cfg(feature = "postgres")]
 pub use database::{create_pool, run_migrations, DatabaseConfig};
@@ -16,3 +18,5 @@ pub use database::{create_pool, run_migrations, DatabaseConfig};
 pub use user_repository::PgUserRepository;
 #[cfg(feature = "postgres")]
 pub use cdr_repository::PgCdrRepository;
+#[cfg(feature = "postgres")]
+pub use role_repository::PgRoleRepository;
