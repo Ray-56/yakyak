@@ -22,11 +22,15 @@ YakYak is an open-source VoIP platform built for real-time voice and video commu
 ### ✨ Features
 
 - 📞 **SIP-based Calling**: Seamless voice and video calls with SIP protocol support.
-- 🌐 **WebRTC Integration**: Peer-to-peer audio/video with modern browser compatibility.
-- ⚡ **WebSocket JSON-RPC**: Real-time signaling for call control and management.
+- 🔐 **SIP Digest Authentication**: Secure user authentication with MD5 Digest (RFC 2617). [See AUTH.md](AUTH.md)
+- 📝 **User Registration**: SIP REGISTER support with automatic expiration management.
+- 🌐 **WebRTC Integration**: Peer-to-peer audio/video with modern browser compatibility (planned).
+- ⚡ **WebSocket JSON-RPC**: Real-time signaling for call control and management (planned).
+- 🏗️ **DDD Architecture**: Clean domain-driven design with proper bounded contexts.
+- 🦀 **Memory Safe**: Built with Rust for safety and performance.
 - 🦬 **Scalable & Fun**: Built for developers who love to tinker and connect communities.
 
-_More features (conferencing, IVR, CDR) are on the way!_
+_More features (RTP media, conferencing, IVR, CDR) are on the way!_
 
 ### 🚀 Quick Start
 

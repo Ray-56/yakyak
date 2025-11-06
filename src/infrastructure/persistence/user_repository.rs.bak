@@ -1,0 +1,348 @@
+//! PostgreSQL User Repository Implementation
+
+use crate::domain::shared::error::{DomainError, Result};
+use crate::domain::user::{ChangePassword, CreateUser, UpdateUser, User, UserRepository};
+use async_trait::async_trait;
+use sqlx::PgPool;
+use tracing::{debug, info, warn};
+
+/// PostgreSQL User Repository
+pub struct PgUserRepository {
+    pool: PgPool,
+}
+
+impl PgUserRepository {
+    /// Create a new PostgreSQL user repository
+    pub fn new(pool: PgPool) -> Self {
+        Self { pool }
+    }
+
+    /// Hash a password using bcrypt
+    fn hash_password(password: &str) -> Result<String> {
+        bcrypt::hash(password, bcrypt::DEFAULT_COST)
+            .map_err(|e| DomainError::Internal(format!("Failed to hash password: {}", e)))
+    }
+
+    /// Calculate SIP HA1 = MD5(username:realm:password)
+    fn calculate_sip_ha1(username: &str, realm: &str, password: &str) -> String {
+        let digest = md5::compute(format!("{}:{}:{}", username, realm, password));
+        format!("{:x}", digest)
+    }
+
+    /// Verify a password against a hash
+    fn verify_password(password: &str, hash: &str) -> Result<bool> {
+        bcrypt::verify(password, hash)
+            .map_err(|e| DomainError::Internal(format!("Failed to verify password: {}", e)))
+    }
+}
+
+#[async_trait]
+impl UserRepository for PgUserRepository {
+    async fn create(&self, data: CreateUser) -> Result<User> {
+        info!("Creating user: {}", data.username);
+
+        // Hash the password
+        let password_hash = Self::hash_password(&data.password)?;
+
+        // Calculate SIP HA1
+        let sip_ha1 = Self::calculate_sip_ha1(&data.username, &data.realm, &data.password);
+
+        // Insert into database
+        let user = sqlx::query_as::<_, User>(
+            r#"
+            INSERT INTO users (username, password_hash, sip_ha1, realm, display_name, email)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id, username, password_hash, sip_ha1, realm, display_name, email, enabled, created_at, updated_at
+            "#,
+        )
+        .bind(&data.username)
+        .bind(&password_hash)
+        .bind(&sip_ha1)
+        .bind(&data.realm)
+        .bind(&data.display_name)
+        .bind(&data.email)
+        .fetch_one(&self.pool)
+        .await
+        .map_err(|e| {
+            if let sqlx::Error::Database(db_err) = &e {
+                if db_err.constraint() == Some("users_username_key") {
+                    return DomainError::AlreadyExists(format!(
+                        "User {} already exists",
+                        data.username
+                    ));
+                }
+            }
+            DomainError::Internal(format!("Failed to create user: {}", e))
+        })?;
+
+        info!("Created user: {} (ID: {})", user.username, user.id);
+        Ok(user)
+    }
+
+    async fn find_by_id(&self, id: i32) -> Result<Option<User>> {
+        debug!("Finding user by ID: {}", id);
+
+        let user = sqlx::query_as::<_, User>(
+            r#"
+            SELECT id, username, password_hash, realm, display_name, email, enabled, created_at, updated_at
+            FROM users
+            WHERE id = $1
+            "#,
+        )
+        .bind(id)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| DomainError::Internal(format!("Failed to find user: {}", e)))?;
+
+        Ok(user)
+    }
+
+    async fn find_by_username(&self, username: &str) -> Result<Option<User>> {
+        debug!("Finding user by username: {}", username);
+
+        let user = sqlx::query_as::<_, User>(
+            r#"
+            SELECT id, username, password_hash, realm, display_name, email, enabled, created_at, updated_at
+            FROM users
+            WHERE username = $1
+            "#,
+        )
+        .bind(username)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| DomainError::Internal(format!("Failed to find user: {}", e)))?;
+
+        Ok(user)
+    }
+
+    async fn find_by_username_and_realm(
+        &self,
+        username: &str,
+        realm: &str,
+    ) -> Result<Option<User>> {
+        debug!("Finding user by username and realm: {}@{}", username, realm);
+
+        let user = sqlx::query_as::<_, User>(
+            r#"
+            SELECT id, username, password_hash, realm, display_name, email, enabled, created_at, updated_at
+            FROM users
+            WHERE username = $1 AND realm = $2
+            "#,
+        )
+        .bind(username)
+        .bind(realm)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| DomainError::Internal(format!("Failed to find user: {}", e)))?;
+
+        Ok(user)
+    }
+
+    async fn list(&self, limit: i64, offset: i64) -> Result<Vec<User>> {
+        debug!("Listing users (limit: {}, offset: {})", limit, offset);
+
+        let users = sqlx::query_as::<_, User>(
+            r#"
+            SELECT id, username, password_hash, realm, display_name, email, enabled, created_at, updated_at
+            FROM users
+            ORDER BY created_at DESC
+            LIMIT $1 OFFSET $2
+            "#,
+        )
+        .bind(limit)
+        .bind(offset)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| DomainError::Internal(format!("Failed to list users: {}", e)))?;
+
+        Ok(users)
+    }
+
+    async fn list_by_realm(&self, realm: &str, limit: i64, offset: i64) -> Result<Vec<User>> {
+        debug!(
+            "Listing users by realm: {} (limit: {}, offset: {})",
+            realm, limit, offset
+        );
+
+        let users = sqlx::query_as::<_, User>(
+            r#"
+            SELECT id, username, password_hash, realm, display_name, email, enabled, created_at, updated_at
+            FROM users
+            WHERE realm = $1
+            ORDER BY created_at DESC
+            LIMIT $2 OFFSET $3
+            "#,
+        )
+        .bind(realm)
+        .bind(limit)
+        .bind(offset)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| DomainError::Internal(format!("Failed to list users: {}", e)))?;
+
+        Ok(users)
+    }
+
+    async fn update(&self, id: i32, data: UpdateUser) -> Result<User> {
+        info!("Updating user ID: {}", id);
+
+        let user = sqlx::query_as::<_, User>(
+            r#"
+            UPDATE users
+            SET display_name = COALESCE($1, display_name),
+                email = COALESCE($2, email),
+                enabled = COALESCE($3, enabled),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $4
+            RETURNING id, username, password_hash, realm, display_name, email, enabled, created_at, updated_at
+            "#,
+        )
+        .bind(&data.display_name)
+        .bind(&data.email)
+        .bind(&data.enabled)
+        .bind(id)
+        .fetch_one(&self.pool)
+        .await
+        .map_err(|e| match e {
+            sqlx::Error::RowNotFound => DomainError::NotFound(format!("User with ID {} not found", id)),
+            _ => DomainError::Internal(format!("Failed to update user: {}", e)),
+        })?;
+
+        info!("Updated user: {} (ID: {})", user.username, user.id);
+        Ok(user)
+    }
+
+    async fn change_password(&self, id: i32, data: ChangePassword) -> Result<()> {
+        info!("Changing password for user ID: {}", id);
+
+        // First, verify the old password
+        let user = self
+            .find_by_id(id)
+            .await?
+            .ok_or_else(|| DomainError::NotFound(format!("User with ID {} not found", id)))?;
+
+        if !Self::verify_password(&data.old_password, &user.password_hash)? {
+            warn!("Invalid old password for user ID: {}", id);
+            return Err(DomainError::Unauthorized(
+                "Invalid old password".to_string(),
+            ));
+        }
+
+        // Hash the new password
+        let new_password_hash = Self::hash_password(&data.new_password)?;
+
+        // Update the password
+        sqlx::query(
+            r#"
+            UPDATE users
+            SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $2
+            "#,
+        )
+        .bind(&new_password_hash)
+        .bind(id)
+        .execute(&self.pool)
+        .await
+        .map_err(|e| DomainError::Internal(format!("Failed to change password: {}", e)))?;
+
+        info!("Password changed for user ID: {}", id);
+        Ok(())
+    }
+
+    async fn delete(&self, id: i32) -> Result<()> {
+        info!("Deleting user ID: {}", id);
+
+        let result = sqlx::query(
+            r#"
+            DELETE FROM users WHERE id = $1
+            "#,
+        )
+        .bind(id)
+        .execute(&self.pool)
+        .await
+        .map_err(|e| DomainError::Internal(format!("Failed to delete user: {}", e)))?;
+
+        if result.rows_affected() == 0 {
+            return Err(DomainError::NotFound(format!(
+                "User with ID {} not found",
+                id
+            )));
+        }
+
+        info!("Deleted user ID: {}", id);
+        Ok(())
+    }
+
+    async fn set_enabled(&self, id: i32, enabled: bool) -> Result<()> {
+        info!("Setting enabled={} for user ID: {}", enabled, id);
+
+        let result = sqlx::query(
+            r#"
+            UPDATE users
+            SET enabled = $1, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $2
+            "#,
+        )
+        .bind(enabled)
+        .bind(id)
+        .execute(&self.pool)
+        .await
+        .map_err(|e| DomainError::Internal(format!("Failed to update user: {}", e)))?;
+
+        if result.rows_affected() == 0 {
+            return Err(DomainError::NotFound(format!(
+                "User with ID {} not found",
+                id
+            )));
+        }
+
+        info!("Set enabled={} for user ID: {}", enabled, id);
+        Ok(())
+    }
+
+    async fn count(&self) -> Result<i64> {
+        let (count,) = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM users")
+            .fetch_one(&self.pool)
+            .await
+            .map_err(|e| DomainError::Internal(format!("Failed to count users: {}", e)))?;
+
+        Ok(count)
+    }
+
+    async fn count_by_realm(&self, realm: &str) -> Result<i64> {
+        let (count,) = sqlx::query_as::<_, (i64,)>("SELECT COUNT(*) FROM users WHERE realm = $1")
+            .bind(realm)
+            .fetch_one(&self.pool)
+            .await
+            .map_err(|e| DomainError::Internal(format!("Failed to count users: {}", e)))?;
+
+        Ok(count)
+    }
+
+    async fn verify_credentials(&self, username: &str, password: &str) -> Result<Option<User>> {
+        debug!("Verifying credentials for user: {}", username);
+
+        let user = self.find_by_username(username).await?;
+
+        match user {
+            Some(user) => {
+                if !user.is_enabled() {
+                    warn!("User {} is disabled", username);
+                    return Ok(None);
+                }
+
+                if Self::verify_password(password, &user.password_hash)? {
+                    debug!("Credentials verified for user: {}", username);
+                    Ok(Some(user))
+                } else {
+                    warn!("Invalid password for user: {}", username);
+                    Ok(None)
+                }
+            }
+            None => {
+                warn!("User {} not found", username);
+                Ok(None)
+            }
+        }
+    }
+}

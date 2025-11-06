@@ -4,3 +4,78 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+# 异步运行时
+tokio = { version = "1.40", features = ["full"] }
+async-trait = "0.1"
+futures = "0.3"
+
+# SIP 协议栈
+rsip = "0.4"
+
+# WebRTC
+webrtc = "0.11"
+
+# RTP/媒体
+rtp = "0.9"
+
+# 序列化
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# 时间处理
+chrono = { version = "0.4", features = ["serde"] }
+
+# UUID 生成
+uuid = { version = "1.10", features = ["v4", "serde"] }
+
+# 错误处理
+thiserror = "1.0"
+anyhow = "1.0"
+
+# 数据库
+sqlx = { version = "0.8", features = ["postgres", "runtime-tokio", "chrono", "uuid", "migrate"], optional = true }
+
+# Web 框架
+axum = { version = "0.7", features = ["ws"] }
+tokio-tungstenite = "0.24"
+tower = "0.5"
+tower-http = { version = "0.6", features = ["trace", "cors"] }
+
+# 配置管理
+config = "0.14"
+toml = "0.8"
+
+# 日志
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# 字节处理
+bytes = "1.7"
+
+# 随机数生成
+rand = "0.8"
+
+# 加密和哈希
+md5 = "0.8"
+hex = "0.4"
+bcrypt = "0.15"
+
+# JSON-RPC
+jsonrpsee = { version = "0.24", features = ["server", "client"] }
+
+# Metrics
+metrics = "0.23"
+metrics-exporter-prometheus = "0.15"
+
+[dev-dependencies]
+mockall = "0.13"
+tokio-test = "0.4"
+
+[features]
+default = ["postgres"]
+postgres = ["sqlx"]
+memory = []
+
+[[bin]]
+name = "yakyak"
+path = "src/main.rs"
