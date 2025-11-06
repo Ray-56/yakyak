@@ -27,14 +27,43 @@ All notable changes to YakYak will be documented in this file.
   - Complete REST API documentation (`docs/API.md`)
   - Migration history and maintenance guidelines
 
-#### Phase 2.2 - Call Transfer Support (Partial)
+#### Phase 2.2 - Call Hold and Transfer (COMPLETED)
 - **REFER Handler**
   - Basic REFER request handling for blind call transfer
   - Refer-To and Referred-By header extraction
   - Call existence validation
   - 202 Accepted response for valid REFER requests
   - Unit tests for REFER functionality
-  - TODO: Complete transfer logic with NOTIFY support
+
+- **Hold Manager**
+  - Call hold/resume state management
+  - HoldState enum (Active, LocalHold, RemoteHold, BothHold)
+  - SDP manipulation for hold/resume (sendonly, recvonly, inactive)
+  - Hold state detection from SDP
+  - Remote hold/resume tracking
+  - Unit tests (8 tests)
+
+#### Phase 2.3 - Authentication Security Enhancements (COMPLETED)
+- **Enhanced Digest Authentication**
+  - SHA-256 and SHA-512 algorithm support (in addition to MD5)
+  - DigestAlgorithm enum with string conversion
+  - Enhanced HA1/HA2 calculation for all algorithms
+  - QoP (Quality of Protection) support
+  - Unit tests for all algorithms
+
+- **Brute Force Protection**
+  - IP-based lockout after N failed attempts
+  - Configurable lockout duration and time window
+  - Automatic cleanup of expired entries
+  - Default: 5 attempts, 15-minute lockout, 5-minute window
+  - Unit tests for protection logic
+
+- **Rate Limiting**
+  - Per-IP request rate limiting
+  - Configurable max requests and time window
+  - Automatic cleanup of old request history
+  - Default: 10 requests per minute
+  - Unit tests
 
 #### Phase 3.4 - Event Subscription (SUBSCRIBE/NOTIFY)
 - **SUBSCRIBE Handler**
@@ -79,6 +108,265 @@ All notable changes to YakYak will be documented in this file.
   - Delivery confirmation
   - Message metadata (from, to, content_type, timestamp)
   - Unit tests for message delivery scenarios
+
+#### Phase 3.6 - Voicemail System (COMPLETED)
+- **Voicemail Domain Model**
+  - VoicemailMessage entity with status tracking
+  - VoicemailStatus enum (New, Read, Saved, Deleted)
+  - VoicemailMailbox configuration entity
+  - PIN-based mailbox access control
+  - Configurable max duration and message limits
+  - Email notification support
+
+- **Voicemail Repository**
+  - VoicemailRepository trait for persistence
+  - CRUD operations for messages and mailboxes
+  - Status-based filtering
+  - Message counting per mailbox
+  - VoicemailFilters for advanced queries
+
+- **Features**
+  - Message mark as read/saved/deleted
+  - Mailbox configuration (PIN, greeting, limits)
+  - Email notification settings
+  - Unit tests (7 tests)
+
+#### Phase 3.7 - IVR System (COMPLETED)
+- **DTMF Detection**
+  - DtmfDigit enum with 12 digits (0-9, *, #)
+  - DtmfEvent with duration and timestamp
+  - RFC 2833 payload parsing
+  - SIP INFO DTMF parsing (application/dtmf-relay)
+  - DTMF frequency mapping
+  - Unit tests (7 tests)
+
+- **DTMF Detector**
+  - Buffer-based digit collection
+  - Configurable timeout and buffer size
+  - Pattern matching (matches, ends_with)
+  - Last N digits retrieval
+  - Automatic buffer clearing on timeout
+  - Unit tests (4 tests)
+
+- **IVR Menu System**
+  - IvrMenu configuration with greeting and items
+  - IvrMenuItem with digit-action mapping
+  - MenuAction enum (PlayAudio, Transfer, GotoMenu, etc.)
+  - IvrMenuBuilder for fluent construction
+  - IvrMenuSystem for menu management
+  - Default main menu template
+  - JSON serialization/deserialization
+  - Unit tests (6 tests)
+
+- **IVR Flow Engine**
+  - IvrSession with state machine
+  - IvrState enum (8 states)
+  - IvrFlowEngine for session management
+  - DTMF event processing
+  - Menu navigation with stack (GoBack support)
+  - Session variables
+  - Timeout and retry handling
+  - Invalid input handling
+  - Unit tests (6 tests)
+
+- **Menu Actions**
+  - Play audio files
+  - Transfer to extensions/URIs
+  - Navigate between menus
+  - Dial by extension
+  - Voicemail access
+  - Repeat/Go back/Hangup
+
+#### Phase 2.5 - Enhanced Monitoring (COMPLETED)
+- **System Health Monitoring**
+  - SystemHealth with overall status (healthy/degraded/unhealthy)
+  - SystemMetrics (uptime, memory, active calls)
+  - CallMetrics (total calls, active calls, call quality stats)
+  - AuthMetrics (registration success/failure rates)
+  - MediaMetrics (RTP packets, jitter, packet loss)
+  - DatabaseMetrics (connection pool status)
+  - Warnings and errors tracking
+  - Health assessment logic
+
+- **Metrics Collector**
+  - MetricsCollector with centralized metrics management
+  - Thread-safe metrics updates via RwLock
+  - Start time tracking for uptime calculation
+  - Call recording (start, end, quality metrics)
+  - Authentication event recording
+  - Media statistics updates
+  - Database metrics updates
+  - System snapshot generation
+
+- **Monitoring API**
+  - GET /health - Basic health check
+  - GET /api/monitoring/health - Detailed system health
+  - JSON serialization for all metrics types
+
+#### Phase 3.1 - Conference System (COMPLETED)
+- **Conference Domain Model**
+  - ConferenceRoom entity with UUID
+  - ConferenceState enum (Waiting, Active, Locked, Ended)
+  - Participant entity with role (Moderator, Presenter, Attendee, Listener)
+  - ParticipantState enum (Connecting, Active, OnHold, Muted, Disconnected)
+  - Moderator controls and permissions
+  - PIN-based room access
+  - Recording support
+  - Unit tests (13 tests)
+
+- **Conference Room Management**
+  - Room creation with configuration
+  - Participant add/remove
+  - Participant mute/unmute
+  - Participant role changes
+  - Moderator management
+  - Room lock/unlock
+  - Room lifecycle (start, end)
+  - Max participant limits
+
+- **Conference Repository**
+  - ConferenceRepository trait for persistence
+  - CRUD operations for rooms
+  - Participant management
+  - Room search and filtering
+  - User-based room queries
+
+- **Audio Mixer**
+  - AudioMixer for multi-participant mixing
+  - AudioFrame with sample data and timestamp
+  - ParticipantStream with mute/volume control
+  - Multi-stream audio mixing algorithm
+  - Participant exclusion (avoid echo)
+  - Sample rate configuration (8000 Hz default)
+  - Unit tests (8 tests)
+
+- **Automatic Gain Control (AGC)**
+  - AutomaticGainControl for volume normalization
+  - Adaptive gain adjustment
+  - Target level configuration
+  - Attack/release coefficient control
+  - Frame-level gain application
+
+#### Phase 3.2 - NAT Traversal (STUN) (COMPLETED)
+- **STUN Protocol Implementation (RFC 5389)**
+  - StunMessageType enum (BindingRequest, BindingResponse, BindingErrorResponse)
+  - StunMessage parsing and serialization
+  - StunAttribute support (MappedAddress, XorMappedAddress, ErrorCode, etc.)
+  - Transaction ID generation and validation
+  - Magic cookie validation (0x2112A442)
+  - Unit tests (5 tests)
+
+- **STUN Client**
+  - StunClient for NAT binding discovery
+  - Configurable STUN server and timeout
+  - UDP socket management
+  - Binding request/response handling
+  - Public IP and port discovery
+  - Error handling for timeouts and invalid responses
+  - Unit tests (3 tests)
+
+- **NAT Type Detection**
+  - NatType enum (OpenInternet, FullCone, RestrictedCone, PortRestrictedCone, Symmetric, Unknown)
+  - Multi-server NAT type detection algorithm
+  - Primary and secondary server queries
+  - Port consistency checking
+  - External IP comparison
+
+- **XOR Address Mapping**
+  - XOR-MAPPED-ADDRESS attribute support
+  - Transaction ID-based XOR operation
+  - IPv4 address encoding/decoding
+  - Magic cookie XOR for obfuscation
+
+#### Documentation
+- **Deployment Guide** (`docs/DEPLOYMENT.md`)
+  - System requirements (hardware, software, network)
+  - Installation methods (source build, Docker)
+  - Complete configuration guide (TOML format)
+  - Database setup (PostgreSQL installation, migrations)
+  - Security configuration (TLS, firewall, reverse proxy)
+  - Systemd service configuration
+  - Monitoring setup (Prometheus, health checks, logs)
+  - Maintenance procedures (backup, restore, log rotation)
+  - Troubleshooting guide
+  - Performance tuning recommendations
+
+#### Phase 2.5 - WebSocket Event Streaming (COMPLETED)
+- **Real-time Event Broadcasting**
+  - EventBroadcaster with broadcast channel (1000 event capacity)
+  - SystemEvent enum with multiple event types
+  - Call events (Created, Ringing, Answered, Terminated, Failed, Hold, Resume, Transfer)
+  - Registration events (Registered, Unregistered, Expired)
+  - Authentication events (Success, Failure, Lockout, RateLimited)
+  - Conference events (Created, Started, Ended, ParticipantJoined/Left/Muted/Unmuted)
+  - Health update events
+  - Custom events support
+  - Unit tests (7 tests)
+
+- **WebSocket Handler**
+  - WebSocket upgrade handler
+  - Bidirectional WebSocket connection management
+  - Welcome message on connection
+  - JSON event serialization
+  - Ping/pong support
+  - Client disconnect handling
+  - Concurrent send/receive tasks
+
+#### Phase 3.1 - Conference PostgreSQL and API (COMPLETED)
+- **Conference PostgreSQL Repository**
+  - PgConferenceRepository implementation
+  - Conference room CRUD operations
+  - Participant management (add, remove, update, list)
+  - State filtering and queries
+  - Cascading deletes
+  - Integration tests (3 tests)
+
+- **Conference REST API**
+  - POST /conferences - Create conference
+  - GET /conferences - List conferences (with state filter)
+  - GET /conferences/:id - Get conference details
+  - PUT /conferences/:id - Update conference
+  - DELETE /conferences/:id - Delete conference
+  - POST /conferences/:id/start - Start conference
+  - POST /conferences/:id/end - End conference
+  - POST /conferences/:id/lock - Lock conference
+  - POST /conferences/:id/unlock - Unlock conference
+  - POST /conferences/:id/participants - Add participant
+  - GET /conferences/:id/participants - List participants
+  - DELETE /conferences/:id/participants/:pid - Remove participant
+  - POST /conferences/:id/participants/:pid/mute - Mute participant
+  - POST /conferences/:id/participants/:pid/unmute - Unmute participant
+  - PUT /conferences/:id/participants/:pid/role - Update participant role
+  - Full JSON request/response DTOs
+  - ConferenceApiState for dependency injection
+
+#### Phase 3.6 - Voicemail PostgreSQL (COMPLETED)
+- **Voicemail PostgreSQL Repository**
+  - PgVoicemailRepository implementation
+  - Voicemail message CRUD operations
+  - Mailbox configuration management
+  - Status updates (New, Read, Saved, Deleted)
+  - Message listing with status filtering
+  - Message counting
+  - Upsert support for mailboxes
+  - Automatic timestamp updates
+  - Integration tests (3 tests)
+
+#### Database Migrations
+- **20251106_02_create_conference_tables.sql**
+  - conference_rooms table (UUID primary key, state, PIN, recording)
+  - conference_participants table (role, state, mute, volume)
+  - Cascading deletes
+  - 5 performance indexes
+  - Comprehensive table/column comments
+
+- **20251106_03_create_voicemail_tables.sql**
+  - voicemail_mailboxes table (PIN, greetings, limits, email notification)
+  - voicemail_messages table (caller info, audio file, status, timestamps)
+  - Cascading deletes
+  - 5 performance indexes
+  - Automatic updated_at trigger
+  - Comprehensive table/column comments
 
 ### Changed
 
@@ -146,6 +434,14 @@ New permission strings in format `resource:action`:
   - Adds role_id to users table
   - Inserts 3 default system roles
   - Creates indexes and triggers
+- `20251106_02_create_conference_tables.sql`
+  - Creates conference_rooms table
+  - Creates conference_participants table
+  - Adds indexes and comments
+- `20251106_03_create_voicemail_tables.sql`
+  - Creates voicemail_mailboxes table
+  - Creates voicemail_messages table
+  - Adds indexes, triggers, and comments
 
 #### Testing
 - Role management unit tests (6 tests)
@@ -155,6 +451,21 @@ New permission strings in format `resource:action`:
 - NOTIFY handler tests (2 tests)
 - MESSAGE handler tests (3 tests)
 - User import unit tests (2 tests)
+- Hold manager tests (8 tests)
+- Enhanced auth tests (5 tests)
+- Voicemail domain tests (7 tests)
+- DTMF detection tests (7 tests)
+- DTMF detector tests (4 tests)
+- IVR menu tests (6 tests)
+- IVR flow engine tests (6 tests)
+- Conference domain tests (13 tests)
+- Audio mixer tests (8 tests)
+- STUN message tests (5 tests)
+- STUN client tests (3 tests)
+- WebSocket event tests (7 tests)
+- Conference repository tests (3 tests)
+- Voicemail repository tests (3 tests)
+- **Total new tests: 109**
 
 ### TODO / In Progress
 
@@ -165,32 +476,45 @@ New permission strings in format `resource:action`:
 - [ ] DTLS-SRTP for WebRTC
 
 #### Phase 2.2 - Call Transfer (Remaining)
+- [x] Basic REFER handler (completed)
+- [x] Call hold/resume state management (completed)
 - [ ] Complete REFER/NOTIFY integration
 - [ ] Attended transfer support
-- [ ] Call hold/resume (re-INVITE)
 - [ ] Music on hold (MOH)
 
 #### Phase 2.3 - Authentication Security
-- [ ] SHA-256/SHA-512 support
-- [ ] Rate limiting
-- [ ] IP blacklisting
+- [x] SHA-256/SHA-512 support (completed)
+- [x] Brute force protection (completed)
+- [x] Rate limiting (completed)
+- [ ] IP blacklisting (basic framework in place)
 - [ ] Audit logging
 
 #### Phase 2.5 - Monitoring Enhancements
+- [x] System health monitoring (completed)
+- [x] Extended metrics (completed)
+- [x] Metrics collector (completed)
+- [x] WebSocket event streaming (completed)
 - [ ] API authentication/authorization
-- [ ] Extended metrics
 - [ ] Performance profiling
+- [ ] Grafana dashboards
 
 #### Phase 3.1 - Conference Features
-- [ ] Conference room management
-- [ ] Audio mixing
-- [ ] Participant controls
-- [ ] Conference recording
+- [x] Conference room management (completed)
+- [x] Audio mixing (completed)
+- [x] Participant controls (completed)
+- [x] Conference domain model (completed)
+- [x] PostgreSQL repository implementation (completed)
+- [x] Conference API endpoints (completed)
+- [ ] Conference recording implementation
+- [ ] Music on hold for conferences
 
 #### Phase 3.2 - NAT Traversal
-- [ ] STUN client
+- [x] STUN client (completed)
+- [x] STUN protocol implementation (completed)
+- [x] NAT type detection (completed)
 - [ ] TURN relay
 - [ ] ICE support
+- [ ] STUN server implementation
 
 #### Phase 3.3 - WebRTC Integration
 - [ ] WebSocket signaling
@@ -198,15 +522,24 @@ New permission strings in format `resource:action`:
 - [ ] Browser compatibility
 
 #### Phase 3.6 - Voicemail
-- [ ] Voicemail recording
-- [ ] Voicemail playback
+- [x] Voicemail domain model (completed)
+- [x] Voicemail repository trait (completed)
+- [x] Mailbox configuration (completed)
+- [x] PostgreSQL repository implementation (completed)
+- [ ] Voicemail recording implementation
+- [ ] Voicemail playback implementation
+- [ ] Voicemail API endpoints
 - [ ] MWI (Message Waiting Indicator)
 
 #### Phase 3.7 - IVR System
-- [ ] DTMF detection
-- [ ] Audio playback
+- [x] DTMF detection (RFC 2833 + SIP INFO) (completed)
+- [x] DTMF detector with buffer (completed)
+- [x] IVR menu system (completed)
+- [x] IVR flow engine (completed)
+- [x] Menu navigation and state machine (completed)
+- [ ] Audio playback implementation
 - [ ] TTS integration
-- [ ] IVR flow engine
+- [ ] ASR integration
 
 #### Phase 4 - Enterprise Features
 - [ ] Call queues and ACD
@@ -220,18 +553,37 @@ New permission strings in format `resource:action`:
 - Network access required for cargo build (dependency download)
 - REFER transfer logic incomplete (framework only)
 - API endpoints lack authentication
-- WebSocket events not yet implemented
+- Conference recording not yet implemented
+- Voicemail recording/playback not yet implemented
 
 ### Performance Improvements
 - Role lookup optimization via database indexes
 - Permission checking via HashSet (O(1) lookup)
 - Connection pooling for database access
+- DTMF buffer management for efficient digit collection
+- IVR session management with automatic cleanup
+- Audio mixer with efficient frame mixing algorithms
+- AGC with adaptive gain control (minimal overhead)
+- STUN client with configurable timeout and UDP socket reuse
+- Metrics collector with RwLock for concurrent access
+- Conference room participant management with HashMap
+- WebSocket event broadcasting with tokio broadcast channel (1000 event capacity)
+- Conference PostgreSQL queries with appropriate indexes
+- Voicemail message filtering with indexed queries
+- Cascading deletes for referential integrity
 
 ### Security
 - bcrypt password hashing (cost factor 12)
-- SIP HA1 storage for Digest authentication
+- SIP HA1 storage for Digest authentication (MD5/SHA-256/SHA-512)
 - Role-based permission system
 - System role protection
+- **Brute force protection** with IP-based lockout
+- **Rate limiting** to prevent abuse
+- Enhanced digest authentication with SHA-256/SHA-512
+- Voicemail PIN protection
+- Conference room PIN-based access control
+- STUN transaction ID validation
+- NAT traversal security (XOR address obfuscation)
 
 ### Breaking Changes
 - User entity now includes `role_id` field
