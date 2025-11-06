@@ -11,6 +11,8 @@ pub mod rest;
 pub mod router;
 pub mod user_dto;
 pub mod user_handler;
+pub mod user_import;
+pub mod voicemail;
 pub mod websocket;
 pub mod ws_handler;
 
@@ -19,5 +21,7 @@ pub use metrics_handler::{init_metrics, update_active_calls, update_registered_u
 pub use monitoring::{MetricsCollector, SystemHealth};
 pub use router::build_router;
 pub use user_handler::AppState;
+pub use user_import::{import_users_csv, import_users_json};
+pub use voicemail::{voicemail_router, VoicemailApiState};
 pub use websocket::EventBroadcaster;
 pub use ws_handler::EventBroadcaster as LegacyEventBroadcaster;

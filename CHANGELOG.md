@@ -368,6 +368,101 @@ All notable changes to YakYak will be documented in this file.
   - Automatic updated_at trigger
   - Comprehensive table/column comments
 
+#### Phase 3.6 - Voicemail API (COMPLETED)
+- **Voicemail REST API**
+  - GET /voicemail/mailboxes/:id - Get mailbox configuration
+  - PUT /voicemail/mailboxes/:id - Update mailbox settings
+  - GET /voicemail/mailboxes/:id/messages - List messages (with status filter)
+  - POST /voicemail/mailboxes/:id/messages - Create message
+  - GET /voicemail/messages/:id - Get message details
+  - DELETE /voicemail/messages/:id - Delete message
+  - PUT /voicemail/messages/:id/status - Update message status
+  - POST /voicemail/messages/:id/mark-read - Mark as read
+  - POST /voicemail/messages/:id/mark-saved - Mark as saved
+  - GET /voicemail/mailboxes/:id/count - Get message count statistics
+  - Full JSON request/response DTOs
+  - VoicemailApiState for dependency injection
+
+#### Phase 3.2 - TURN Relay (COMPLETED)
+- **TURN Protocol Implementation (RFC 5766)**
+  - TurnMethod enum (Allocate, Refresh, Send, Data, CreatePermission, ChannelBind)
+  - TurnMessage parsing and serialization
+  - TurnAttribute support (Lifetime, RequestedTransport, Data, XorRelayedAddress, etc.)
+  - Message type encoding/decoding
+  - Transaction ID generation
+  - Unit tests (5 tests)
+
+- **TURN Client**
+  - TurnClient for relay allocation
+  - Authentication support (username/password)
+  - Allocate relay address
+  - Refresh allocation lifetime
+  - Create permissions for peers
+  - Send indications through relay
+  - Configurable timeout
+  - Unit tests (3 tests)
+
+- **TURN Relay Server**
+  - TurnRelay with port management (base_port to max_port)
+  - RelayAllocation tracking (client, relay address, lifetime, permissions)
+  - Allocation lifecycle management
+  - Permission management per allocation
+  - Bidirectional relay (client<->peer)
+  - Automatic cleanup of expired allocations
+  - Statistics and monitoring
+  - Unit tests (6 tests)
+
+#### Phase 3.2 - ICE Implementation (COMPLETED)
+- **ICE Candidate Types**
+  - CandidateType enum (Host, ServerReflexive, PeerReflexive, Relay)
+  - Priority computation (RFC 5245)
+  - Foundation generation
+  - SDP candidate format parsing and serialization
+  - Related address support for reflexive/relay candidates
+  - Unit tests (8 tests)
+
+- **ICE Candidate Pairs**
+  - IceCandidatePair with state machine
+  - CandidatePairState (Frozen, Waiting, InProgress, Succeeded, Failed)
+  - Pair priority computation
+  - Controlling/controlled role support
+
+- **ICE Agent**
+  - IceAgent with complete candidate gathering
+  - IceConfig with STUN/TURN server lists
+  - Host candidate gathering from local interfaces
+  - Server reflexive candidate gathering via STUN
+  - Relay candidate gathering via TURN
+  - Candidate pair formation
+  - Connection state machine (New, Checking, Connected, Completed, Failed, etc.)
+  - Gathering state tracking
+  - Selected pair management
+  - Unit tests (4 tests)
+
+#### Phase 2.3 - Audit Logging (COMPLETED)
+- **Audit Event System**
+  - AuditEvent with comprehensive metadata
+  - AuditEventType enum with 20+ event types
+  - AuditLevel (Info, Warning, Critical)
+  - Event categories: Authentication, User Management, Roles, Calls, Conferences, System Config, Security, Data Access
+  - IP address, user agent, session tracking
+  - Custom metadata support
+  - Timestamp and UUID for each event
+
+- **Audit Backend**
+  - AuditBackend trait for pluggable backends
+  - MemoryAuditBackend with configurable capacity
+  - FIFO event retention
+  - Query support with multiple filters (time range, level, username, IP)
+  - Async logging
+
+- **Audit Logger**
+  - AuditLogger with convenience methods
+  - Integration with tracing for operational logging
+  - Common event helpers (auth_success, auth_failure, auth_lockout, etc.)
+  - Query API for audit trail analysis
+  - Unit tests (4 tests)
+
 ### Changed
 
 #### Database Schema
@@ -465,7 +560,13 @@ New permission strings in format `resource:action`:
 - WebSocket event tests (7 tests)
 - Conference repository tests (3 tests)
 - Voicemail repository tests (3 tests)
-- **Total new tests: 109**
+- TURN message tests (5 tests)
+- TURN client tests (3 tests)
+- TURN relay tests (6 tests)
+- ICE candidate tests (8 tests)
+- ICE agent tests (4 tests)
+- Audit logging tests (4 tests)
+- **Total new tests: 147**
 
 ### TODO / In Progress
 
@@ -486,8 +587,8 @@ New permission strings in format `resource:action`:
 - [x] SHA-256/SHA-512 support (completed)
 - [x] Brute force protection (completed)
 - [x] Rate limiting (completed)
+- [x] Audit logging (completed)
 - [ ] IP blacklisting (basic framework in place)
-- [ ] Audit logging
 
 #### Phase 2.5 - Monitoring Enhancements
 - [x] System health monitoring (completed)
@@ -512,9 +613,12 @@ New permission strings in format `resource:action`:
 - [x] STUN client (completed)
 - [x] STUN protocol implementation (completed)
 - [x] NAT type detection (completed)
-- [ ] TURN relay
-- [ ] ICE support
+- [x] TURN relay (completed)
+- [x] TURN client (completed)
+- [x] ICE candidate gathering (completed)
+- [x] ICE agent (completed)
 - [ ] STUN server implementation
+- [ ] ICE connectivity checks implementation
 
 #### Phase 3.3 - WebRTC Integration
 - [ ] WebSocket signaling
@@ -526,9 +630,9 @@ New permission strings in format `resource:action`:
 - [x] Voicemail repository trait (completed)
 - [x] Mailbox configuration (completed)
 - [x] PostgreSQL repository implementation (completed)
+- [x] Voicemail API endpoints (completed)
 - [ ] Voicemail recording implementation
 - [ ] Voicemail playback implementation
-- [ ] Voicemail API endpoints
 - [ ] MWI (Message Waiting Indicator)
 
 #### Phase 3.7 - IVR System
