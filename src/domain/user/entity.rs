@@ -2,6 +2,7 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 /// User entity
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15,6 +16,7 @@ pub struct User {
     pub display_name: Option<String>,
     pub email: Option<String>,
     pub enabled: bool,
+    pub role_id: Option<Uuid>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -27,6 +29,7 @@ pub struct CreateUser {
     pub realm: String,
     pub display_name: Option<String>,
     pub email: Option<String>,
+    pub role_id: Option<Uuid>,
 }
 
 /// User update data
@@ -35,6 +38,7 @@ pub struct UpdateUser {
     pub display_name: Option<String>,
     pub email: Option<String>,
     pub enabled: Option<bool>,
+    pub role_id: Option<Uuid>,
 }
 
 /// Change password data

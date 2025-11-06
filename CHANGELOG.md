@@ -1,0 +1,253 @@
+# Changelog
+
+All notable changes to YakYak will be documented in this file.
+
+## [Unreleased] - 2025-11-06
+
+### Added
+
+#### Phase 1.1 - User Management Enhancements
+- **Role-Based Access Control (RBAC)**
+  - `Role` entity with 20 distinct permissions
+  - `Permission` enum for fine-grained access control
+  - `RoleRepository` trait and PostgreSQL implementation
+  - Three default system roles: administrator, user, operator
+  - Database migration for roles table with UUID primary key
+  - Users can now be assigned roles via `role_id` field
+  - System roles are protected from deletion
+
+- **Bulk User Import**
+  - CSV import endpoint (`POST /users/import/csv`)
+  - JSON import endpoint (`POST /users/import/json`)
+  - Detailed import results with error reporting
+  - Support for optional fields (display_name, email)
+
+- **Documentation**
+  - Comprehensive database schema documentation (`docs/DATABASE_SCHEMA.md`)
+  - Complete REST API documentation (`docs/API.md`)
+  - Migration history and maintenance guidelines
+
+#### Phase 2.2 - Call Transfer Support (Partial)
+- **REFER Handler**
+  - Basic REFER request handling for blind call transfer
+  - Refer-To and Referred-By header extraction
+  - Call existence validation
+  - 202 Accepted response for valid REFER requests
+  - Unit tests for REFER functionality
+  - TODO: Complete transfer logic with NOTIFY support
+
+#### Phase 3.4 - Event Subscription (SUBSCRIBE/NOTIFY)
+- **SUBSCRIBE Handler**
+  - Event subscription handling (presence, dialog, message-summary, reg, refer)
+  - Subscription manager with dialog ID tracking
+  - Expires header support (unsubscribe with Expires: 0)
+  - 489 Bad Event response for unsupported event packages
+  - 202 Accepted response for valid subscriptions
+  - Unit tests for subscription workflows
+
+- **NOTIFY Handler**
+  - Event notification handling
+  - Support for refer, message-summary, presence, dialog, reg events
+  - Event and Subscription-State header extraction
+  - SIP fragment body parsing (for REFER progress)
+  - 200 OK response for valid notifications
+  - Unit tests for various event types
+
+- **Subscription Management**
+  - `SubscriptionManager` for tracking active subscriptions
+  - Dialog ID generation from Call-ID and tags
+  - Subscription expiration handling
+  - In-memory subscription storage
+
+#### Phase 3.5 - Instant Messaging (MESSAGE)
+- **MESSAGE Handler**
+  - SIP MESSAGE request handling
+  - Text message routing and delivery
+  - Content-Type header support
+  - From/To URI extraction and parsing
+
+- **Message Store**
+  - In-memory message storage
+  - Offline message queuing
+  - Message delivery tracking
+  - Undelivered message retrieval
+  - Message history with timestamps
+
+- **Features**
+  - Online/offline user detection via Registrar
+  - Automatic message queuing for offline users
+  - Delivery confirmation
+  - Message metadata (from, to, content_type, timestamp)
+  - Unit tests for message delivery scenarios
+
+### Changed
+
+#### Database Schema
+- **users table**
+  - Added `role_id UUID` column (foreign key to roles)
+  - New index on `role_id` for performance
+
+- **roles table** (new)
+  - UUID primary key
+  - String-based permission array
+  - System role protection flag
+  - Automatic timestamp updates
+
+#### Domain Models
+- **User entity**
+  - Added `role_id` field
+  - Updated `CreateUser` with optional role assignment
+  - Updated `UpdateUser` to support role changes
+
+- **New Repositories**
+  - `RoleRepository` trait with CRUD operations
+  - `PgRoleRepository` PostgreSQL implementation
+
+#### API Endpoints
+- **User Management**
+  - User creation now accepts `role_id` parameter
+  - User updates support role assignment
+  - New bulk import endpoints (CSV and JSON)
+
+- **Role Management** (planned endpoints)
+  - GET /roles - List all roles
+  - GET /roles/:id - Get role by ID
+  - POST /roles - Create custom role
+  - PUT /roles/:id - Update role
+  - DELETE /roles/:id - Delete role
+
+### Technical Details
+
+#### Permissions
+New permission strings in format `resource:action`:
+- User: `user:read`, `user:create`, `user:update`, `user:delete`, `user:manage_roles`
+- Call: `call:read`, `call:create`, `call:terminate`, `call:transfer`
+- CDR: `cdr:read`, `cdr:export`, `cdr:delete`
+- System: `system:config`, `system:monitor`, `system:audit`
+- Conference: `conference:create`, `conference:manage`, `conference:moderate`
+- Voicemail: `voicemail:access`, `voicemail:manage`
+
+#### Default Roles
+1. **Administrator** (UUID: a0000000-0000-0000-0000-000000000001)
+   - All 20 permissions
+   - System role (cannot be deleted)
+
+2. **User** (UUID: a0000000-0000-0000-0000-000000000002)
+   - call:create, call:read, voicemail:access
+   - System role
+
+3. **Operator** (UUID: a0000000-0000-0000-0000-000000000003)
+   - call:create, call:read, call:transfer, call:terminate, user:read, cdr:read
+   - System role
+
+#### Database Migrations
+- `20251106_01_create_roles_table.sql`
+  - Creates roles table
+  - Adds role_id to users table
+  - Inserts 3 default system roles
+  - Creates indexes and triggers
+
+#### Testing
+- Role management unit tests (6 tests)
+- Role repository integration tests (5 tests)
+- REFER handler tests (2 tests)
+- SUBSCRIBE handler tests (4 tests)
+- NOTIFY handler tests (2 tests)
+- MESSAGE handler tests (3 tests)
+- User import unit tests (2 tests)
+
+### TODO / In Progress
+
+#### Phase 2.1 - TLS/SRTP Encryption
+- [ ] TLS transport layer
+- [ ] Certificate management
+- [ ] SRTP media encryption
+- [ ] DTLS-SRTP for WebRTC
+
+#### Phase 2.2 - Call Transfer (Remaining)
+- [ ] Complete REFER/NOTIFY integration
+- [ ] Attended transfer support
+- [ ] Call hold/resume (re-INVITE)
+- [ ] Music on hold (MOH)
+
+#### Phase 2.3 - Authentication Security
+- [ ] SHA-256/SHA-512 support
+- [ ] Rate limiting
+- [ ] IP blacklisting
+- [ ] Audit logging
+
+#### Phase 2.5 - Monitoring Enhancements
+- [ ] API authentication/authorization
+- [ ] Extended metrics
+- [ ] Performance profiling
+
+#### Phase 3.1 - Conference Features
+- [ ] Conference room management
+- [ ] Audio mixing
+- [ ] Participant controls
+- [ ] Conference recording
+
+#### Phase 3.2 - NAT Traversal
+- [ ] STUN client
+- [ ] TURN relay
+- [ ] ICE support
+
+#### Phase 3.3 - WebRTC Integration
+- [ ] WebSocket signaling
+- [ ] WebRTC SDP support
+- [ ] Browser compatibility
+
+#### Phase 3.6 - Voicemail
+- [ ] Voicemail recording
+- [ ] Voicemail playback
+- [ ] MWI (Message Waiting Indicator)
+
+#### Phase 3.7 - IVR System
+- [ ] DTMF detection
+- [ ] Audio playback
+- [ ] TTS integration
+- [ ] IVR flow engine
+
+#### Phase 4 - Enterprise Features
+- [ ] Call queues and ACD
+- [ ] High availability clustering
+- [ ] Multi-tenancy
+- [ ] SIP trunking
+- [ ] Advanced codecs (Opus, H.264)
+
+### Known Issues
+- Signing service intermittent availability
+- Network access required for cargo build (dependency download)
+- REFER transfer logic incomplete (framework only)
+- API endpoints lack authentication
+- WebSocket events not yet implemented
+
+### Performance Improvements
+- Role lookup optimization via database indexes
+- Permission checking via HashSet (O(1) lookup)
+- Connection pooling for database access
+
+### Security
+- bcrypt password hashing (cost factor 12)
+- SIP HA1 storage for Digest authentication
+- Role-based permission system
+- System role protection
+
+### Breaking Changes
+- User entity now includes `role_id` field
+- Database schema updated (requires migration)
+- CreateUser and UpdateUser structs modified
+
+---
+
+## Previous Releases
+
+See [ROADMAP.md](ROADMAP.md) for detailed implementation history and progress tracking.
+
+---
+
+**Legend:**
+- ✅ Completed
+- 🚧 In Progress
+- 📋 Planned
+- ⚠️ Known Issue
