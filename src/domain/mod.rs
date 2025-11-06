@@ -11,6 +11,7 @@
 pub mod billing;
 pub mod call;
 pub mod cdr;
+pub mod conference;
 pub mod media;
 pub mod registration;
 pub mod routing;

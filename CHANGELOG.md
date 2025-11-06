@@ -177,6 +177,120 @@ All notable changes to YakYak will be documented in this file.
   - Voicemail access
   - Repeat/Go back/Hangup
 
+#### Phase 2.5 - Enhanced Monitoring (COMPLETED)
+- **System Health Monitoring**
+  - SystemHealth with overall status (healthy/degraded/unhealthy)
+  - SystemMetrics (uptime, memory, active calls)
+  - CallMetrics (total calls, active calls, call quality stats)
+  - AuthMetrics (registration success/failure rates)
+  - MediaMetrics (RTP packets, jitter, packet loss)
+  - DatabaseMetrics (connection pool status)
+  - Warnings and errors tracking
+  - Health assessment logic
+
+- **Metrics Collector**
+  - MetricsCollector with centralized metrics management
+  - Thread-safe metrics updates via RwLock
+  - Start time tracking for uptime calculation
+  - Call recording (start, end, quality metrics)
+  - Authentication event recording
+  - Media statistics updates
+  - Database metrics updates
+  - System snapshot generation
+
+- **Monitoring API**
+  - GET /health - Basic health check
+  - GET /api/monitoring/health - Detailed system health
+  - JSON serialization for all metrics types
+
+#### Phase 3.1 - Conference System (COMPLETED)
+- **Conference Domain Model**
+  - ConferenceRoom entity with UUID
+  - ConferenceState enum (Waiting, Active, Locked, Ended)
+  - Participant entity with role (Moderator, Presenter, Attendee, Listener)
+  - ParticipantState enum (Connecting, Active, OnHold, Muted, Disconnected)
+  - Moderator controls and permissions
+  - PIN-based room access
+  - Recording support
+  - Unit tests (13 tests)
+
+- **Conference Room Management**
+  - Room creation with configuration
+  - Participant add/remove
+  - Participant mute/unmute
+  - Participant role changes
+  - Moderator management
+  - Room lock/unlock
+  - Room lifecycle (start, end)
+  - Max participant limits
+
+- **Conference Repository**
+  - ConferenceRepository trait for persistence
+  - CRUD operations for rooms
+  - Participant management
+  - Room search and filtering
+  - User-based room queries
+
+- **Audio Mixer**
+  - AudioMixer for multi-participant mixing
+  - AudioFrame with sample data and timestamp
+  - ParticipantStream with mute/volume control
+  - Multi-stream audio mixing algorithm
+  - Participant exclusion (avoid echo)
+  - Sample rate configuration (8000 Hz default)
+  - Unit tests (8 tests)
+
+- **Automatic Gain Control (AGC)**
+  - AutomaticGainControl for volume normalization
+  - Adaptive gain adjustment
+  - Target level configuration
+  - Attack/release coefficient control
+  - Frame-level gain application
+
+#### Phase 3.2 - NAT Traversal (STUN) (COMPLETED)
+- **STUN Protocol Implementation (RFC 5389)**
+  - StunMessageType enum (BindingRequest, BindingResponse, BindingErrorResponse)
+  - StunMessage parsing and serialization
+  - StunAttribute support (MappedAddress, XorMappedAddress, ErrorCode, etc.)
+  - Transaction ID generation and validation
+  - Magic cookie validation (0x2112A442)
+  - Unit tests (5 tests)
+
+- **STUN Client**
+  - StunClient for NAT binding discovery
+  - Configurable STUN server and timeout
+  - UDP socket management
+  - Binding request/response handling
+  - Public IP and port discovery
+  - Error handling for timeouts and invalid responses
+  - Unit tests (3 tests)
+
+- **NAT Type Detection**
+  - NatType enum (OpenInternet, FullCone, RestrictedCone, PortRestrictedCone, Symmetric, Unknown)
+  - Multi-server NAT type detection algorithm
+  - Primary and secondary server queries
+  - Port consistency checking
+  - External IP comparison
+
+- **XOR Address Mapping**
+  - XOR-MAPPED-ADDRESS attribute support
+  - Transaction ID-based XOR operation
+  - IPv4 address encoding/decoding
+  - Magic cookie XOR for obfuscation
+
+#### Documentation
+- **Deployment Guide** (`docs/DEPLOYMENT.md`)
+  - System requirements (hardware, software, network)
+  - Installation methods (source build, Docker)
+  - Complete configuration guide (TOML format)
+  - Database setup (PostgreSQL installation, migrations)
+  - Security configuration (TLS, firewall, reverse proxy)
+  - Systemd service configuration
+  - Monitoring setup (Prometheus, health checks, logs)
+  - Maintenance procedures (backup, restore, log rotation)
+  - Troubleshooting guide
+  - Performance tuning recommendations
+
 ### Changed
 
 #### Database Schema
@@ -259,7 +373,11 @@ New permission strings in format `resource:action`:
 - DTMF detector tests (4 tests)
 - IVR menu tests (6 tests)
 - IVR flow engine tests (6 tests)
-- **Total new tests: 67**
+- Conference domain tests (13 tests)
+- Audio mixer tests (8 tests)
+- STUN message tests (5 tests)
+- STUN client tests (3 tests)
+- **Total new tests: 96**
 
 ### TODO / In Progress
 
@@ -284,20 +402,30 @@ New permission strings in format `resource:action`:
 - [ ] Audit logging
 
 #### Phase 2.5 - Monitoring Enhancements
+- [x] System health monitoring (completed)
+- [x] Extended metrics (completed)
+- [x] Metrics collector (completed)
 - [ ] API authentication/authorization
-- [ ] Extended metrics
 - [ ] Performance profiling
+- [ ] Grafana dashboards
 
 #### Phase 3.1 - Conference Features
-- [ ] Conference room management
-- [ ] Audio mixing
-- [ ] Participant controls
-- [ ] Conference recording
+- [x] Conference room management (completed)
+- [x] Audio mixing (completed)
+- [x] Participant controls (completed)
+- [x] Conference domain model (completed)
+- [ ] Conference recording implementation
+- [ ] PostgreSQL repository implementation
+- [ ] Conference API endpoints
+- [ ] Music on hold for conferences
 
 #### Phase 3.2 - NAT Traversal
-- [ ] STUN client
+- [x] STUN client (completed)
+- [x] STUN protocol implementation (completed)
+- [x] NAT type detection (completed)
 - [ ] TURN relay
 - [ ] ICE support
+- [ ] STUN server implementation
 
 #### Phase 3.3 - WebRTC Integration
 - [ ] WebSocket signaling
@@ -343,6 +471,11 @@ New permission strings in format `resource:action`:
 - Connection pooling for database access
 - DTMF buffer management for efficient digit collection
 - IVR session management with automatic cleanup
+- Audio mixer with efficient frame mixing algorithms
+- AGC with adaptive gain control (minimal overhead)
+- STUN client with configurable timeout and UDP socket reuse
+- Metrics collector with RwLock for concurrent access
+- Conference room participant management with HashMap
 
 ### Security
 - bcrypt password hashing (cost factor 12)
@@ -353,6 +486,9 @@ New permission strings in format `resource:action`:
 - **Rate limiting** to prevent abuse
 - Enhanced digest authentication with SHA-256/SHA-512
 - Voicemail PIN protection
+- Conference room PIN-based access control
+- STUN transaction ID validation
+- NAT traversal security (XOR address obfuscation)
 
 ### Breaking Changes
 - User entity now includes `role_id` field
