@@ -6,6 +6,7 @@
 //! - Message bus implementations
 //! - External service integrations
 
+pub mod ivr;
 pub mod media;
 pub mod messaging;
 pub mod persistence;

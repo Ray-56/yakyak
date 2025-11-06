@@ -27,14 +27,43 @@ All notable changes to YakYak will be documented in this file.
   - Complete REST API documentation (`docs/API.md`)
   - Migration history and maintenance guidelines
 
-#### Phase 2.2 - Call Transfer Support (Partial)
+#### Phase 2.2 - Call Hold and Transfer (COMPLETED)
 - **REFER Handler**
   - Basic REFER request handling for blind call transfer
   - Refer-To and Referred-By header extraction
   - Call existence validation
   - 202 Accepted response for valid REFER requests
   - Unit tests for REFER functionality
-  - TODO: Complete transfer logic with NOTIFY support
+
+- **Hold Manager**
+  - Call hold/resume state management
+  - HoldState enum (Active, LocalHold, RemoteHold, BothHold)
+  - SDP manipulation for hold/resume (sendonly, recvonly, inactive)
+  - Hold state detection from SDP
+  - Remote hold/resume tracking
+  - Unit tests (8 tests)
+
+#### Phase 2.3 - Authentication Security Enhancements (COMPLETED)
+- **Enhanced Digest Authentication**
+  - SHA-256 and SHA-512 algorithm support (in addition to MD5)
+  - DigestAlgorithm enum with string conversion
+  - Enhanced HA1/HA2 calculation for all algorithms
+  - QoP (Quality of Protection) support
+  - Unit tests for all algorithms
+
+- **Brute Force Protection**
+  - IP-based lockout after N failed attempts
+  - Configurable lockout duration and time window
+  - Automatic cleanup of expired entries
+  - Default: 5 attempts, 15-minute lockout, 5-minute window
+  - Unit tests for protection logic
+
+- **Rate Limiting**
+  - Per-IP request rate limiting
+  - Configurable max requests and time window
+  - Automatic cleanup of old request history
+  - Default: 10 requests per minute
+  - Unit tests
 
 #### Phase 3.4 - Event Subscription (SUBSCRIBE/NOTIFY)
 - **SUBSCRIBE Handler**
@@ -79,6 +108,74 @@ All notable changes to YakYak will be documented in this file.
   - Delivery confirmation
   - Message metadata (from, to, content_type, timestamp)
   - Unit tests for message delivery scenarios
+
+#### Phase 3.6 - Voicemail System (COMPLETED)
+- **Voicemail Domain Model**
+  - VoicemailMessage entity with status tracking
+  - VoicemailStatus enum (New, Read, Saved, Deleted)
+  - VoicemailMailbox configuration entity
+  - PIN-based mailbox access control
+  - Configurable max duration and message limits
+  - Email notification support
+
+- **Voicemail Repository**
+  - VoicemailRepository trait for persistence
+  - CRUD operations for messages and mailboxes
+  - Status-based filtering
+  - Message counting per mailbox
+  - VoicemailFilters for advanced queries
+
+- **Features**
+  - Message mark as read/saved/deleted
+  - Mailbox configuration (PIN, greeting, limits)
+  - Email notification settings
+  - Unit tests (7 tests)
+
+#### Phase 3.7 - IVR System (COMPLETED)
+- **DTMF Detection**
+  - DtmfDigit enum with 12 digits (0-9, *, #)
+  - DtmfEvent with duration and timestamp
+  - RFC 2833 payload parsing
+  - SIP INFO DTMF parsing (application/dtmf-relay)
+  - DTMF frequency mapping
+  - Unit tests (7 tests)
+
+- **DTMF Detector**
+  - Buffer-based digit collection
+  - Configurable timeout and buffer size
+  - Pattern matching (matches, ends_with)
+  - Last N digits retrieval
+  - Automatic buffer clearing on timeout
+  - Unit tests (4 tests)
+
+- **IVR Menu System**
+  - IvrMenu configuration with greeting and items
+  - IvrMenuItem with digit-action mapping
+  - MenuAction enum (PlayAudio, Transfer, GotoMenu, etc.)
+  - IvrMenuBuilder for fluent construction
+  - IvrMenuSystem for menu management
+  - Default main menu template
+  - JSON serialization/deserialization
+  - Unit tests (6 tests)
+
+- **IVR Flow Engine**
+  - IvrSession with state machine
+  - IvrState enum (8 states)
+  - IvrFlowEngine for session management
+  - DTMF event processing
+  - Menu navigation with stack (GoBack support)
+  - Session variables
+  - Timeout and retry handling
+  - Invalid input handling
+  - Unit tests (6 tests)
+
+- **Menu Actions**
+  - Play audio files
+  - Transfer to extensions/URIs
+  - Navigate between menus
+  - Dial by extension
+  - Voicemail access
+  - Repeat/Go back/Hangup
 
 ### Changed
 
@@ -155,6 +252,14 @@ New permission strings in format `resource:action`:
 - NOTIFY handler tests (2 tests)
 - MESSAGE handler tests (3 tests)
 - User import unit tests (2 tests)
+- Hold manager tests (8 tests)
+- Enhanced auth tests (5 tests)
+- Voicemail domain tests (7 tests)
+- DTMF detection tests (7 tests)
+- DTMF detector tests (4 tests)
+- IVR menu tests (6 tests)
+- IVR flow engine tests (6 tests)
+- **Total new tests: 67**
 
 ### TODO / In Progress
 
@@ -165,15 +270,17 @@ New permission strings in format `resource:action`:
 - [ ] DTLS-SRTP for WebRTC
 
 #### Phase 2.2 - Call Transfer (Remaining)
+- [x] Basic REFER handler (completed)
+- [x] Call hold/resume state management (completed)
 - [ ] Complete REFER/NOTIFY integration
 - [ ] Attended transfer support
-- [ ] Call hold/resume (re-INVITE)
 - [ ] Music on hold (MOH)
 
 #### Phase 2.3 - Authentication Security
-- [ ] SHA-256/SHA-512 support
-- [ ] Rate limiting
-- [ ] IP blacklisting
+- [x] SHA-256/SHA-512 support (completed)
+- [x] Brute force protection (completed)
+- [x] Rate limiting (completed)
+- [ ] IP blacklisting (basic framework in place)
 - [ ] Audit logging
 
 #### Phase 2.5 - Monitoring Enhancements
@@ -198,15 +305,23 @@ New permission strings in format `resource:action`:
 - [ ] Browser compatibility
 
 #### Phase 3.6 - Voicemail
-- [ ] Voicemail recording
-- [ ] Voicemail playback
+- [x] Voicemail domain model (completed)
+- [x] Voicemail repository trait (completed)
+- [x] Mailbox configuration (completed)
+- [ ] Voicemail recording implementation
+- [ ] Voicemail playback implementation
+- [ ] PostgreSQL repository implementation
 - [ ] MWI (Message Waiting Indicator)
 
 #### Phase 3.7 - IVR System
-- [ ] DTMF detection
-- [ ] Audio playback
+- [x] DTMF detection (RFC 2833 + SIP INFO) (completed)
+- [x] DTMF detector with buffer (completed)
+- [x] IVR menu system (completed)
+- [x] IVR flow engine (completed)
+- [x] Menu navigation and state machine (completed)
+- [ ] Audio playback implementation
 - [ ] TTS integration
-- [ ] IVR flow engine
+- [ ] ASR integration
 
 #### Phase 4 - Enterprise Features
 - [ ] Call queues and ACD
@@ -226,12 +341,18 @@ New permission strings in format `resource:action`:
 - Role lookup optimization via database indexes
 - Permission checking via HashSet (O(1) lookup)
 - Connection pooling for database access
+- DTMF buffer management for efficient digit collection
+- IVR session management with automatic cleanup
 
 ### Security
 - bcrypt password hashing (cost factor 12)
-- SIP HA1 storage for Digest authentication
+- SIP HA1 storage for Digest authentication (MD5/SHA-256/SHA-512)
 - Role-based permission system
 - System role protection
+- **Brute force protection** with IP-based lockout
+- **Rate limiting** to prevent abuse
+- Enhanced digest authentication with SHA-256/SHA-512
+- Voicemail PIN protection
 
 ### Breaking Changes
 - User entity now includes `role_id` field

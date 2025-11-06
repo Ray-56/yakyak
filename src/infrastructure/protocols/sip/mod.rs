@@ -28,16 +28,22 @@
 pub mod auth;
 #[cfg(feature = "postgres")]
 pub mod auth_db;
+pub mod auth_enhanced;
 pub mod builder;
 pub mod call_handler;
 pub mod call_router;
 pub mod call_state;
 pub mod dialog;
 pub mod handler;
+pub mod hold_manager;
 pub mod message;
+pub mod message_handler;
+pub mod notify_handler;
+pub mod refer_handler;
 pub mod registrar;
 pub mod sdp;
 pub mod server;
+pub mod subscribe_handler;
 pub mod transaction;
 pub mod transport;
 

@@ -17,6 +17,7 @@ pub mod routing;
 pub mod session;
 pub mod shared;
 pub mod user;
+pub mod voicemail;
 
 // Re-export commonly used types
 pub use shared::{DomainError, Result};
