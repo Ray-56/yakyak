@@ -8,9 +8,12 @@
 //! - Repository Interfaces: Ports for persistence
 //! - Domain Events: Things that happened in the domain
 
+pub mod audio;
 pub mod billing;
 pub mod call;
+pub mod call_announcer;
 pub mod call_queue;
+pub mod call_queue_engine;
 pub mod cdr;
 pub mod conference;
 pub mod media;
@@ -22,6 +25,8 @@ pub mod sip_trunk;
 pub mod tenant;
 pub mod user;
 pub mod voicemail;
+pub mod voicemail_ivr;
+pub mod voicemail_service;
 
 // Re-export commonly used types
 pub use shared::{DomainError, Result};

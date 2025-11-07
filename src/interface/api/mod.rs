@@ -16,6 +16,7 @@ pub mod user_dto;
 pub mod user_handler;
 pub mod user_import;
 pub mod voicemail;
+pub mod webrtc_signaling;
 pub mod websocket;
 pub mod ws_handler;
 
@@ -29,5 +30,6 @@ pub use tenant::{tenant_router, TenantApiState};
 pub use user_handler::AppState;
 pub use user_import::{import_users_csv, import_users_json};
 pub use voicemail::{voicemail_router, VoicemailApiState};
+pub use webrtc_signaling::{webrtc_signaling_router, SignalingState};
 pub use websocket::EventBroadcaster;
 pub use ws_handler::EventBroadcaster as LegacyEventBroadcaster;

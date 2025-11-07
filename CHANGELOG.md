@@ -177,6 +177,63 @@ All notable changes to YakYak will be documented in this file.
   - Voicemail access
   - Repeat/Go back/Hangup
 
+#### Phase 3.7 - Audio Playback System (COMPLETED)
+- **WAV File Support**
+  - WavFile parser with RIFF/WAVE format support
+  - WavFormat with channel, sample rate, bits per sample
+  - Support for 8, 16, 24, 32-bit PCM audio
+  - Chunk parsing (RIFF header, fmt chunk, data chunk)
+  - G.711 compatibility checking (8kHz, mono, 8-bit)
+  - Duration calculation
+  - Unit tests (7 tests)
+
+- **Audio Conversion**
+  - 8/16/24/32-bit to 16-bit signed sample conversion
+  - Stereo to mono conversion by channel averaging
+  - Sample rate resampling using linear interpolation
+  - Upsampling and downsampling support
+  - G.711 compatible format conversion (8kHz mono)
+  - Automatic format detection
+
+- **Audio Player**
+  - AudioPlayer with state machine (Idle, Playing, Paused, Finished, Stopped)
+  - Frame-by-frame audio streaming (configurable frame duration, default 20ms)
+  - Real-time pacing with sleep to maintain timing
+  - Pause/resume/stop controls
+  - Loop playback option
+  - DTMF interrupt support
+  - Progress tracking (position, duration, percentage)
+  - Seek functionality
+  - StreamingAudioPlayer for async contexts
+  - Unit tests (10 tests)
+
+- **Multi-language Audio Management**
+  - AudioFileManager for organizing audio files
+  - Language support (English, Spanish, French, German, Chinese, Japanese, Korean, Portuguese, Russian, Arabic)
+  - Audio file registration with metadata (ID, path, language, description, duration, size)
+  - Automatic language detection from directory structure (base_dir/lang/file.wav)
+  - Get with fallback to default language
+  - List by language, list all IDs, list all languages
+  - Bulk directory loading
+  - AudioFileInfo with metadata tracking
+  - Unit tests (7 tests)
+
+- **Sequential Playback**
+  - SequentialPlayer for playing multiple files in sequence
+  - Queue management (enqueue, enqueue_front, clear)
+  - Automatic advancement to next audio file
+  - Skip to next file
+  - Overall and per-file progress tracking
+  - Interrupt support with queue clearing
+  - SequenceBuilder for fluent construction
+  - Unit tests (9 tests)
+
+- **Playback Options**
+  - Configurable frame duration (default 20ms for telephony)
+  - Loop playback mode
+  - DTMF interrupt enable/disable
+  - Reusable across player instances
+
 #### Phase 2.5 - Enhanced Monitoring (COMPLETED)
 - **System Health Monitoring**
   - SystemHealth with overall status (healthy/degraded/unhealthy)
@@ -383,6 +440,94 @@ All notable changes to YakYak will be documented in this file.
   - Full JSON request/response DTOs
   - VoicemailApiState for dependency injection
 
+#### Phase 3.6 - Voicemail Recording and Playback (COMPLETED)
+- **Voicemail Recorder**
+  - VoicemailRecorder for capturing audio to WAV files
+  - Configurable maximum recording duration (default 180s)
+  - Sample buffer with 16-bit PCM mono at 8kHz
+  - Real-time duration tracking during recording
+  - Start/stop recording controls
+  - WAV file generation with proper RIFF headers
+  - Automatic format: 8kHz mono 16-bit PCM
+  - Unit tests (4 tests)
+
+- **WAV File Writing**
+  - Complete RIFF/WAVE file format writer
+  - RIFF header (RIFF signature, file size, WAVE format)
+  - fmt chunk (audio format, channels, sample rate, bit depth)
+  - data chunk (PCM audio samples)
+  - Proper little-endian byte ordering
+  - Block alignment and byte rate calculation
+
+- **Voicemail Player**
+  - VoicemailPlayer for playing back messages
+  - Frame-by-frame audio streaming (20ms frames)
+  - Play voicemail messages from files
+  - Play custom greetings
+  - Automatic G.711 format conversion
+  - Playback controls (pause, resume, stop, replay)
+  - Progress tracking and seeking
+  - Fast forward/rewind support (configurable seconds)
+  - Integration with AudioPlayer
+
+- **Voicemail Service**
+  - VoicemailService for managing recordings and playback
+  - Mailbox directory structure management
+  - Automatic directory creation per mailbox
+  - Unique filename generation (timestamp + UUID)
+  - Save recordings with metadata
+  - Create VoicemailMessage entities from recordings
+  - Audio file deletion
+  - File size queries
+  - Base directory configuration
+
+- **Message Waiting Indicator (MWI)**
+  - MwiState with message counts
+  - New vs old message tracking
+  - Urgent message counts (separate counters)
+  - SIP NOTIFY body formatting (RFC 3842)
+  - Messages-Waiting header (yes/no)
+  - Message-Account header
+  - Voice-Message header with counts (new/old/urgent)
+  - Total message count calculation
+  - Unit tests (4 tests)
+
+- **Voicemail IVR Access**
+  - VoicemailIvrSession for dial-in access
+  - State machine (Authenticating, VerifyingPin, MainMenu, PlayingMessage, etc.)
+  - PIN authentication with retry limit (3 attempts)
+  - Mailbox auto-detection from caller ID
+  - Message navigation (next, previous, current position)
+  - Message status management (mark read, saved, deleted)
+  - Message sorting (newest first)
+  - Session variables for state tracking
+  - Unit tests (9 tests)
+
+- **DTMF Menu Options**
+  - VoicemailMenuOption enum for IVR navigation
+  - Play next (1), Replay (2), Delete (3), Save (4)
+  - Previous (5), Skip (6), Main menu (*), Exit (#)
+  - Record greeting (9)
+  - Bidirectional digit <-> option mapping
+
+- **Voicemail Prompts**
+  - VoicemailPrompt enum with audio IDs
+  - Welcome, Enter PIN, Invalid PIN
+  - New/saved message count announcements
+  - Main menu options, Message headers
+  - Deletion/save confirmations
+  - No more messages, Goodbye
+  - Recording prompts
+
+- **Message Management**
+  - Load messages for mailbox
+  - Sort by date (newest first)
+  - Filter by status (new, read, saved, deleted)
+  - Count new vs saved messages
+  - Remove deleted messages from list
+  - Current position tracking (1-based)
+  - Has more messages detection
+
 #### Phase 3.2 - TURN Relay (COMPLETED)
 - **TURN Protocol Implementation (RFC 5766)**
   - TurnMethod enum (Allocate, Refresh, Send, Data, CreatePermission, ChannelBind)
@@ -493,6 +638,48 @@ All notable changes to YakYak will be documented in this file.
   - ICE candidate line formatting
   - DTLS fingerprint formatting
 
+#### Phase 3.3 - WebRTC Signaling Server (COMPLETED)
+- **WebSocket-based Signaling**
+  - WebSocket upgrade handler at `/webrtc/signaling/:peer_id`
+  - Bidirectional real-time communication
+  - Split send/receive tasks for concurrent operation
+  - Automatic peer cleanup on disconnect
+  - Ping/pong support for connection health
+  - Unit tests (4 tests)
+
+- **Signaling Protocol**
+  - SignalingMessage enum with 12 message types
+  - Register/Unregister: Peer registration and discovery
+  - Offer/Answer: SDP offer/answer exchange for WebRTC negotiation
+  - IceCandidate: ICE candidate exchange with sdp_mid and sdp_m_line_index
+  - Call/Accept/Reject/Hangup: Call control signaling
+  - PeerStatus: Online/offline presence notifications
+  - Error/Success: Status messages with codes and descriptions
+  - JSON serialization with tagged union format
+
+- **Peer Management**
+  - SignalingState with thread-safe peer tracking
+  - WebRtcPeer entity (peer_id, username, connected_at)
+  - Peer registration with duplicate detection
+  - Automatic online/offline status broadcasting
+  - Peer lookup by ID
+  - List all online peers
+
+- **Message Routing**
+  - Broadcast channel for pub/sub messaging (1000 message capacity)
+  - Send to specific peer by ID
+  - Broadcast to all peers
+  - Sender verification for security
+  - Recipient validation before forwarding
+  - Peer ID mismatch detection
+
+- **Security Features**
+  - Sender ID verification on all forwarded messages
+  - Peer ID must match WebSocket connection
+  - Recipient existence validation
+  - Error responses for invalid messages
+  - Parse error handling with detailed error messages
+
 #### Phase 4 - Call Queue and ACD System (COMPLETED)
 - **Queue Strategies**
   - RingAll: All available agents ring simultaneously
@@ -529,6 +716,221 @@ All notable changes to YakYak will be documented in this file.
   - Get next agent by strategy
   - Queue statistics (waiting calls, avg wait time, abandonment rate)
   - Unit tests (8 tests)
+
+#### Phase 4 - Call Queue Engine (COMPLETED)
+- **CallQueueEngine Service**
+  - Central orchestration for all queue operations
+  - Thread-safe session management with Arc<Mutex>
+  - Multiple queue support with HashMap-based routing
+  - Start/stop queue sessions
+  - Integration with AudioFileManager for announcements
+
+- **Call Queueing**
+  - enqueue_call() with overflow detection
+  - Queue full checking against max_queue_size
+  - Automatic position assignment (1-based)
+  - Caller information tracking (name, number)
+  - Wait time calculation from enqueued_at timestamp
+  - Priority support for future enhancement
+
+- **Agent Selection Strategies**
+  - RingAll: Return first available (caller rings all)
+  - Linear: Agents by join time (FIFO)
+  - LeastRecent: Agent with oldest last_call_time
+  - FewestCalls: Agent with minimum total_calls
+  - LeastTalkTime: Agent with minimum talk_time
+  - Random: Random selection from available pool
+  - RoundRobin: Rotating with position tracking
+
+- **Agent State Management**
+  - Add/remove members from queue
+  - Available agent tracking
+  - Mark busy on call connect
+  - Mark available on call end
+  - Pause/unpause support
+  - Statistics per agent (calls, talk time)
+
+- **Call Connection Flow**
+  - connect_call() links call to agent
+  - Remove from waiting queue
+  - Add to active calls HashMap
+  - Mark agent as busy
+  - Update queue statistics
+  - SLA threshold checking
+  - Position updates for remaining calls
+
+- **Call Lifecycle**
+  - end_call() with talk_time tracking
+  - Agent statistics updates
+  - Mark agent available
+  - Remove from active calls
+  - abandon_call() for caller hangups
+  - Abandonment statistics tracking
+
+- **Queue Statistics (Real-time)**
+  - Total calls received
+  - Calls waiting (current)
+  - Calls active (current)
+  - Calls answered (cumulative)
+  - Calls abandoned (cumulative)
+  - Calls overflowed (cumulative)
+  - Average wait time (dynamic)
+  - Longest wait time (peak)
+  - Service level percentage
+  - Configurable SLA threshold (default 20s)
+
+- **Service Level Agreement (SLA)**
+  - Track calls answered within threshold
+  - Automatic calculation: (within_threshold / total_answered) * 100
+  - Default threshold: 20 seconds
+  - Real-time percentage updates
+
+- **Music on Hold Integration**
+  - create_moh_player() from queue config
+  - Integration with AudioFileManager
+  - Loop playback for continuous music
+  - StreamingAudioPlayer with 20ms frames
+  - Automatic audio file lookup by ID
+
+- **Queue Monitoring**
+  - get_statistics() for real-time metrics
+  - get_position() for caller position announcements
+  - get_waiting_calls() for queue visibility
+  - get_available_agents() for capacity planning
+  - Per-queue session tracking
+
+- **Error Handling**
+  - QueueEngineError enum
+  - QueueFull when max_queue_size exceeded
+  - QueueNotFound for invalid queue_id
+  - NoAvailableAgents when all busy
+  - CallNotFound for invalid call operations
+  - MemberNotFound for agent operations
+
+- **Overflow Handling**
+  - Detect queue full condition
+  - Increment overflow statistics
+  - Return QueueFull error
+  - Caller can trigger overflow action
+  - Support for forwarding/voicemail/announcement
+
+- **Unit Tests**
+  - Engine creation (1 test)
+  - Enqueue call (1 test)
+  - Queue full detection (1 test)
+  - Add/remove member (1 test)
+  - Connect call flow (1 test)
+  - Abandon call (1 test)
+  - End call (1 test)
+  - Round-robin strategy (1 test)
+  - Total: 8 comprehensive tests
+
+#### Phase 4.1 - Call Announcer Service (COMPLETED)
+- **CallAnnouncer Service**
+  - Audio announcement playback into active calls
+  - Integration with AudioFileManager
+  - Multi-language support via Language enum
+  - Thread-safe active announcement tracking
+  - Scheduled announcement queue with time-based execution
+  - Frame-by-frame audio delivery (20ms frames)
+
+- **Announcement Types**
+  - QueuePosition: "You are caller number X"
+  - WaitTime: "Estimated wait time X minutes"
+  - Periodic: Recurring announcements at intervals
+  - Welcome: Queue entry greeting
+  - Goodbye: Queue exit message
+  - Custom: User-defined announcements
+
+- **Announcement Request**
+  - AnnouncementRequest with builder pattern
+  - Unique UUID per announcement
+  - Call ID targeting
+  - Audio file list for sequential playback
+  - Language selection
+  - Scheduled playback (play_at timestamp)
+  - Repeat interval for periodic announcements
+
+- **Position Announcements**
+  - announce_position() helper method
+  - Number-to-speech conversion (1-999)
+  - Multi-language prompts:
+    - "queue-position" (introductory prompt)
+    - Number words: "one", "two", ... "nine-hundred"
+    - Tens: "ten", "twenty", "thirty", etc.
+    - Teens: "eleven", "twelve", "thirteen", etc.
+  - Audio sequence building
+
+- **Wait Time Announcements**
+  - announce_wait_time() helper method
+  - Minute-based estimates
+  - Multi-language prompts:
+    - "estimated-wait" (introductory prompt)
+    - Number words for minutes
+    - "minute" / "minutes" (singular/plural)
+  - Automatic sequence generation
+
+- **Welcome Announcements**
+  - announce_welcome() helper
+  - Customizable audio file ID
+  - Immediate playback
+  - Queue greeting use case
+
+- **Active Announcement Tracking**
+  - Per-call announcement lists
+  - ActiveAnnouncement struct with player
+  - Automatic cleanup on completion
+  - Multiple simultaneous announcements per call
+  - UUID-based announcement identification
+
+- **Frame Delivery**
+  - get_next_frame() for RTP streaming
+  - Returns (samples: Vec<i16>, sample_rate: usize)
+  - Automatic advancement to next file
+  - Cleanup on sequence completion
+  - Integration with existing audio players
+
+- **Scheduled Announcements**
+  - Scheduled announcement queue
+  - process_scheduled() for time checking
+  - Automatic promotion to active on time match
+  - Repeat interval support for periodic announcements
+  - Manual stop via stop_announcement()
+
+- **Number-to-Speech Conversion**
+  - number_to_audio_id() helper function
+  - Handles 1-999 range
+  - Digit-by-digit decomposition:
+    - Hundreds place: "one-hundred", "two-hundred", etc.
+    - Tens place: "twenty", "thirty", etc.
+    - Teens: "eleven" through "nineteen"
+    - Ones place: "one" through "nine"
+  - Returns Vec<String> of audio file IDs
+  - Used for position and wait time announcements
+
+- **Integration Points**
+  - AudioFileManager for file lookup
+  - AudioPlayer for playback control
+  - CallQueue for position/wait time data
+  - RTP media stream for audio injection
+  - Multi-language audio file structure
+
+- **Error Handling**
+  - Audio file not found errors
+  - Invalid call ID detection
+  - Player creation failures
+  - Scheduled announcement validation
+  - Graceful degradation on missing files
+
+- **Unit Tests**
+  - Announcement creation (1 test)
+  - Position announcement (1 test)
+  - Wait time announcement (1 test)
+  - Welcome announcement (1 test)
+  - Frame retrieval (1 test)
+  - Number-to-speech conversion (1 test)
+  - Scheduled announcements (1 test)
+  - Total: 7 comprehensive tests
 
 #### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
 - **TLS Configuration**
@@ -568,6 +970,86 @@ All notable changes to YakYak will be documented in this file.
   - Generate self-signed certificates (placeholder)
   - Certificate removal
   - Unit tests (3 tests)
+
+#### Phase 2.1 - SRTP/SRTCP Encryption (COMPLETED)
+- **SRTP Protection Profiles**
+  - SrtpProfile enum (AES-128-CM with HMAC-SHA1-80/32, AES-256-CM with HMAC-SHA1-80/32)
+  - Master key length (16 bytes for AES-128, 32 bytes for AES-256)
+  - Master salt length (14 bytes for all profiles)
+  - Authentication tag length (10 bytes for 80-bit, 4 bytes for 32-bit)
+  - Cipher, auth, and salt key length configuration
+
+- **Key Derivation (RFC 3711)**
+  - SRTP Key Derivation Function (KDF) implementation
+  - AES-CM PRF (Pseudo-Random Function)
+  - Key labels for SRTP/SRTCP encryption, authentication, salting
+  - Session key derivation from master key
+  - Separate keys for SRTP and SRTCP
+  - 48-bit index support for key derivation
+
+- **Master Key Management**
+  - SrtpMasterKey with key and salt
+  - Random master key generation per profile
+  - Session key derivation (6 keys: SRTP cipher/auth/salt, SRTCP cipher/auth/salt)
+  - SrtpSessionKeys structure
+
+- **Cryptographic Primitives**
+  - AES-128 Counter Mode encryption/decryption
+  - HMAC-SHA1 authentication (160-bit key, configurable tag length)
+  - IV generation from salt, SSRC, and packet index
+  - Keystream generation for XOR encryption
+  - Authentication tag computation and verification
+
+- **SRTP Context**
+  - Per-SSRC stream context management
+  - Packet index calculation (ROC * 65536 + SEQ)
+  - ROC (Rollover Counter) tracking for 32-bit sequence extension
+  - RTP header parsing (SSRC, sequence number)
+  - RTP header length calculation (with CSRC and extensions)
+  - Encrypt/decrypt RTP packets in-place
+  - Authentication tag append/verify
+
+- **Replay Protection**
+  - Sliding window bitmap (64 packets)
+  - Highest sequence number tracking
+  - Check for replay attacks before decryption
+  - Window update after accepting packet
+  - Configurable replay protection (can be disabled)
+
+- **SRTCP Context**
+  - SRTCP index management
+  - E flag handling (1 bit for encryption indicator)
+  - SRTCP index (31 bits) in packet
+  - RTCP header parsing
+  - Encrypt/decrypt RTCP packets
+  - Authentication for both encrypted and unencrypted RTCP
+
+- **MediaCryptoContext**
+  - Combined SRTP/SRTCP context for media sessions
+  - Unified API for RTP/RTCP protection
+  - protect_rtp() / unprotect_rtp() methods
+  - protect_rtcp() / unprotect_rtcp() methods
+  - Single master key for both SRTP and SRTCP
+
+- **Unit Tests**
+  - SRTP profile length tests (3 tests)
+  - Key derivation tests (3 tests)
+  - Session key derivation (1 test)
+  - HMAC authentication tests (1 test)
+  - IV generation tests (2 tests)
+  - AES-CM keystream tests (2 tests)
+  - Replay window tests (1 test)
+  - Stream context tests (1 test)
+  - RTP header parsing tests (2 tests)
+  - SRTP encrypt/decrypt tests (4 tests)
+  - SRTP authentication failure tests (1 test)
+  - SRTP replay protection tests (1 test)
+  - Multi-stream tests (1 test)
+  - SRTCP encrypt/decrypt tests (4 tests)
+  - SRTCP authentication tests (1 test)
+  - SRTCP index increment tests (1 test)
+  - MediaCryptoContext tests (4 tests)
+  - Total: 33 unit tests
 
 #### Phase 4 - SIP Trunk Support (COMPLETED)
 - **SIP Trunk Configuration**
