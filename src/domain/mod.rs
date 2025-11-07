@@ -8,6 +8,7 @@
 //! - Repository Interfaces: Ports for persistence
 //! - Domain Events: Things that happened in the domain
 
+pub mod audio;
 pub mod billing;
 pub mod call;
 pub mod call_queue;
