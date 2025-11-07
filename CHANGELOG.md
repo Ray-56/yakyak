@@ -368,6 +368,389 @@ All notable changes to YakYak will be documented in this file.
   - Automatic updated_at trigger
   - Comprehensive table/column comments
 
+#### Phase 3.6 - Voicemail API (COMPLETED)
+- **Voicemail REST API**
+  - GET /voicemail/mailboxes/:id - Get mailbox configuration
+  - PUT /voicemail/mailboxes/:id - Update mailbox settings
+  - GET /voicemail/mailboxes/:id/messages - List messages (with status filter)
+  - POST /voicemail/mailboxes/:id/messages - Create message
+  - GET /voicemail/messages/:id - Get message details
+  - DELETE /voicemail/messages/:id - Delete message
+  - PUT /voicemail/messages/:id/status - Update message status
+  - POST /voicemail/messages/:id/mark-read - Mark as read
+  - POST /voicemail/messages/:id/mark-saved - Mark as saved
+  - GET /voicemail/mailboxes/:id/count - Get message count statistics
+  - Full JSON request/response DTOs
+  - VoicemailApiState for dependency injection
+
+#### Phase 3.2 - TURN Relay (COMPLETED)
+- **TURN Protocol Implementation (RFC 5766)**
+  - TurnMethod enum (Allocate, Refresh, Send, Data, CreatePermission, ChannelBind)
+  - TurnMessage parsing and serialization
+  - TurnAttribute support (Lifetime, RequestedTransport, Data, XorRelayedAddress, etc.)
+  - Message type encoding/decoding
+  - Transaction ID generation
+  - Unit tests (5 tests)
+
+- **TURN Client**
+  - TurnClient for relay allocation
+  - Authentication support (username/password)
+  - Allocate relay address
+  - Refresh allocation lifetime
+  - Create permissions for peers
+  - Send indications through relay
+  - Configurable timeout
+  - Unit tests (3 tests)
+
+- **TURN Relay Server**
+  - TurnRelay with port management (base_port to max_port)
+  - RelayAllocation tracking (client, relay address, lifetime, permissions)
+  - Allocation lifecycle management
+  - Permission management per allocation
+  - Bidirectional relay (client<->peer)
+  - Automatic cleanup of expired allocations
+  - Statistics and monitoring
+  - Unit tests (6 tests)
+
+#### Phase 3.2 - ICE Implementation (COMPLETED)
+- **ICE Candidate Types**
+  - CandidateType enum (Host, ServerReflexive, PeerReflexive, Relay)
+  - Priority computation (RFC 5245)
+  - Foundation generation
+  - SDP candidate format parsing and serialization
+  - Related address support for reflexive/relay candidates
+  - Unit tests (8 tests)
+
+- **ICE Candidate Pairs**
+  - IceCandidatePair with state machine
+  - CandidatePairState (Frozen, Waiting, InProgress, Succeeded, Failed)
+  - Pair priority computation
+  - Controlling/controlled role support
+
+- **ICE Agent**
+  - IceAgent with complete candidate gathering
+  - IceConfig with STUN/TURN server lists
+  - Host candidate gathering from local interfaces
+  - Server reflexive candidate gathering via STUN
+  - Relay candidate gathering via TURN
+  - Candidate pair formation
+  - Connection state machine (New, Checking, Connected, Completed, Failed, etc.)
+  - Gathering state tracking
+  - Selected pair management
+  - Unit tests (4 tests)
+
+#### Phase 2.3 - Audit Logging (COMPLETED)
+- **Audit Event System**
+  - AuditEvent with comprehensive metadata
+  - AuditEventType enum with 20+ event types
+  - AuditLevel (Info, Warning, Critical)
+  - Event categories: Authentication, User Management, Roles, Calls, Conferences, System Config, Security, Data Access
+  - IP address, user agent, session tracking
+  - Custom metadata support
+  - Timestamp and UUID for each event
+
+- **Audit Backend**
+  - AuditBackend trait for pluggable backends
+  - MemoryAuditBackend with configurable capacity
+  - FIFO event retention
+  - Query support with multiple filters (time range, level, username, IP)
+  - Async logging
+
+- **Audit Logger**
+  - AuditLogger with convenience methods
+  - Integration with tracing for operational logging
+  - Common event helpers (auth_success, auth_failure, auth_lockout, etc.)
+  - Query API for audit trail analysis
+  - Unit tests (4 tests)
+
+#### Phase 3.3 - WebRTC SDP Support (COMPLETED)
+- **WebRTC SDP Implementation**
+  - SdpType enum (Offer, Answer, Pranswer)
+  - MediaType enum (Audio, Video, Application)
+  - MediaDirection (SendRecv, SendOnly, RecvOnly, Inactive)
+  - Complete SDP string parsing and serialization
+  - BUNDLE support for multiplexing
+  - Unit tests (9 tests)
+
+- **RTP Codec Support**
+  - RtpCodec with payload type, name, clock rate, channels
+  - Predefined codecs: Opus (111/48000/2), PCMU (0/8000), PCMA (8/8000), VP8 (96/90000), H264 (97/90000)
+  - Format parameters support
+  - RTCP feedback support
+
+- **Media Description**
+  - MediaDescription with codec list
+  - ICE credentials (ufrag, pwd)
+  - ICE candidate embedding
+  - DTLS fingerprint integration
+  - DtlsSetup (Active, Passive, ActPass)
+  - RTP/RTCP multiplexing
+  - RTCP feedback configuration
+
+- **Helper Functions**
+  - create_audio_offer() for quick audio SDP generation
+  - SDP string generation with proper v=0, o=, s=, t=, m= lines
+  - ICE candidate line formatting
+  - DTLS fingerprint formatting
+
+#### Phase 4 - Call Queue and ACD System (COMPLETED)
+- **Queue Strategies**
+  - RingAll: All available agents ring simultaneously
+  - Linear: Agents ring in order until answered
+  - LeastRecent: Agent who hasn't received call longest
+  - FewestCalls: Agent with lowest total calls
+  - LeastTalkTime: Agent with lowest total talk time
+  - Random: Random agent selection
+  - RoundRobin: Rotating distribution
+
+- **Queue Member Management**
+  - QueueMember entity with agent tracking
+  - AgentStatus (Available, OnCall, Paused, Unavailable)
+  - Call statistics: total calls, answered, missed
+  - Talk time tracking
+  - Last call timestamp
+  - Pause reasons
+  - Login/logout tracking
+
+- **Call Queue Configuration**
+  - Queue name and strategy
+  - Max wait time before overflow
+  - Max queue size
+  - Ring timeout per agent
+  - Announce position option
+  - Music on hold configuration
+  - Join/leave events
+  - Overflow destination
+
+- **Queue State Management**
+  - QueuedCall tracking with timestamp and position
+  - Active call mapping
+  - Round-robin position tracking
+  - Get next agent by strategy
+  - Queue statistics (waiting calls, avg wait time, abandonment rate)
+  - Unit tests (8 tests)
+
+#### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
+- **TLS Configuration**
+  - TlsMode enum (Disabled, Optional, Required)
+  - TlsConfig with certificate/key paths
+  - Peer verification options
+  - TLS version control (min_version)
+  - Cipher suite configuration
+  - Mutual TLS support
+  - Configuration validation
+  - Unit tests (7 tests)
+
+- **DTLS Configuration**
+  - DtlsConfig for WebRTC
+  - Fingerprint algorithm (SHA-256, SHA-384, SHA-512)
+  - DtlsRole (Client, Server)
+  - DtlsSetup (Active, Passive, ActPass)
+  - SRTP profile support
+  - Fingerprint generation
+
+- **Certificate Management**
+  - Certificate entity with metadata
+  - CertificateType (Server, Client, CA)
+  - X.509 certificate parsing (placeholder)
+  - Certificate validity checking
+  - Expiration warning (days until expiry)
+  - Self-signed certificate detection
+  - SAN (Subject Alternative Name) support
+  - DTLS fingerprint generation for SDP
+
+- **Certificate Manager**
+  - Load certificates from PEM files
+  - Load private keys from PEM files
+  - Certificate storage and retrieval
+  - Get certificates by type (Server, CA)
+  - Find expiring certificates
+  - Generate self-signed certificates (placeholder)
+  - Certificate removal
+  - Unit tests (3 tests)
+
+#### Phase 4 - SIP Trunk Support (COMPLETED)
+- **SIP Trunk Configuration**
+  - TrunkType (Register, IpBased, Peer)
+  - TrunkDirection (Inbound, Outbound, Bidirectional)
+  - Provider configuration (name, SIP server, port)
+  - Backup server support
+  - Unit tests (8 tests)
+
+- **Authentication**
+  - Username/password authentication
+  - Auth username and realm
+  - IP-based authentication with allowed IP list
+  - Add/check allowed IPs
+
+- **Registration Management**
+  - Registration enable/disable
+  - Configurable registration interval
+  - Registration expiry tracking
+  - Last registration timestamp
+  - Needs registration check (auto-refresh 60s before expiry)
+  - Mark registered/unregistered
+
+- **Call Routing**
+  - Prefix matching
+  - Prefix stripping
+  - Prefix addition
+  - Caller ID number override
+  - Caller ID name override
+  - Number formatting for outbound calls
+
+- **Codec Configuration**
+  - CodecPreference with priority
+  - Default codecs: PCMU (100), PCMA (99), G729 (98)
+  - DtmfMode (Rfc2833, SipInfo, Inband)
+
+- **Capacity and Quality**
+  - Max concurrent calls limit
+  - Max calls per second limit
+  - RTCP enable/disable
+  - T.38 fax support
+  - SRTP encryption support
+
+- **Trunk Statistics**
+  - TrunkStatistics for monitoring
+  - Current calls tracking
+  - Total calls, successful calls, failed calls
+  - Success rate calculation
+  - Average call duration
+  - Total minutes
+  - Last call time
+
+#### Phase 4 - Multi-tenancy Support (COMPLETED)
+- **Tenant Management**
+  - Tenant entity with UUID
+  - TenantStatus (Active, Suspended, Trial, Deactivated)
+  - SubscriptionPlan (Free, Starter, Professional, Enterprise, Custom)
+  - Tenant slug for URL-safe identifier
+  - SIP realm per tenant for isolation
+  - Trial period with expiration tracking
+  - Unit tests (8 tests)
+
+- **Subscription Plans and Quotas**
+  - TenantQuota with resource limits
+  - Free tier: 5 users, 2 calls, 100 min/mo, 1GB storage
+  - Starter: 25 users, 10 calls, 1000 min/mo, 10GB storage
+  - Professional: 100 users, 50 calls, 5000 min/mo, 50GB storage
+  - Enterprise: Unlimited users, 1000 calls, unlimited min, 500GB storage
+  - Feature flags per plan (voicemail, IVR, call_queue, analytics, SIP trunk, WebRTC, API access)
+
+- **Tenant Features**
+  - Plan upgrade/downgrade
+  - Suspend/reactivate tenant
+  - Suspension reason tracking
+  - Feature availability checking
+  - User limit enforcement
+  - Concurrent call limit enforcement
+  - Trial expiration checking
+
+- **Tenant Configuration**
+  - Contact information (admin email/name, phone, company)
+  - Billing information (email, address)
+  - Custom domain support
+  - Timezone and language
+  - Branding (logo URL, primary color)
+  - Custom metadata
+
+- **Usage Tracking**
+  - TenantUsage for consumption monitoring
+  - Current users and calls
+  - Monthly call minutes tracking
+  - Storage usage (GB)
+  - Last activity timestamp
+  - Quota compliance checking
+  - Usage percentage calculations (users, calls, minutes, storage)
+
+#### Phase 4 - Call Queue PostgreSQL and API (COMPLETED)
+- **Call Queue PostgreSQL Repository**
+  - PgCallQueueRepository implementation
+  - Queue CRUD operations (create, get, update, delete, list)
+  - Get queue by extension
+  - Member management (add, remove, update, get members)
+  - Full PostgreSQL persistence
+
+- **Call Queue REST API**
+  - POST /queues - Create call queue
+  - GET /queues - List all queues
+  - GET /queues/:id - Get queue by ID
+  - PUT /queues/:id - Update queue
+  - DELETE /queues/:id - Delete queue
+  - GET /queues/extension/:extension - Get queue by extension
+  - POST /queues/:id/members - Add member to queue
+  - GET /queues/:id/members - List queue members
+  - DELETE /queues/:id/members/:member_id - Remove member
+  - PUT /queues/:id/members/:member_id - Update member status
+  - POST /queues/:id/members/:member_id/pause - Pause member
+  - POST /queues/:id/members/:member_id/unpause - Unpause member
+  - Full JSON request/response DTOs
+
+#### Phase 4 - Multi-tenancy PostgreSQL and API (COMPLETED)
+- **Tenant PostgreSQL Repository**
+  - PgTenantRepository implementation
+  - Tenant CRUD operations
+  - Get tenant by slug
+  - List tenants with status filter
+  - Tenant usage tracking (get, update)
+  - Full PostgreSQL persistence
+
+- **Tenant REST API**
+  - POST /tenants - Create tenant
+  - GET /tenants - List all tenants (with status filter)
+  - GET /tenants/:id - Get tenant by ID
+  - PUT /tenants/:id - Update tenant
+  - DELETE /tenants/:id - Delete tenant
+  - GET /tenants/slug/:slug - Get tenant by slug
+  - POST /tenants/:id/suspend - Suspend tenant
+  - POST /tenants/:id/reactivate - Reactivate tenant
+  - POST /tenants/:id/upgrade - Upgrade subscription plan
+  - GET /tenants/:id/usage - Get tenant usage statistics
+  - Full JSON request/response DTOs
+
+#### Phase 4 - SIP Trunk PostgreSQL and API (COMPLETED)
+- **SIP Trunk PostgreSQL Repository**
+  - PgSipTrunkRepository implementation
+  - Trunk CRUD operations
+  - Get trunk by name
+  - List trunks (all or enabled only)
+  - Trunk statistics tracking (get, update)
+  - Full PostgreSQL persistence
+
+- **SIP Trunk REST API**
+  - POST /trunks - Create SIP trunk
+  - GET /trunks - List all trunks
+  - GET /trunks/:id - Get trunk by ID
+  - PUT /trunks/:id - Update trunk
+  - DELETE /trunks/:id - Delete trunk
+  - GET /trunks/name/:name - Get trunk by name
+  - POST /trunks/:id/register - Trigger registration
+  - GET /trunks/:id/statistics - Get trunk statistics
+  - Full JSON request/response DTOs
+
+#### Database Migrations
+- **20251106_04_create_call_queue_tables.sql**
+  - call_queues table (queue configuration with strategy, timeouts, overflow)
+  - queue_members table (agent status, statistics, pause reasons)
+  - 6 performance indexes
+  - Automatic updated_at trigger
+  - Comprehensive table/column comments
+
+- **20251106_05_create_tenant_tables.sql**
+  - tenants table (name, slug, status, plan, quotas, branding, metadata)
+  - tenant_usage table (real-time usage tracking)
+  - 6 performance indexes
+  - Automatic updated_at trigger
+  - Comprehensive table/column comments
+
+- **20251106_06_create_sip_trunk_tables.sql**
+  - sip_trunks table (provider config, registration, codecs, routing)
+  - trunk_statistics table (real-time call statistics)
+  - 5 performance indexes
+  - Automatic updated_at trigger
+  - Comprehensive table/column comments
+
 ### Changed
 
 #### Database Schema
@@ -465,15 +848,29 @@ New permission strings in format `resource:action`:
 - WebSocket event tests (7 tests)
 - Conference repository tests (3 tests)
 - Voicemail repository tests (3 tests)
-- **Total new tests: 109**
+- TURN message tests (5 tests)
+- TURN client tests (3 tests)
+- TURN relay tests (6 tests)
+- ICE candidate tests (8 tests)
+- ICE agent tests (4 tests)
+- Audit logging tests (4 tests)
+- WebRTC SDP tests (9 tests)
+- Call queue tests (8 tests)
+- TLS configuration tests (7 tests)
+- Certificate management tests (3 tests)
+- SIP trunk tests (8 tests)
+- Multi-tenancy tests (8 tests)
+- **Total new tests: 190**
 
 ### TODO / In Progress
 
 #### Phase 2.1 - TLS/SRTP Encryption
-- [ ] TLS transport layer
-- [ ] Certificate management
-- [ ] SRTP media encryption
-- [ ] DTLS-SRTP for WebRTC
+- [x] TLS configuration framework (completed)
+- [x] DTLS configuration (completed)
+- [x] Certificate management (completed)
+- [ ] TLS listener implementation
+- [ ] SRTP media encryption implementation
+- [ ] DTLS-SRTP for WebRTC implementation
 
 #### Phase 2.2 - Call Transfer (Remaining)
 - [x] Basic REFER handler (completed)
@@ -486,8 +883,8 @@ New permission strings in format `resource:action`:
 - [x] SHA-256/SHA-512 support (completed)
 - [x] Brute force protection (completed)
 - [x] Rate limiting (completed)
+- [x] Audit logging (completed)
 - [ ] IP blacklisting (basic framework in place)
-- [ ] Audit logging
 
 #### Phase 2.5 - Monitoring Enhancements
 - [x] System health monitoring (completed)
@@ -512,23 +909,26 @@ New permission strings in format `resource:action`:
 - [x] STUN client (completed)
 - [x] STUN protocol implementation (completed)
 - [x] NAT type detection (completed)
-- [ ] TURN relay
-- [ ] ICE support
+- [x] TURN relay (completed)
+- [x] TURN client (completed)
+- [x] ICE candidate gathering (completed)
+- [x] ICE agent (completed)
 - [ ] STUN server implementation
+- [ ] ICE connectivity checks implementation
 
 #### Phase 3.3 - WebRTC Integration
-- [ ] WebSocket signaling
-- [ ] WebRTC SDP support
-- [ ] Browser compatibility
+- [x] WebRTC SDP support (completed)
+- [ ] WebSocket signaling server
+- [ ] Browser compatibility testing
 
 #### Phase 3.6 - Voicemail
 - [x] Voicemail domain model (completed)
 - [x] Voicemail repository trait (completed)
 - [x] Mailbox configuration (completed)
 - [x] PostgreSQL repository implementation (completed)
+- [x] Voicemail API endpoints (completed)
 - [ ] Voicemail recording implementation
 - [ ] Voicemail playback implementation
-- [ ] Voicemail API endpoints
 - [ ] MWI (Message Waiting Indicator)
 
 #### Phase 3.7 - IVR System
@@ -542,10 +942,15 @@ New permission strings in format `resource:action`:
 - [ ] ASR integration
 
 #### Phase 4 - Enterprise Features
-- [ ] Call queues and ACD
+- [x] Call queue domain model (completed)
+- [x] Multi-tenancy domain model (completed)
+- [x] SIP trunk domain model (completed)
+- [x] Call queue persistence and API (completed)
+- [x] Multi-tenancy persistence and API (completed)
+- [x] SIP trunk persistence and API (completed)
+- [ ] Call queue integration with SIP routing
+- [ ] SIP trunk integration with SIP registration
 - [ ] High availability clustering
-- [ ] Multi-tenancy
-- [ ] SIP trunking
 - [ ] Advanced codecs (Opus, H.264)
 
 ### Known Issues

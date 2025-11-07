@@ -1,4 +1,7 @@
 //! WebRTC protocol implementation
+pub mod sdp;
 
-// Placeholder for WebRTC implementation
-// TODO: Implement WebRTC signaling
+pub use sdp::{
+    WebRtcSdp, SdpType, MediaDescription, MediaType, MediaDirection,
+    RtpCodec, DtlsFingerprint, DtlsSetup, create_audio_offer,
+};

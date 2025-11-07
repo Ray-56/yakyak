@@ -15,6 +15,12 @@ pub mod role_repository;
 pub mod conference_repository;
 #[cfg(feature = "postgres")]
 pub mod voicemail_repository;
+#[cfg(feature = "postgres")]
+pub mod call_queue_repository;
+#[cfg(feature = "postgres")]
+pub mod tenant_repository;
+#[cfg(feature = "postgres")]
+pub mod sip_trunk_repository;
 
 #[cfg(feature = "postgres")]
 pub use database::{create_pool, run_migrations, DatabaseConfig};
@@ -28,3 +34,9 @@ pub use role_repository::PgRoleRepository;
 pub use conference_repository::PgConferenceRepository;
 #[cfg(feature = "postgres")]
 pub use voicemail_repository::PgVoicemailRepository;
+#[cfg(feature = "postgres")]
+pub use call_queue_repository::PgCallQueueRepository;
+#[cfg(feature = "postgres")]
+pub use tenant_repository::PgTenantRepository;
+#[cfg(feature = "postgres")]
+pub use sip_trunk_repository::PgSipTrunkRepository;
