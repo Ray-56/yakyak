@@ -1444,6 +1444,140 @@ All notable changes to YakYak will be documented in this file.
   - Control buttons (hold/resume/hangup)
   - Call statistics widgets
 
+#### Phase 4.3 - Billing System (COMPLETED)
+- **Billing Account Management**
+  - BillingAccount entity with tenant association
+  - AccountStatus enum (Active, Suspended, Overdue, Closed)
+  - Credit limit enforcement
+  - Account suspension on over-limit
+  - Auto-pay support
+  - Billing contact information
+  - Tax ID tracking
+  - Currency support (USD, EUR, GBP, JPY, CNY, Custom)
+
+- **Rate Plans and Pricing**
+  - RatePlan configuration with UUID
+  - BillingCycle (Monthly, Quarterly, Yearly, PayAsYouGo)
+  - Monthly/recurring fees
+  - Usage-based rates per type
+  - Included units (free tier)
+  - Minimum charges
+  - Rate calculation engine
+  - Multi-currency support
+
+- **Usage Tracking**
+  - UsageType enum (11 types)
+    - InboundMinutes, OutboundMinutes, InternalMinutes
+    - TollFreeMinutes, InternationalMinutes
+    - SmsOutbound, SmsInbound
+    - StorageGB, Recording, Conference
+    - Custom usage types
+  - UsageRecord with quantity and rate
+  - Real-time charge calculation
+  - Reference ID for CDR linkage
+  - Timestamp tracking
+
+- **Invoice Generation**
+  - Invoice entity with line items
+  - InvoiceStatus (Draft, Issued, Paid, Overdue, Cancelled, Refunded)
+  - Automatic invoice numbering (INV-00000001)
+  - Period-based billing (start/end dates)
+  - Line item breakdown
+  - Tax calculation (configurable rate)
+  - Subtotal, tax, and total calculation
+  - Due date management
+  - Overdue detection
+  - Balance due tracking
+
+- **Payment Processing**
+  - Payment entity with multiple methods
+  - PaymentMethod (CreditCard, BankTransfer, PayPal, Other)
+  - Payment application to invoices
+  - Account balance updates
+  - Payment reference tracking
+  - Payment history
+
+- **Billing Manager**
+  - Thread-safe billing operations with Arc<Mutex>
+  - create_account() / get_account()
+  - create_rate_plan() / get_rate_plan()
+  - record_usage() - Record usage and apply charges
+  - generate_invoice() - Create invoices for billing period
+  - issue_invoice() - Issue draft invoices with due dates
+  - record_payment() - Process payments
+  - get_account_invoices() - List invoices per account
+  - mark_overdue_invoices() - Batch overdue processing
+  - get_account_balance() - Query balance
+  - get_usage_summary() - Usage aggregation by type
+
+- **Billing Features**
+  - Usage aggregation by type and period
+  - Automatic charge calculation from rate plans
+  - Credit limit enforcement
+  - Account suspension on over-limit
+  - Overdue invoice detection
+  - Partial payment support
+  - Multi-currency invoicing
+  - Tax calculation and tracking
+
+- **Integration Points**
+  - Multi-tenancy system integration
+  - CDR (Call Detail Records) integration
+  - Usage metering from call sessions
+  - Conference and recording billing
+  - Real-time balance tracking
+  - Payment gateway integration ready
+
+- **Use Cases**
+  - Subscription billing (monthly/yearly plans)
+  - Usage-based billing (pay-as-you-go)
+  - Hybrid billing (base fee + usage)
+  - Credit limit enforcement
+  - Automated invoicing
+  - Payment processing
+  - Account receivables management
+  - Multi-tenant billing isolation
+
+- **Rate Calculation**
+  - Base rate per unit
+  - Included units (free allowance)
+  - Minimum charge thresholds
+  - Overage calculation
+  - Tiered pricing ready (via multiple rates)
+
+- **Invoice Line Items**
+  - Description, quantity, unit price
+  - Automatic amount calculation
+  - Monthly fee line items
+  - Usage-based line items
+  - Aggregated usage by type
+
+- **Unit Tests**
+  - Rate calculation (1 test)
+  - Rate plan configuration (1 test)
+  - Invoice lifecycle (1 test)
+  - Billing account operations (1 test)
+  - Billing manager usage recording (1 test)
+  - Invoice generation (1 test)
+  - Payment processing (1 test)
+  - Usage summary (1 test)
+  - Total: 8 comprehensive tests
+
+- **Performance Features**
+  - HashMap-based account lookup (O(1))
+  - Efficient usage aggregation
+  - Minimal lock contention
+  - Lazy invoice calculation
+  - Batch overdue processing
+
+- **Financial Compliance**
+  - Audit trail with timestamps
+  - Invoice numbering sequence
+  - Tax ID tracking
+  - Payment reference tracking
+  - Multi-currency support
+  - Balance reconciliation
+
 #### Phase 3.4 - User Presence and Status Management (COMPLETED)
 - **Presence States**
   - PresenceState enum with 7 states
