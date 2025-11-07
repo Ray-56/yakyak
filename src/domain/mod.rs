@@ -21,6 +21,7 @@ pub mod call_recording;
 pub mod cdr;
 pub mod conference;
 pub mod media;
+pub mod music_on_hold;
 pub mod presence;
 pub mod registration;
 pub mod routing;

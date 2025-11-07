@@ -1444,6 +1444,124 @@ All notable changes to YakYak will be documented in this file.
   - Control buttons (hold/resume/hangup)
   - Call statistics widgets
 
+#### Phase 2.2 - Music on Hold (MOH) System (COMPLETED)
+- **MOH Playlist Management**
+  - MohPlaylist entity with UUID identification
+  - Multiple playback modes (Sequential, Random, Once, Loop)
+  - Add/remove audio files from playlist
+  - Enable/disable playlists
+  - Default playlist support
+  - Playlist description and metadata
+  - Total duration calculation
+
+- **Audio File Management**
+  - MohAudioFile entity with metadata
+  - Support for multiple formats (WAV, MP3, Opus, Raw PCM)
+  - File format auto-detection from extension
+  - Duration, sample rate, channels tracking
+  - File size tracking
+  - Enable/disable individual files
+  - File validation (existence check)
+  - Added timestamp tracking
+
+- **Playback Modes**
+  - Sequential: Play files in order, then repeat
+  - Random: Randomized playback order
+  - Once: Play through once, then silence
+  - Loop: Continuous loop of single file
+  - Configurable per playlist
+
+- **MOH Session Management**
+  - MohSession for active call tracking
+  - Current file index and playback position
+  - Pause/resume functionality
+  - Session duration tracking
+  - Loop count tracking
+  - Automatic file advancement
+  - Session reset capability
+
+- **MohFileManager**
+  - Centralized audio file management
+  - Add/remove files
+  - Enable/disable files
+  - List all or enabled files only
+  - Directory scanning and auto-import
+  - File format detection
+  - Storage usage tracking
+  - File count statistics
+
+- **MohManager**
+  - Complete MOH orchestration
+  - create_playlist() / get_playlist() / update_playlist() / delete_playlist()
+  - set_default_playlist() / get_default_playlist()
+  - start_moh() / stop_moh() - Session lifecycle
+  - pause_moh() / resume_moh() - Playback control
+  - get_session() / get_current_file()
+  - advance_to_next_file() - Manual advancement
+  - list_active_sessions() - Active session tracking
+  - get_statistics() - System-wide statistics
+
+- **Integration Points**
+  - Call hold integration (play MOH during hold)
+  - Call queue integration (waiting callers)
+  - Conference integration (pre-call music)
+  - Audio player system integration
+  - File management for admin UI
+
+- **Use Cases**
+  - Music during call hold
+  - Queue waiting music
+  - Conference waiting room
+  - Custom on-hold messages
+  - Multi-language announcements
+  - Branded audio content
+  - Time-of-day playlists
+
+- **MOH Statistics**
+  - MohStatistics for system monitoring
+  - Total and enabled playlists count
+  - Total and enabled audio files count
+  - Active session count
+  - Total storage bytes
+  - Real-time statistics generation
+
+- **Session Features**
+  - Unique session ID per call
+  - Call ID association
+  - Playlist association
+  - Current playback position tracking
+  - Pause state management
+  - Started timestamp
+  - Duration calculation
+  - Loop count tracking
+
+- **Performance**
+  - HashMap-based O(1) lookups
+  - Thread-safe operations with Arc<Mutex>
+  - Efficient file indexing
+  - Minimal memory per session
+  - Lazy loading support ready
+
+- **Unit Tests**
+  - Playback mode default (1 test)
+  - Audio format detection (1 test)
+  - Audio file creation and metadata (1 test)
+  - Playlist CRUD operations (1 test)
+  - Session lifecycle and controls (1 test)
+  - File manager operations (1 test)
+  - Manager playlist operations (1 test)
+  - Manager session operations (1 test)
+  - Statistics generation (1 test)
+  - Total: 9 comprehensive tests
+
+- **Integration Ready**
+  - Ready for call hold handlers
+  - Ready for queue system integration
+  - Ready for conference system
+  - Admin API endpoints ready
+  - File upload/management ready
+  - Real-time playback control ready
+
 #### Phase 2.5 - API Authentication and Authorization (COMPLETED)
 - **JWT Token-Based Authentication**
   - TokenClaims with user ID, username, role, scopes
