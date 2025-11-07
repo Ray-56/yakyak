@@ -1327,6 +1327,123 @@ All notable changes to YakYak will be documented in this file.
   - PCI DSS password requirements
   - Audit logging best practices
 
+#### Phase 2.5 - Active Call Management (COMPLETED)
+- **ActiveCallManager**
+  - Real-time call tracking and monitoring
+  - Thread-safe call management with Arc<Mutex>
+  - Call registration and lifecycle management
+  - Active call list with filtering capabilities
+  - Call history tracking (configurable max 1000 calls)
+  - Automatic duration tracking
+
+- **Call State Management**
+  - CallState enum with 7 states
+  - Initiating → Ringing → Active → OnHold → Transferring → Terminating → Terminated
+  - State transition tracking
+  - Active state detection
+  - Answer time recording
+
+- **ActiveCall Information**
+  - UUID and SIP Call-ID tracking
+  - Call direction (Inbound/Outbound/Internal)
+  - Caller and callee information (name, username)
+  - Start time and answer time
+  - Duration calculation (setup time + talk time)
+  - Codec information
+  - IP addresses for both parties
+  - Quality MOS score integration
+  - Recording status
+  - Hold status
+  - Queue and conference association
+  - Custom tags support
+
+- **Call Statistics**
+  - Real-time statistics aggregation
+  - Total active calls count
+  - Calls by direction (inbound/outbound/internal)
+  - Calls by state (ringing/on hold/recording)
+  - Calls in queues and conferences
+  - Average call duration
+  - Longest call duration
+  - Average MOS score across all calls
+
+- **Call Filtering and Queries**
+  - get_all_calls() - All active calls with updated durations
+  - get_calls_by_state() - Filter by call state
+  - get_calls_by_direction() - Filter by direction
+  - get_calls_by_user() - All calls for a specific user
+  - get_calls_in_queue() - Calls in specific queue
+  - get_calls_in_conference() - Calls in specific conference
+  - get_recent_history() - Recent terminated calls
+
+- **Call Control Actions**
+  - CallControlAction enum with 8 action types
+  - Hangup (with reason)
+  - Hold/Resume
+  - Transfer (to target party)
+  - Start/Stop recording
+  - Mute/Unmute (framework ready)
+  - Action result tracking (success/failure)
+
+- **Call Control Operations**
+  - control_call() - Execute control actions
+  - update_state() - Manual state changes
+  - terminate_call() - End call and move to history
+  - update_quality() - Update MOS score
+  - set_recording() - Toggle recording status
+  - set_hold() - Toggle hold status
+
+- **Integration Points**
+  - SIP call handlers for state updates
+  - Call quality monitoring integration
+  - Call recording system integration
+  - Call queue management
+  - Conference room management
+  - Real-time dashboards and monitoring
+
+- **Use Cases**
+  - Call center monitoring dashboards
+  - Supervisor call monitoring
+  - Active call reports
+  - Call barge-in and whisper
+  - Emergency call termination
+  - System health monitoring
+  - Capacity planning
+  - Real-time analytics
+
+- **CallControlResult**
+  - Success/failure indication
+  - Descriptive message
+  - Call ID reference
+  - Action confirmation
+
+- **Performance Features**
+  - Automatic duration updates
+  - Efficient HashMap-based lookups
+  - Circular buffer for call history
+  - Lock-free reads where possible
+  - Minimal memory per call
+
+- **Unit Tests**
+  - Call state active detection (1 test)
+  - Active call creation (1 test)
+  - Active call answer (1 test)
+  - Call manager registration (1 test)
+  - State update operations (1 test)
+  - Call termination and history (1 test)
+  - Statistics calculation (1 test)
+  - Filter by direction (1 test)
+  - Call control actions (1 test)
+  - Total: 9 comprehensive tests
+
+- **Monitoring Dashboard Support**
+  - Real-time call list updates
+  - Call state visualization
+  - Duration tracking
+  - Quality indicators
+  - Control buttons (hold/resume/hangup)
+  - Call statistics widgets
+
 #### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
 - **TLS Configuration**
   - TlsMode enum (Disabled, Optional, Required)
