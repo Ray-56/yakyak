@@ -1064,6 +1064,144 @@ All notable changes to YakYak will be documented in this file.
   - Minimal memory footprint
   - Thread-safe concurrent recordings
 
+#### Phase 3.9 - Call Quality Monitoring (COMPLETED)
+- **QoS Metrics Collection**
+  - QosMetrics struct for comprehensive quality tracking
+  - Packet loss percentage calculation
+  - Jitter measurement in milliseconds
+  - Round-trip time (RTT) tracking
+  - Packet and byte counters (sent/received/lost)
+  - Codec and sample rate tracking
+  - Real-time metric updates
+
+- **MOS Score Calculation**
+  - E-Model algorithm implementation (ITU-T G.107)
+  - R-factor calculation from delay, equipment, and packet loss impairments
+  - Delay impairment based on RTT
+  - Equipment impairment by codec (PCMU/PCMA/G729/GSM/Opus)
+  - Packet loss impairment factor (2.5x multiplier)
+  - Jitter impairment for high jitter conditions (>20ms)
+  - MOS scale: 1.0 (poor) to 5.0 (excellent)
+  - Quality acceptability threshold (MOS >= 3.6)
+
+- **Quality Rating Categories**
+  - QualityRating enum with 5 levels
+  - Excellent: MOS >= 4.3
+  - Good: MOS >= 4.0
+  - Fair: MOS >= 3.6 (acceptable threshold)
+  - Poor: MOS >= 3.1
+  - Bad: MOS < 3.1
+  - Human-readable rating strings
+
+- **Quality Alerts**
+  - QualityAlert enum for various issues
+  - High packet loss alerts (threshold: 5%)
+  - High jitter alerts (threshold: 30ms)
+  - High latency alerts (threshold: 300ms RTT)
+  - Low MOS score alerts (threshold: 3.6)
+  - Quality degradation trend detection (0.5 MOS drop)
+  - Configurable alert thresholds
+
+- **Quality Monitoring Session**
+  - Per-call monitoring with QualityMonitoringSession
+  - Metrics history tracking (60 data points)
+  - Real-time metric updates from RTP statistics
+  - Alert checking and generation
+  - Average metrics calculation over session
+  - Duration tracking
+  - Alert history retention
+
+- **Quality Thresholds**
+  - QualityThresholds configuration
+  - Default packet loss: 5%
+  - Default jitter: 30ms
+  - Default RTT: 300ms
+  - Default minimum MOS: 3.6
+  - Customizable per deployment
+
+- **Call Quality Manager**
+  - CallQualityManager for multi-call monitoring
+  - Thread-safe session management (Arc<Mutex>)
+  - Active and completed session tracking
+  - start_monitoring() / stop_monitoring() lifecycle
+  - Real-time metric updates
+  - Alert callback mechanism
+  - Quality report generation
+
+- **Quality Reports**
+  - QualityReport for completed calls
+  - Call ID and timestamp tracking
+  - Call duration in seconds
+  - Average metrics over entire call
+  - Overall quality rating
+  - Alert count summary
+  - Historical report storage
+
+- **Quality Analytics**
+  - QualitySummary for system-wide statistics
+  - Total and active call counts
+  - Quality distribution (excellent/good/fair/poor/bad)
+  - Average packet loss across all calls
+  - Average jitter across all calls
+  - Average MOS across all calls
+  - Real-time dashboard support
+
+- **Integration Points**
+  - RTP session integration for metric collection
+  - RTCP reports for RTT and packet statistics
+  - Real-time monitoring dashboards
+  - Alert notification systems
+  - Call detail records (CDR) integration
+  - Quality-based routing decisions
+
+- **Use Cases**
+  - Network troubleshooting and optimization
+  - SLA compliance monitoring
+  - Proactive quality management
+  - Capacity planning
+  - Codec performance comparison
+  - User experience improvement
+  - NOC (Network Operations Center) dashboards
+
+- **Alert Callback System**
+  - Configurable alert callback function
+  - Real-time alert delivery
+  - Integration with notification systems
+  - Webhook support for external systems
+  - Alert aggregation and deduplication
+
+- **Metrics History**
+  - Time-series metrics storage
+  - Configurable history size (default 60 points)
+  - Trend analysis support
+  - Degradation detection
+  - Historical comparison
+
+- **Unit Tests**
+  - QoS metrics default values (1 test)
+  - Packet loss calculation (1 test)
+  - MOS calculation with E-Model (1 test)
+  - Quality rating classification (1 test)
+  - Quality monitoring session (1 test)
+  - Quality alerts generation (1 test)
+  - Call quality manager operations (1 test)
+  - Quality summary statistics (1 test)
+  - Average metrics calculation (1 test)
+  - Total: 9 comprehensive tests
+
+- **Performance**
+  - Minimal CPU overhead for metric calculation
+  - Efficient memory usage with bounded history
+  - Lock-free metric reads where possible
+  - Fast MOS calculation (mathematical formula)
+  - Scalable to thousands of concurrent calls
+
+- **Standards Compliance**
+  - ITU-T G.107 (E-Model)
+  - ITU-T P.800 (MOS methodology)
+  - RFC 3550 (RTP)
+  - RFC 3611 (RTCP XR)
+
 #### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
 - **TLS Configuration**
   - TlsMode enum (Disabled, Optional, Required)
