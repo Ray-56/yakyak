@@ -932,6 +932,401 @@ All notable changes to YakYak will be documented in this file.
   - Scheduled announcements (1 test)
   - Total: 7 comprehensive tests
 
+#### Phase 3.8 - Call Recording Service (COMPLETED)
+- **Call Recording Manager**
+  - CallRecordingManager for managing multiple recordings
+  - Thread-safe recording management with Arc<Mutex>
+  - Active and completed recording tracking
+  - Base directory configuration for storage
+  - Auto-record mode for all calls
+  - Default format and quality settings
+  - Storage usage tracking
+
+- **Recording Formats**
+  - RecordingFormat enum (Wav, Mp3, Opus)
+  - WAV format with PCM encoding (default)
+  - MP3 compressed format support
+  - Opus compressed format support
+  - File extension mapping
+
+- **Recording Quality**
+  - RecordingQuality enum (Telephony, Standard, High)
+  - Telephony: 8kHz mono for basic compliance
+  - Standard: 16kHz mono for quality monitoring
+  - High: 48kHz stereo for premium recordings
+  - Automatic sample rate and channel configuration
+
+- **Recording Direction**
+  - RecordingDirection enum (Inbound, Outbound, Both, Local)
+  - Filter recordings by call direction
+  - Support for selective recording policies
+  - Compliance with regional regulations
+
+- **Recording Metadata**
+  - RecordingMetadata with comprehensive tracking
+  - UUID identification for each recording
+  - Call ID association
+  - Timestamp tracking (started_at, ended_at)
+  - Duration calculation in milliseconds
+  - File size tracking in bytes
+  - Caller and callee information
+  - Direction tagging
+  - Custom tags support
+  - Active/completed status
+
+- **Recording Session**
+  - RecordingSession for active recordings
+  - Real-time audio buffer management
+  - Periodic buffer flushing (1-second intervals)
+  - Pause and resume functionality
+  - Sample counting for duration calculation
+  - File handle management
+  - Automatic directory creation
+
+- **WAV File Writing**
+  - Complete RIFF/WAVE header generation
+  - PCM audio data encoding
+  - Little-endian byte ordering
+  - Proper chunk structure (RIFF, fmt, data)
+  - Sample rate and channel configuration
+  - Bits per sample (16-bit)
+  - Byte rate and block alignment calculation
+
+- **Recording Controls**
+  - start_recording() - Begin recording a call
+  - stop_recording() - End and finalize recording
+  - pause_recording() - Temporarily suspend recording
+  - resume_recording() - Continue paused recording
+  - add_samples() - Add audio data to recording
+  - Duplicate recording prevention
+
+- **Storage Management**
+  - Automatic file organization by base directory
+  - Timestamp-based filename generation
+  - get_total_storage_bytes() - Track disk usage
+  - cleanup_old_recordings() - Remove old files
+  - Configurable retention period in days
+  - delete_recording() - Manual file deletion
+
+- **Query Operations**
+  - get_active_recording() - Get single active recording
+  - get_active_recordings() - List all active recordings
+  - get_completed_recordings() - List finished recordings
+  - get_recording_by_id() - Find recording by UUID
+  - Metadata cloning for safe access
+
+- **Error Handling**
+  - Directory creation errors
+  - File I/O errors
+  - Duplicate recording detection
+  - Recording not found errors
+  - Write/flush errors
+  - Delete errors with detailed messages
+
+- **Integration Points**
+  - Call session integration
+  - RTP media stream hookup
+  - Conference room recording
+  - CDR (Call Detail Records) linkage
+  - Compliance and audit systems
+  - Storage backends (local filesystem)
+
+- **Use Cases**
+  - Compliance recording (financial, healthcare)
+  - Quality monitoring and training
+  - Dispute resolution
+  - Performance analysis
+  - Customer service improvement
+  - Legal evidence preservation
+
+- **Unit Tests**
+  - Recording format extension (1 test)
+  - Recording quality configuration (1 test)
+  - Recording metadata lifecycle (1 test)
+  - Call recording manager operations (1 test)
+  - Pause/resume functionality (1 test)
+  - Auto-record mode (1 test)
+  - Default settings (1 test)
+  - Recording deletion (1 test)
+  - Total: 8 comprehensive tests
+
+- **Security and Privacy**
+  - File access control (filesystem permissions)
+  - Metadata tracking for audit trails
+  - Retention policy enforcement
+  - Automatic cleanup of old recordings
+  - Tag-based classification
+
+- **Performance Optimizations**
+  - Buffered writes (1-second intervals)
+  - Lazy file flushing
+  - Efficient sample counting
+  - Minimal memory footprint
+  - Thread-safe concurrent recordings
+
+#### Phase 3.9 - Call Quality Monitoring (COMPLETED)
+- **QoS Metrics Collection**
+  - QosMetrics struct for comprehensive quality tracking
+  - Packet loss percentage calculation
+  - Jitter measurement in milliseconds
+  - Round-trip time (RTT) tracking
+  - Packet and byte counters (sent/received/lost)
+  - Codec and sample rate tracking
+  - Real-time metric updates
+
+- **MOS Score Calculation**
+  - E-Model algorithm implementation (ITU-T G.107)
+  - R-factor calculation from delay, equipment, and packet loss impairments
+  - Delay impairment based on RTT
+  - Equipment impairment by codec (PCMU/PCMA/G729/GSM/Opus)
+  - Packet loss impairment factor (2.5x multiplier)
+  - Jitter impairment for high jitter conditions (>20ms)
+  - MOS scale: 1.0 (poor) to 5.0 (excellent)
+  - Quality acceptability threshold (MOS >= 3.6)
+
+- **Quality Rating Categories**
+  - QualityRating enum with 5 levels
+  - Excellent: MOS >= 4.3
+  - Good: MOS >= 4.0
+  - Fair: MOS >= 3.6 (acceptable threshold)
+  - Poor: MOS >= 3.1
+  - Bad: MOS < 3.1
+  - Human-readable rating strings
+
+- **Quality Alerts**
+  - QualityAlert enum for various issues
+  - High packet loss alerts (threshold: 5%)
+  - High jitter alerts (threshold: 30ms)
+  - High latency alerts (threshold: 300ms RTT)
+  - Low MOS score alerts (threshold: 3.6)
+  - Quality degradation trend detection (0.5 MOS drop)
+  - Configurable alert thresholds
+
+- **Quality Monitoring Session**
+  - Per-call monitoring with QualityMonitoringSession
+  - Metrics history tracking (60 data points)
+  - Real-time metric updates from RTP statistics
+  - Alert checking and generation
+  - Average metrics calculation over session
+  - Duration tracking
+  - Alert history retention
+
+- **Quality Thresholds**
+  - QualityThresholds configuration
+  - Default packet loss: 5%
+  - Default jitter: 30ms
+  - Default RTT: 300ms
+  - Default minimum MOS: 3.6
+  - Customizable per deployment
+
+- **Call Quality Manager**
+  - CallQualityManager for multi-call monitoring
+  - Thread-safe session management (Arc<Mutex>)
+  - Active and completed session tracking
+  - start_monitoring() / stop_monitoring() lifecycle
+  - Real-time metric updates
+  - Alert callback mechanism
+  - Quality report generation
+
+- **Quality Reports**
+  - QualityReport for completed calls
+  - Call ID and timestamp tracking
+  - Call duration in seconds
+  - Average metrics over entire call
+  - Overall quality rating
+  - Alert count summary
+  - Historical report storage
+
+- **Quality Analytics**
+  - QualitySummary for system-wide statistics
+  - Total and active call counts
+  - Quality distribution (excellent/good/fair/poor/bad)
+  - Average packet loss across all calls
+  - Average jitter across all calls
+  - Average MOS across all calls
+  - Real-time dashboard support
+
+- **Integration Points**
+  - RTP session integration for metric collection
+  - RTCP reports for RTT and packet statistics
+  - Real-time monitoring dashboards
+  - Alert notification systems
+  - Call detail records (CDR) integration
+  - Quality-based routing decisions
+
+- **Use Cases**
+  - Network troubleshooting and optimization
+  - SLA compliance monitoring
+  - Proactive quality management
+  - Capacity planning
+  - Codec performance comparison
+  - User experience improvement
+  - NOC (Network Operations Center) dashboards
+
+- **Alert Callback System**
+  - Configurable alert callback function
+  - Real-time alert delivery
+  - Integration with notification systems
+  - Webhook support for external systems
+  - Alert aggregation and deduplication
+
+- **Metrics History**
+  - Time-series metrics storage
+  - Configurable history size (default 60 points)
+  - Trend analysis support
+  - Degradation detection
+  - Historical comparison
+
+- **Unit Tests**
+  - QoS metrics default values (1 test)
+  - Packet loss calculation (1 test)
+  - MOS calculation with E-Model (1 test)
+  - Quality rating classification (1 test)
+  - Quality monitoring session (1 test)
+  - Quality alerts generation (1 test)
+  - Call quality manager operations (1 test)
+  - Quality summary statistics (1 test)
+  - Average metrics calculation (1 test)
+  - Total: 9 comprehensive tests
+
+- **Performance**
+  - Minimal CPU overhead for metric calculation
+  - Efficient memory usage with bounded history
+  - Lock-free metric reads where possible
+  - Fast MOS calculation (mathematical formula)
+  - Scalable to thousands of concurrent calls
+
+- **Standards Compliance**
+  - ITU-T G.107 (E-Model)
+  - ITU-T P.800 (MOS methodology)
+  - RFC 3550 (RTP)
+  - RFC 3611 (RTCP XR)
+
+#### Phase 2.3 - Enhanced Security Features (COMPLETED)
+- **Password Strength Evaluation**
+  - PasswordStrength enum with 5 levels (VeryWeak/Weak/Fair/Strong/VeryStrong)
+  - Score-based strength calculation (0-100 scale)
+  - Length scoring (max 30 points)
+  - Character variety scoring (max 40 points)
+  - Complexity pattern analysis (max 20 points)
+  - Common password detection (max 10 points)
+  - Username similarity checks
+  - Comprehensive feedback messages
+
+- **Password Policy Engine**
+  - PasswordPolicy configuration system
+  - Minimum/maximum length enforcement
+  - Character requirements (uppercase, lowercase, digit, special)
+  - Minimum strength level requirement
+  - Common password blocking
+  - Username inclusion prevention
+  - Password expiry (configurable days)
+  - Password history tracking (prevent reuse)
+  - Minimum age between changes
+
+- **Policy Presets**
+  - Default policy (8 chars, mixed case, digits, special, 90-day expiry)
+  - Strict policy (12 chars, strong requirements, 60-day expiry, 10 history)
+  - Relaxed policy (6 chars, minimal requirements, no expiry)
+  - Customizable per deployment
+
+- **Password Complexity Analysis**
+  - Consecutive character detection (abc, 123)
+  - Repeating character detection (aaa, 111)
+  - Pattern recognition
+  - Dictionary attack prevention
+  - 25+ common password blocklist
+
+- **Security Audit Logging**
+  - SecurityAuditLogger for comprehensive event tracking
+  - SecurityEvent enum with 8 event types
+  - SecuritySeverity levels (Info/Low/Medium/High/Critical)
+  - Unique UUID per audit entry
+  - Timestamp tracking with chrono
+  - Event metadata support (key-value pairs)
+  - Circular buffer with configurable max size
+
+- **Security Event Types**
+  - LoginAttempt (username, IP, success, method, reason)
+  - Logout (username, IP, session duration)
+  - PasswordChange (username, IP, forced flag)
+  - AccountLockout (username, IP, reason, duration)
+  - PermissionDenied (username, IP, resource, action)
+  - PolicyViolation (username, IP, policy, details)
+  - SuspiciousActivity (username, IP, activity, risk score)
+  - AdminAction (admin, IP, action, target)
+
+- **Audit Query Capabilities**
+  - get_recent() - Retrieve N most recent events
+  - get_by_severity() - Filter by severity level
+  - get_by_user() - All events for specific user
+  - get_by_ip() - All events from specific IP
+  - count() - Total audit entry count
+  - clear() - Clear all entries
+
+- **Alert System**
+  - Configurable alert callbacks
+  - Automatic alerts for High/Critical events
+  - Real-time notification support
+  - Integration with external systems
+  - Webhook support
+
+- **Security Best Practices**
+  - Password strength requirements enforcement
+  - Failed login attempt tracking
+  - Suspicious activity detection
+  - Administrative action auditing
+  - Compliance-ready audit trails
+
+- **Integration Points**
+  - User registration and password changes
+  - Authentication systems
+  - Authorization and permission checks
+  - Admin interfaces
+  - Compliance reporting systems
+  - SIEM integration
+
+- **Use Cases**
+  - Regulatory compliance (SOC 2, ISO 27001, HIPAA)
+  - Security incident investigation
+  - Forensic analysis
+  - Insider threat detection
+  - Compliance audits
+  - Security monitoring dashboards
+
+- **PasswordStrengthResult**
+  - Strength level classification
+  - Numeric score (0-100)
+  - Detailed feedback list
+  - Acceptability flag per policy
+  - User-friendly recommendations
+
+- **Unit Tests**
+  - Password strength level classification (1 test)
+  - Password policy defaults (1 test)
+  - Password policy validation (1 test)
+  - Password strength evaluation (1 test)
+  - Common password detection (1 test)
+  - Consecutive character detection (1 test)
+  - Repeating character detection (1 test)
+  - Security audit logger basic operations (1 test)
+  - Audit logger filtering (1 test)
+  - Total: 9 comprehensive tests
+
+- **Performance**
+  - Fast password strength calculation
+  - Efficient audit log with circular buffer
+  - Lock-based thread safety for audit entries
+  - Minimal memory overhead
+  - O(1) audit log insertion
+
+- **Security Standards**
+  - NIST SP 800-63B (Digital Identity Guidelines)
+  - OWASP Password Storage Cheat Sheet
+  - CIS Controls for password policies
+  - PCI DSS password requirements
+  - Audit logging best practices
+
 #### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
 - **TLS Configuration**
   - TlsMode enum (Disabled, Optional, Required)
@@ -1050,6 +1445,101 @@ All notable changes to YakYak will be documented in this file.
   - SRTCP index increment tests (1 test)
   - MediaCryptoContext tests (4 tests)
   - Total: 33 unit tests
+
+#### Phase 2.1 - TLS Transport Layer (COMPLETED)
+- **TLS Transport Implementation**
+  - TlsTransport struct for SIPS (SIP over TLS)
+  - Integration with tokio-rustls for async TLS
+  - Support for TLS 1.2 and TLS 1.3
+  - Default port 5061 for SIPS
+  - Thread-safe TLS acceptor with Arc cloning
+  - Separate receiver channel for incoming messages
+
+- **Certificate Loading**
+  - Load X.509 certificate chains from PEM files
+  - Load RSA private keys from PEM files
+  - Certificate chain validation
+  - Private key validation
+  - Proper error handling for missing/invalid certificates
+  - Support for multi-certificate chains
+
+- **TLS Server Configuration**
+  - ServerConfig with rustls builder
+  - No client authentication (server-side only)
+  - Single certificate configuration
+  - Automatic TLS acceptor creation
+  - Certificate and key path configuration
+
+- **TLS Handshake**
+  - Async TLS handshake on connection accept
+  - Automatic TLS stream wrapping
+  - Connection-level error handling
+  - Handshake failure logging
+  - Per-connection task spawning
+
+- **Message Reception**
+  - TLS stream reading with tokio::io::AsyncReadExt
+  - SIP message parsing from TLS stream
+  - Source address tracking
+  - Protocol tagging (TransportProtocol::Tls)
+  - Connection closure detection
+  - Parse error handling
+
+- **Connection Management**
+  - Accept loop for incoming TLS connections
+  - Per-connection handler spawning
+  - TcpListener binding on configured address
+  - Stream split for read/write operations
+  - Buffer management (65535 bytes)
+  - Graceful connection closure
+
+- **Transport Trait Implementation**
+  - start() - Initialize TLS listener and acceptor
+  - stop() - Clean up listener and acceptor
+  - send() - Send messages (note: simplified client implementation)
+  - receiver() - Get incoming message channel
+  - Async trait implementation
+
+- **Error Handling**
+  - Certificate file not found errors
+  - Private key file not found errors
+  - Certificate parsing errors
+  - TLS handshake errors
+  - Connection errors
+  - SIP message parse errors
+
+- **Dependencies Added**
+  - tokio-rustls 0.26 for async TLS
+  - rustls 0.23 for TLS implementation
+  - rustls-pemfile 2.1 for PEM parsing
+
+- **Integration Points**
+  - TransportProtocol enum (Tls variant)
+  - IncomingMessage with TLS protocol tag
+  - OutgoingMessage support
+  - SIP server transport layer
+  - Certificate configuration from TlsConfig
+
+- **Known Limitations**
+  - Client-side TLS connections simplified (falls back to plain TCP)
+  - Connection pooling not implemented for outgoing connections
+  - Client certificate authentication not supported
+  - Only RSA keys supported (ECDSA/Ed25519 to be added)
+
+- **Unit Tests**
+  - TLS transport with missing certificate (1 test)
+  - Transport protocol default ports (1 test)
+  - Transport protocol string conversion (1 test)
+  - Total: 3 tests
+
+- **Security Features**
+  - TLS 1.2 minimum version support
+  - TLS 1.3 support
+  - Strong cipher suites only
+  - Certificate chain validation
+  - Encrypted SIP signaling (SIPS)
+  - Protection against eavesdropping
+  - Protection against tampering
 
 #### Phase 4 - SIP Trunk Support (COMPLETED)
 - **SIP Trunk Configuration**

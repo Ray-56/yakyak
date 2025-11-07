@@ -63,6 +63,11 @@ hmac = "0.12"
 sha1 = "0.10"
 aes = "0.8"
 
+# TLS 支持
+tokio-rustls = "0.26"
+rustls = "0.23"
+rustls-pemfile = "2.1"
+
 # JSON-RPC
 jsonrpsee = { version = "0.24", features = ["server", "client"] }
 
