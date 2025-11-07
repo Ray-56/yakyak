@@ -756,6 +756,86 @@ All notable changes to YakYak will be documented in this file.
   - Certificate removal
   - Unit tests (3 tests)
 
+#### Phase 2.1 - SRTP/SRTCP Encryption (COMPLETED)
+- **SRTP Protection Profiles**
+  - SrtpProfile enum (AES-128-CM with HMAC-SHA1-80/32, AES-256-CM with HMAC-SHA1-80/32)
+  - Master key length (16 bytes for AES-128, 32 bytes for AES-256)
+  - Master salt length (14 bytes for all profiles)
+  - Authentication tag length (10 bytes for 80-bit, 4 bytes for 32-bit)
+  - Cipher, auth, and salt key length configuration
+
+- **Key Derivation (RFC 3711)**
+  - SRTP Key Derivation Function (KDF) implementation
+  - AES-CM PRF (Pseudo-Random Function)
+  - Key labels for SRTP/SRTCP encryption, authentication, salting
+  - Session key derivation from master key
+  - Separate keys for SRTP and SRTCP
+  - 48-bit index support for key derivation
+
+- **Master Key Management**
+  - SrtpMasterKey with key and salt
+  - Random master key generation per profile
+  - Session key derivation (6 keys: SRTP cipher/auth/salt, SRTCP cipher/auth/salt)
+  - SrtpSessionKeys structure
+
+- **Cryptographic Primitives**
+  - AES-128 Counter Mode encryption/decryption
+  - HMAC-SHA1 authentication (160-bit key, configurable tag length)
+  - IV generation from salt, SSRC, and packet index
+  - Keystream generation for XOR encryption
+  - Authentication tag computation and verification
+
+- **SRTP Context**
+  - Per-SSRC stream context management
+  - Packet index calculation (ROC * 65536 + SEQ)
+  - ROC (Rollover Counter) tracking for 32-bit sequence extension
+  - RTP header parsing (SSRC, sequence number)
+  - RTP header length calculation (with CSRC and extensions)
+  - Encrypt/decrypt RTP packets in-place
+  - Authentication tag append/verify
+
+- **Replay Protection**
+  - Sliding window bitmap (64 packets)
+  - Highest sequence number tracking
+  - Check for replay attacks before decryption
+  - Window update after accepting packet
+  - Configurable replay protection (can be disabled)
+
+- **SRTCP Context**
+  - SRTCP index management
+  - E flag handling (1 bit for encryption indicator)
+  - SRTCP index (31 bits) in packet
+  - RTCP header parsing
+  - Encrypt/decrypt RTCP packets
+  - Authentication for both encrypted and unencrypted RTCP
+
+- **MediaCryptoContext**
+  - Combined SRTP/SRTCP context for media sessions
+  - Unified API for RTP/RTCP protection
+  - protect_rtp() / unprotect_rtp() methods
+  - protect_rtcp() / unprotect_rtcp() methods
+  - Single master key for both SRTP and SRTCP
+
+- **Unit Tests**
+  - SRTP profile length tests (3 tests)
+  - Key derivation tests (3 tests)
+  - Session key derivation (1 test)
+  - HMAC authentication tests (1 test)
+  - IV generation tests (2 tests)
+  - AES-CM keystream tests (2 tests)
+  - Replay window tests (1 test)
+  - Stream context tests (1 test)
+  - RTP header parsing tests (2 tests)
+  - SRTP encrypt/decrypt tests (4 tests)
+  - SRTP authentication failure tests (1 test)
+  - SRTP replay protection tests (1 test)
+  - Multi-stream tests (1 test)
+  - SRTCP encrypt/decrypt tests (4 tests)
+  - SRTCP authentication tests (1 test)
+  - SRTCP index increment tests (1 test)
+  - MediaCryptoContext tests (4 tests)
+  - Total: 33 unit tests
+
 #### Phase 4 - SIP Trunk Support (COMPLETED)
 - **SIP Trunk Configuration**
   - TrunkType (Register, IpBased, Peer)

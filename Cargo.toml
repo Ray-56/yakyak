@@ -59,6 +59,9 @@ rand = "0.8"
 md5 = "0.8"
 hex = "0.4"
 bcrypt = "0.15"
+hmac = "0.12"
+sha1 = "0.10"
+aes = "0.8"
 
 # JSON-RPC
 jsonrpsee = { version = "0.24", features = ["server", "client"] }
