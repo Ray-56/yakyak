@@ -717,6 +717,114 @@ All notable changes to YakYak will be documented in this file.
   - Queue statistics (waiting calls, avg wait time, abandonment rate)
   - Unit tests (8 tests)
 
+#### Phase 4 - Call Queue Engine (COMPLETED)
+- **CallQueueEngine Service**
+  - Central orchestration for all queue operations
+  - Thread-safe session management with Arc<Mutex>
+  - Multiple queue support with HashMap-based routing
+  - Start/stop queue sessions
+  - Integration with AudioFileManager for announcements
+
+- **Call Queueing**
+  - enqueue_call() with overflow detection
+  - Queue full checking against max_queue_size
+  - Automatic position assignment (1-based)
+  - Caller information tracking (name, number)
+  - Wait time calculation from enqueued_at timestamp
+  - Priority support for future enhancement
+
+- **Agent Selection Strategies**
+  - RingAll: Return first available (caller rings all)
+  - Linear: Agents by join time (FIFO)
+  - LeastRecent: Agent with oldest last_call_time
+  - FewestCalls: Agent with minimum total_calls
+  - LeastTalkTime: Agent with minimum talk_time
+  - Random: Random selection from available pool
+  - RoundRobin: Rotating with position tracking
+
+- **Agent State Management**
+  - Add/remove members from queue
+  - Available agent tracking
+  - Mark busy on call connect
+  - Mark available on call end
+  - Pause/unpause support
+  - Statistics per agent (calls, talk time)
+
+- **Call Connection Flow**
+  - connect_call() links call to agent
+  - Remove from waiting queue
+  - Add to active calls HashMap
+  - Mark agent as busy
+  - Update queue statistics
+  - SLA threshold checking
+  - Position updates for remaining calls
+
+- **Call Lifecycle**
+  - end_call() with talk_time tracking
+  - Agent statistics updates
+  - Mark agent available
+  - Remove from active calls
+  - abandon_call() for caller hangups
+  - Abandonment statistics tracking
+
+- **Queue Statistics (Real-time)**
+  - Total calls received
+  - Calls waiting (current)
+  - Calls active (current)
+  - Calls answered (cumulative)
+  - Calls abandoned (cumulative)
+  - Calls overflowed (cumulative)
+  - Average wait time (dynamic)
+  - Longest wait time (peak)
+  - Service level percentage
+  - Configurable SLA threshold (default 20s)
+
+- **Service Level Agreement (SLA)**
+  - Track calls answered within threshold
+  - Automatic calculation: (within_threshold / total_answered) * 100
+  - Default threshold: 20 seconds
+  - Real-time percentage updates
+
+- **Music on Hold Integration**
+  - create_moh_player() from queue config
+  - Integration with AudioFileManager
+  - Loop playback for continuous music
+  - StreamingAudioPlayer with 20ms frames
+  - Automatic audio file lookup by ID
+
+- **Queue Monitoring**
+  - get_statistics() for real-time metrics
+  - get_position() for caller position announcements
+  - get_waiting_calls() for queue visibility
+  - get_available_agents() for capacity planning
+  - Per-queue session tracking
+
+- **Error Handling**
+  - QueueEngineError enum
+  - QueueFull when max_queue_size exceeded
+  - QueueNotFound for invalid queue_id
+  - NoAvailableAgents when all busy
+  - CallNotFound for invalid call operations
+  - MemberNotFound for agent operations
+
+- **Overflow Handling**
+  - Detect queue full condition
+  - Increment overflow statistics
+  - Return QueueFull error
+  - Caller can trigger overflow action
+  - Support for forwarding/voicemail/announcement
+
+- **Unit Tests**
+  - Engine creation (1 test)
+  - Enqueue call (1 test)
+  - Queue full detection (1 test)
+  - Add/remove member (1 test)
+  - Connect call flow (1 test)
+  - Abandon call (1 test)
+  - End call (1 test)
+  - Round-robin strategy (1 test)
+  - Total: 8 comprehensive tests
+
 #### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
 - **TLS Configuration**
   - TlsMode enum (Disabled, Optional, Required)
