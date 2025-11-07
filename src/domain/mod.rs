@@ -23,6 +23,8 @@ pub mod sip_trunk;
 pub mod tenant;
 pub mod user;
 pub mod voicemail;
+pub mod voicemail_ivr;
+pub mod voicemail_service;
 
 // Re-export commonly used types
 pub use shared::{DomainError, Result};

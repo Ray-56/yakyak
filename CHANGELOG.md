@@ -440,6 +440,94 @@ All notable changes to YakYak will be documented in this file.
   - Full JSON request/response DTOs
   - VoicemailApiState for dependency injection
 
+#### Phase 3.6 - Voicemail Recording and Playback (COMPLETED)
+- **Voicemail Recorder**
+  - VoicemailRecorder for capturing audio to WAV files
+  - Configurable maximum recording duration (default 180s)
+  - Sample buffer with 16-bit PCM mono at 8kHz
+  - Real-time duration tracking during recording
+  - Start/stop recording controls
+  - WAV file generation with proper RIFF headers
+  - Automatic format: 8kHz mono 16-bit PCM
+  - Unit tests (4 tests)
+
+- **WAV File Writing**
+  - Complete RIFF/WAVE file format writer
+  - RIFF header (RIFF signature, file size, WAVE format)
+  - fmt chunk (audio format, channels, sample rate, bit depth)
+  - data chunk (PCM audio samples)
+  - Proper little-endian byte ordering
+  - Block alignment and byte rate calculation
+
+- **Voicemail Player**
+  - VoicemailPlayer for playing back messages
+  - Frame-by-frame audio streaming (20ms frames)
+  - Play voicemail messages from files
+  - Play custom greetings
+  - Automatic G.711 format conversion
+  - Playback controls (pause, resume, stop, replay)
+  - Progress tracking and seeking
+  - Fast forward/rewind support (configurable seconds)
+  - Integration with AudioPlayer
+
+- **Voicemail Service**
+  - VoicemailService for managing recordings and playback
+  - Mailbox directory structure management
+  - Automatic directory creation per mailbox
+  - Unique filename generation (timestamp + UUID)
+  - Save recordings with metadata
+  - Create VoicemailMessage entities from recordings
+  - Audio file deletion
+  - File size queries
+  - Base directory configuration
+
+- **Message Waiting Indicator (MWI)**
+  - MwiState with message counts
+  - New vs old message tracking
+  - Urgent message counts (separate counters)
+  - SIP NOTIFY body formatting (RFC 3842)
+  - Messages-Waiting header (yes/no)
+  - Message-Account header
+  - Voice-Message header with counts (new/old/urgent)
+  - Total message count calculation
+  - Unit tests (4 tests)
+
+- **Voicemail IVR Access**
+  - VoicemailIvrSession for dial-in access
+  - State machine (Authenticating, VerifyingPin, MainMenu, PlayingMessage, etc.)
+  - PIN authentication with retry limit (3 attempts)
+  - Mailbox auto-detection from caller ID
+  - Message navigation (next, previous, current position)
+  - Message status management (mark read, saved, deleted)
+  - Message sorting (newest first)
+  - Session variables for state tracking
+  - Unit tests (9 tests)
+
+- **DTMF Menu Options**
+  - VoicemailMenuOption enum for IVR navigation
+  - Play next (1), Replay (2), Delete (3), Save (4)
+  - Previous (5), Skip (6), Main menu (*), Exit (#)
+  - Record greeting (9)
+  - Bidirectional digit <-> option mapping
+
+- **Voicemail Prompts**
+  - VoicemailPrompt enum with audio IDs
+  - Welcome, Enter PIN, Invalid PIN
+  - New/saved message count announcements
+  - Main menu options, Message headers
+  - Deletion/save confirmations
+  - No more messages, Goodbye
+  - Recording prompts
+
+- **Message Management**
+  - Load messages for mailbox
+  - Sort by date (newest first)
+  - Filter by status (new, read, saved, deleted)
+  - Count new vs saved messages
+  - Remove deleted messages from list
+  - Current position tracking (1-based)
+  - Has more messages detection
+
 #### Phase 3.2 - TURN Relay (COMPLETED)
 - **TURN Protocol Implementation (RFC 5766)**
   - TurnMethod enum (Allocate, Refresh, Send, Data, CreatePermission, ChannelBind)
