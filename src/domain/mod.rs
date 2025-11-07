@@ -21,6 +21,7 @@ pub mod conference;
 pub mod media;
 pub mod registration;
 pub mod routing;
+pub mod security;
 pub mod session;
 pub mod shared;
 pub mod sip_trunk;
