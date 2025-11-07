@@ -1444,6 +1444,44 @@ All notable changes to YakYak will be documented in this file.
   - Control buttons (hold/resume/hangup)
   - Call statistics widgets
 
+#### Phase 3.6 - Message Waiting Indicator (MWI) (COMPLETED)
+- **MWI Subscription Management**
+  - MwiSubscription entity with UUID
+  - Subscribe/unsubscribe/refresh operations
+  - Subscription expiry tracking
+  - Dialog information (Call-ID, tags)
+  - Subscription state (Active, Pending, Terminated)
+  - 10 comprehensive unit tests
+
+- **Message Summary (RFC 3842)**
+  - MessageSummary entity per account
+  - Voice message counts (new/old/urgent)
+  - RFC 3842 message-summary body generation
+  - Messages-Waiting header
+  - Voice-Message format: new/old (urgent_new/urgent_old)
+
+- **MWI Manager**
+  - Thread-safe subscription management
+  - subscribe() / unsubscribe() / refresh_subscription()
+  - update_summary() - Update and notify all subscribers
+  - list_subscriptions() / cleanup_expired()
+  - get_statistics() - System statistics
+  - Notification callback for SIP NOTIFY
+
+- **Integration Features**
+  - Voicemail system integration
+  - SIP SUBSCRIBE/NOTIFY handlers
+  - Real-time message count updates
+  - Automatic NOTIFY on subscribe/unsubscribe
+  - Multi-device notification support
+
+- **Use Cases**
+  - Visual voicemail indicators
+  - Message waiting lamp on phones
+  - Email/SMS notifications
+  - Unified messaging
+  - Multi-device synchronization
+
 #### Phase 2.2 - Music on Hold (MOH) System (COMPLETED)
 - **MOH Playlist Management**
   - MohPlaylist entity with UUID identification
