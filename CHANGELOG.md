@@ -932,6 +932,138 @@ All notable changes to YakYak will be documented in this file.
   - Scheduled announcements (1 test)
   - Total: 7 comprehensive tests
 
+#### Phase 3.8 - Call Recording Service (COMPLETED)
+- **Call Recording Manager**
+  - CallRecordingManager for managing multiple recordings
+  - Thread-safe recording management with Arc<Mutex>
+  - Active and completed recording tracking
+  - Base directory configuration for storage
+  - Auto-record mode for all calls
+  - Default format and quality settings
+  - Storage usage tracking
+
+- **Recording Formats**
+  - RecordingFormat enum (Wav, Mp3, Opus)
+  - WAV format with PCM encoding (default)
+  - MP3 compressed format support
+  - Opus compressed format support
+  - File extension mapping
+
+- **Recording Quality**
+  - RecordingQuality enum (Telephony, Standard, High)
+  - Telephony: 8kHz mono for basic compliance
+  - Standard: 16kHz mono for quality monitoring
+  - High: 48kHz stereo for premium recordings
+  - Automatic sample rate and channel configuration
+
+- **Recording Direction**
+  - RecordingDirection enum (Inbound, Outbound, Both, Local)
+  - Filter recordings by call direction
+  - Support for selective recording policies
+  - Compliance with regional regulations
+
+- **Recording Metadata**
+  - RecordingMetadata with comprehensive tracking
+  - UUID identification for each recording
+  - Call ID association
+  - Timestamp tracking (started_at, ended_at)
+  - Duration calculation in milliseconds
+  - File size tracking in bytes
+  - Caller and callee information
+  - Direction tagging
+  - Custom tags support
+  - Active/completed status
+
+- **Recording Session**
+  - RecordingSession for active recordings
+  - Real-time audio buffer management
+  - Periodic buffer flushing (1-second intervals)
+  - Pause and resume functionality
+  - Sample counting for duration calculation
+  - File handle management
+  - Automatic directory creation
+
+- **WAV File Writing**
+  - Complete RIFF/WAVE header generation
+  - PCM audio data encoding
+  - Little-endian byte ordering
+  - Proper chunk structure (RIFF, fmt, data)
+  - Sample rate and channel configuration
+  - Bits per sample (16-bit)
+  - Byte rate and block alignment calculation
+
+- **Recording Controls**
+  - start_recording() - Begin recording a call
+  - stop_recording() - End and finalize recording
+  - pause_recording() - Temporarily suspend recording
+  - resume_recording() - Continue paused recording
+  - add_samples() - Add audio data to recording
+  - Duplicate recording prevention
+
+- **Storage Management**
+  - Automatic file organization by base directory
+  - Timestamp-based filename generation
+  - get_total_storage_bytes() - Track disk usage
+  - cleanup_old_recordings() - Remove old files
+  - Configurable retention period in days
+  - delete_recording() - Manual file deletion
+
+- **Query Operations**
+  - get_active_recording() - Get single active recording
+  - get_active_recordings() - List all active recordings
+  - get_completed_recordings() - List finished recordings
+  - get_recording_by_id() - Find recording by UUID
+  - Metadata cloning for safe access
+
+- **Error Handling**
+  - Directory creation errors
+  - File I/O errors
+  - Duplicate recording detection
+  - Recording not found errors
+  - Write/flush errors
+  - Delete errors with detailed messages
+
+- **Integration Points**
+  - Call session integration
+  - RTP media stream hookup
+  - Conference room recording
+  - CDR (Call Detail Records) linkage
+  - Compliance and audit systems
+  - Storage backends (local filesystem)
+
+- **Use Cases**
+  - Compliance recording (financial, healthcare)
+  - Quality monitoring and training
+  - Dispute resolution
+  - Performance analysis
+  - Customer service improvement
+  - Legal evidence preservation
+
+- **Unit Tests**
+  - Recording format extension (1 test)
+  - Recording quality configuration (1 test)
+  - Recording metadata lifecycle (1 test)
+  - Call recording manager operations (1 test)
+  - Pause/resume functionality (1 test)
+  - Auto-record mode (1 test)
+  - Default settings (1 test)
+  - Recording deletion (1 test)
+  - Total: 8 comprehensive tests
+
+- **Security and Privacy**
+  - File access control (filesystem permissions)
+  - Metadata tracking for audit trails
+  - Retention policy enforcement
+  - Automatic cleanup of old recordings
+  - Tag-based classification
+
+- **Performance Optimizations**
+  - Buffered writes (1-second intervals)
+  - Lazy file flushing
+  - Efficient sample counting
+  - Minimal memory footprint
+  - Thread-safe concurrent recordings
+
 #### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
 - **TLS Configuration**
   - TlsMode enum (Disabled, Optional, Required)

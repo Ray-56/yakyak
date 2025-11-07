@@ -14,6 +14,7 @@ pub mod call;
 pub mod call_announcer;
 pub mod call_queue;
 pub mod call_queue_engine;
+pub mod call_recording;
 pub mod cdr;
 pub mod conference;
 pub mod media;
