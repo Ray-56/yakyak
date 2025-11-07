@@ -399,6 +399,43 @@ pub struct QueueStatistics {
     pub active_calls: usize,
 }
 
+/// Repository trait for call queue persistence
+#[async_trait::async_trait]
+pub trait CallQueueRepository: Send + Sync {
+    /// Create a new call queue
+    async fn create_queue(&self, queue: CallQueue) -> Result<CallQueue, String>;
+
+    /// Get a queue by ID
+    async fn get_queue(&self, queue_id: Uuid) -> Result<Option<CallQueue>, String>;
+
+    /// Get a queue by extension
+    async fn get_queue_by_extension(&self, extension: &str) -> Result<Option<CallQueue>, String>;
+
+    /// Update a queue
+    async fn update_queue(&self, queue: &CallQueue) -> Result<(), String>;
+
+    /// Delete a queue
+    async fn delete_queue(&self, queue_id: Uuid) -> Result<(), String>;
+
+    /// List all queues
+    async fn list_queues(&self) -> Result<Vec<CallQueue>, String>;
+
+    /// Add a member to a queue
+    async fn add_member(&self, queue_id: Uuid, member: QueueMember) -> Result<(), String>;
+
+    /// Remove a member from a queue
+    async fn remove_member(&self, queue_id: Uuid, member_id: Uuid) -> Result<(), String>;
+
+    /// Update a member
+    async fn update_member(&self, member: &QueueMember) -> Result<(), String>;
+
+    /// Get members of a queue
+    async fn get_members(&self, queue_id: Uuid) -> Result<Vec<QueueMember>, String>;
+
+    /// Get a specific member
+    async fn get_member(&self, member_id: Uuid) -> Result<Option<QueueMember>, String>;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

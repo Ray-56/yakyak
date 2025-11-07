@@ -324,6 +324,34 @@ impl TrunkStatistics {
     }
 }
 
+/// Repository trait for SIP trunk persistence
+#[async_trait::async_trait]
+pub trait SipTrunkRepository: Send + Sync {
+    /// Create a new SIP trunk
+    async fn create_trunk(&self, trunk: SipTrunk) -> Result<SipTrunk, String>;
+
+    /// Get a trunk by ID
+    async fn get_trunk(&self, trunk_id: Uuid) -> Result<Option<SipTrunk>, String>;
+
+    /// Get a trunk by name
+    async fn get_trunk_by_name(&self, name: &str) -> Result<Option<SipTrunk>, String>;
+
+    /// Update a trunk
+    async fn update_trunk(&self, trunk: &SipTrunk) -> Result<(), String>;
+
+    /// Delete a trunk
+    async fn delete_trunk(&self, trunk_id: Uuid) -> Result<(), String>;
+
+    /// List all trunks
+    async fn list_trunks(&self, enabled_only: bool) -> Result<Vec<SipTrunk>, String>;
+
+    /// Get or create statistics for a trunk
+    async fn get_statistics(&self, trunk_id: Uuid) -> Result<Option<TrunkStatistics>, String>;
+
+    /// Update statistics for a trunk
+    async fn update_statistics(&self, stats: &TrunkStatistics) -> Result<(), String>;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

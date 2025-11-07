@@ -325,6 +325,34 @@ pub struct UsagePercentages {
     pub storage: f64,
 }
 
+/// Repository trait for tenant persistence
+#[async_trait::async_trait]
+pub trait TenantRepository: Send + Sync {
+    /// Create a new tenant
+    async fn create_tenant(&self, tenant: Tenant) -> Result<Tenant, String>;
+
+    /// Get a tenant by ID
+    async fn get_tenant(&self, tenant_id: Uuid) -> Result<Option<Tenant>, String>;
+
+    /// Get a tenant by slug
+    async fn get_tenant_by_slug(&self, slug: &str) -> Result<Option<Tenant>, String>;
+
+    /// Update a tenant
+    async fn update_tenant(&self, tenant: &Tenant) -> Result<(), String>;
+
+    /// Delete a tenant
+    async fn delete_tenant(&self, tenant_id: Uuid) -> Result<(), String>;
+
+    /// List all tenants
+    async fn list_tenants(&self, status: Option<TenantStatus>) -> Result<Vec<Tenant>, String>;
+
+    /// Get or create usage record for a tenant
+    async fn get_usage(&self, tenant_id: Uuid) -> Result<Option<TenantUsage>, String>;
+
+    /// Update usage for a tenant
+    async fn update_usage(&self, usage: &TenantUsage) -> Result<(), String>;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -664,6 +664,93 @@ All notable changes to YakYak will be documented in this file.
   - Quota compliance checking
   - Usage percentage calculations (users, calls, minutes, storage)
 
+#### Phase 4 - Call Queue PostgreSQL and API (COMPLETED)
+- **Call Queue PostgreSQL Repository**
+  - PgCallQueueRepository implementation
+  - Queue CRUD operations (create, get, update, delete, list)
+  - Get queue by extension
+  - Member management (add, remove, update, get members)
+  - Full PostgreSQL persistence
+
+- **Call Queue REST API**
+  - POST /queues - Create call queue
+  - GET /queues - List all queues
+  - GET /queues/:id - Get queue by ID
+  - PUT /queues/:id - Update queue
+  - DELETE /queues/:id - Delete queue
+  - GET /queues/extension/:extension - Get queue by extension
+  - POST /queues/:id/members - Add member to queue
+  - GET /queues/:id/members - List queue members
+  - DELETE /queues/:id/members/:member_id - Remove member
+  - PUT /queues/:id/members/:member_id - Update member status
+  - POST /queues/:id/members/:member_id/pause - Pause member
+  - POST /queues/:id/members/:member_id/unpause - Unpause member
+  - Full JSON request/response DTOs
+
+#### Phase 4 - Multi-tenancy PostgreSQL and API (COMPLETED)
+- **Tenant PostgreSQL Repository**
+  - PgTenantRepository implementation
+  - Tenant CRUD operations
+  - Get tenant by slug
+  - List tenants with status filter
+  - Tenant usage tracking (get, update)
+  - Full PostgreSQL persistence
+
+- **Tenant REST API**
+  - POST /tenants - Create tenant
+  - GET /tenants - List all tenants (with status filter)
+  - GET /tenants/:id - Get tenant by ID
+  - PUT /tenants/:id - Update tenant
+  - DELETE /tenants/:id - Delete tenant
+  - GET /tenants/slug/:slug - Get tenant by slug
+  - POST /tenants/:id/suspend - Suspend tenant
+  - POST /tenants/:id/reactivate - Reactivate tenant
+  - POST /tenants/:id/upgrade - Upgrade subscription plan
+  - GET /tenants/:id/usage - Get tenant usage statistics
+  - Full JSON request/response DTOs
+
+#### Phase 4 - SIP Trunk PostgreSQL and API (COMPLETED)
+- **SIP Trunk PostgreSQL Repository**
+  - PgSipTrunkRepository implementation
+  - Trunk CRUD operations
+  - Get trunk by name
+  - List trunks (all or enabled only)
+  - Trunk statistics tracking (get, update)
+  - Full PostgreSQL persistence
+
+- **SIP Trunk REST API**
+  - POST /trunks - Create SIP trunk
+  - GET /trunks - List all trunks
+  - GET /trunks/:id - Get trunk by ID
+  - PUT /trunks/:id - Update trunk
+  - DELETE /trunks/:id - Delete trunk
+  - GET /trunks/name/:name - Get trunk by name
+  - POST /trunks/:id/register - Trigger registration
+  - GET /trunks/:id/statistics - Get trunk statistics
+  - Full JSON request/response DTOs
+
+#### Database Migrations
+- **20251106_04_create_call_queue_tables.sql**
+  - call_queues table (queue configuration with strategy, timeouts, overflow)
+  - queue_members table (agent status, statistics, pause reasons)
+  - 6 performance indexes
+  - Automatic updated_at trigger
+  - Comprehensive table/column comments
+
+- **20251106_05_create_tenant_tables.sql**
+  - tenants table (name, slug, status, plan, quotas, branding, metadata)
+  - tenant_usage table (real-time usage tracking)
+  - 6 performance indexes
+  - Automatic updated_at trigger
+  - Comprehensive table/column comments
+
+- **20251106_06_create_sip_trunk_tables.sql**
+  - sip_trunks table (provider config, registration, codecs, routing)
+  - trunk_statistics table (real-time call statistics)
+  - 5 performance indexes
+  - Automatic updated_at trigger
+  - Comprehensive table/column comments
+
 ### Changed
 
 #### Database Schema
