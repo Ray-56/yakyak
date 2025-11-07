@@ -1327,6 +1327,501 @@ All notable changes to YakYak will be documented in this file.
   - PCI DSS password requirements
   - Audit logging best practices
 
+#### Phase 2.5 - Active Call Management (COMPLETED)
+- **ActiveCallManager**
+  - Real-time call tracking and monitoring
+  - Thread-safe call management with Arc<Mutex>
+  - Call registration and lifecycle management
+  - Active call list with filtering capabilities
+  - Call history tracking (configurable max 1000 calls)
+  - Automatic duration tracking
+
+- **Call State Management**
+  - CallState enum with 7 states
+  - Initiating → Ringing → Active → OnHold → Transferring → Terminating → Terminated
+  - State transition tracking
+  - Active state detection
+  - Answer time recording
+
+- **ActiveCall Information**
+  - UUID and SIP Call-ID tracking
+  - Call direction (Inbound/Outbound/Internal)
+  - Caller and callee information (name, username)
+  - Start time and answer time
+  - Duration calculation (setup time + talk time)
+  - Codec information
+  - IP addresses for both parties
+  - Quality MOS score integration
+  - Recording status
+  - Hold status
+  - Queue and conference association
+  - Custom tags support
+
+- **Call Statistics**
+  - Real-time statistics aggregation
+  - Total active calls count
+  - Calls by direction (inbound/outbound/internal)
+  - Calls by state (ringing/on hold/recording)
+  - Calls in queues and conferences
+  - Average call duration
+  - Longest call duration
+  - Average MOS score across all calls
+
+- **Call Filtering and Queries**
+  - get_all_calls() - All active calls with updated durations
+  - get_calls_by_state() - Filter by call state
+  - get_calls_by_direction() - Filter by direction
+  - get_calls_by_user() - All calls for a specific user
+  - get_calls_in_queue() - Calls in specific queue
+  - get_calls_in_conference() - Calls in specific conference
+  - get_recent_history() - Recent terminated calls
+
+- **Call Control Actions**
+  - CallControlAction enum with 8 action types
+  - Hangup (with reason)
+  - Hold/Resume
+  - Transfer (to target party)
+  - Start/Stop recording
+  - Mute/Unmute (framework ready)
+  - Action result tracking (success/failure)
+
+- **Call Control Operations**
+  - control_call() - Execute control actions
+  - update_state() - Manual state changes
+  - terminate_call() - End call and move to history
+  - update_quality() - Update MOS score
+  - set_recording() - Toggle recording status
+  - set_hold() - Toggle hold status
+
+- **Integration Points**
+  - SIP call handlers for state updates
+  - Call quality monitoring integration
+  - Call recording system integration
+  - Call queue management
+  - Conference room management
+  - Real-time dashboards and monitoring
+
+- **Use Cases**
+  - Call center monitoring dashboards
+  - Supervisor call monitoring
+  - Active call reports
+  - Call barge-in and whisper
+  - Emergency call termination
+  - System health monitoring
+  - Capacity planning
+  - Real-time analytics
+
+- **CallControlResult**
+  - Success/failure indication
+  - Descriptive message
+  - Call ID reference
+  - Action confirmation
+
+- **Performance Features**
+  - Automatic duration updates
+  - Efficient HashMap-based lookups
+  - Circular buffer for call history
+  - Lock-free reads where possible
+  - Minimal memory per call
+
+- **Unit Tests**
+  - Call state active detection (1 test)
+  - Active call creation (1 test)
+  - Active call answer (1 test)
+  - Call manager registration (1 test)
+  - State update operations (1 test)
+  - Call termination and history (1 test)
+  - Statistics calculation (1 test)
+  - Filter by direction (1 test)
+  - Call control actions (1 test)
+  - Total: 9 comprehensive tests
+
+- **Monitoring Dashboard Support**
+  - Real-time call list updates
+  - Call state visualization
+  - Duration tracking
+  - Quality indicators
+  - Control buttons (hold/resume/hangup)
+  - Call statistics widgets
+
+#### Phase 4.5 - Advanced Audio Codecs (COMPLETED)
+- **Opus Codec Support**
+  - OpusConfig with multiple presets (VoIP, Audio, Low Latency)
+  - Variable bitrate (6-510 kbps)
+  - Multiple sampling rates (8, 12, 16, 24, 48 kHz)
+  - Low latency (2.5-60 ms frame duration)
+  - OpusApplication modes (Voip, Audio, RestrictedLowdelay)
+  - Forward Error Correction (FEC) support
+  - Discontinuous Transmission (DTX) support
+  - Complexity settings (0-10)
+  - OpusEncoder and OpusDecoder framework
+  - OpusPacket analyzer with TOC parsing
+  - Bandwidth detection (Narrowband to Fullband)
+  - Frame count and duration calculation
+  - Configuration validation
+  - 8 unit tests
+
+- **G.722 Wideband Codec Support**
+  - G.722Config with bitrate modes
+  - Wideband audio (50-7000 Hz)
+  - 16 kHz sampling rate
+  - Three bitrate modes (48, 56, 64 kbps)
+  - Sub-band ADPCM (SB-ADPCM) encoding framework
+  - G722Encoder and G722Decoder
+  - G722Payload RTP parser
+  - Sample count and duration calculation
+  - Configuration validation
+  - Encoder/decoder state reset
+  - 10 unit tests
+
+- **Enhanced Codec Negotiation**
+  - Updated CodecNegotiator with 4 default codecs
+  - Codec priority: Opus > G.722 > PCMU > PCMA
+  - for_voip() negotiator (quality-first)
+  - for_webrtc() negotiator (Opus-first)
+  - add_codec() for custom codecs
+  - Dynamic codec list management
+  - 4 additional negotiator tests
+
+- **Codec Integration Features**
+  - Opus codec (PT 111) for WebRTC and HD VoIP
+  - G.722 codec (PT 9) for wideband telephony
+  - Backward compatibility with G.711 (PCMU/PCMA)
+  - Multi-channel support (mono/stereo)
+  - Variable sample rates
+  - RTP payload type mapping
+  - SDP codec negotiation integration
+
+- **Opus Features**
+  - VoIP preset: 16kHz, mono, 24kbps, FEC+DTX
+  - Audio preset: 48kHz, stereo, 64kbps
+  - Low latency preset: 10ms frames
+  - Dynamic bitrate adjustment
+  - FEC enable/disable
+  - DTX enable/disable
+  - Frame size calculation
+  - Max packet size calculation
+
+- **G.722 Features**
+  - Standard 64 kbps mode (most common)
+  - Low-bitrate 48/56 kbps modes
+  - 2:1 compression ratio
+  - Low complexity
+  - Encoded size calculation
+  - Sample count from payload
+  - Duration calculation
+
+- **Implementation Notes**
+  - Framework ready for libopus integration
+  - Placeholder encoding/decoding (awaiting library)
+  - Production use requires opus-rs or libopus FFI
+  - G.722 includes simplified ADPCM (production needs optimized library)
+  - QMF filtering framework in place
+  - Sub-band state management
+
+- **Use Cases**
+  - WebRTC audio (Opus mandatory codec)
+  - HD voice calls (G.722 wideband)
+  - Conference calls with multiple codecs
+  - Adaptive bitrate for network conditions
+  - Low-latency gaming/interactive audio
+  - Music streaming with Opus
+  - Legacy interop with G.722 devices
+
+- **Integration Points**
+  - RTP/RTCP media handling
+  - SDP offer/answer negotiation
+  - WebRTC signaling
+  - Media bridge transcoding
+  - Conference audio mixing
+  - Call recording with multiple formats
+
+- **Quality Improvements**
+  - Opus: Superior quality at low bitrates
+  - G.722: 2x bandwidth vs G.711 (7kHz vs 3.4kHz)
+  - Reduced bandwidth usage with Opus DTX
+  - Better error concealment with Opus FEC
+  - Smooth quality degradation under packet loss
+
+- **Performance**
+  - Opus: Configurable complexity (CPU vs quality)
+  - G.722: Low complexity, suitable for embedded
+  - Minimal state memory requirements
+  - Efficient frame processing
+  - Optimized for real-time streaming
+
+- **Standards Compliance**
+  - Opus: RFC 6716
+  - G.722: ITU-T G.722
+  - RTP Payload: RFC 7587 (Opus), RFC 3551 (G.722)
+  - WebRTC: Opus as mandatory codec
+
+- **Unit Tests**
+  - Opus configuration and validation (4 tests)
+  - Opus encoder/decoder creation (2 tests)
+  - Opus packet parsing (1 test)
+  - Opus config setters (1 test)
+  - G.722 configuration and modes (3 tests)
+  - G.722 encoder/decoder (3 tests)
+  - G.722 encode/decode round-trip (1 test)
+  - G.722 payload parsing (1 test)
+  - G.722 state reset (1 test)
+  - Codec negotiator enhancements (4 tests)
+  - Total: 22 comprehensive tests
+
+#### Phase 4.3 - Billing System (COMPLETED)
+- **Billing Account Management**
+  - BillingAccount entity with tenant association
+  - AccountStatus enum (Active, Suspended, Overdue, Closed)
+  - Credit limit enforcement
+  - Account suspension on over-limit
+  - Auto-pay support
+  - Billing contact information
+  - Tax ID tracking
+  - Currency support (USD, EUR, GBP, JPY, CNY, Custom)
+
+- **Rate Plans and Pricing**
+  - RatePlan configuration with UUID
+  - BillingCycle (Monthly, Quarterly, Yearly, PayAsYouGo)
+  - Monthly/recurring fees
+  - Usage-based rates per type
+  - Included units (free tier)
+  - Minimum charges
+  - Rate calculation engine
+  - Multi-currency support
+
+- **Usage Tracking**
+  - UsageType enum (11 types)
+    - InboundMinutes, OutboundMinutes, InternalMinutes
+    - TollFreeMinutes, InternationalMinutes
+    - SmsOutbound, SmsInbound
+    - StorageGB, Recording, Conference
+    - Custom usage types
+  - UsageRecord with quantity and rate
+  - Real-time charge calculation
+  - Reference ID for CDR linkage
+  - Timestamp tracking
+
+- **Invoice Generation**
+  - Invoice entity with line items
+  - InvoiceStatus (Draft, Issued, Paid, Overdue, Cancelled, Refunded)
+  - Automatic invoice numbering (INV-00000001)
+  - Period-based billing (start/end dates)
+  - Line item breakdown
+  - Tax calculation (configurable rate)
+  - Subtotal, tax, and total calculation
+  - Due date management
+  - Overdue detection
+  - Balance due tracking
+
+- **Payment Processing**
+  - Payment entity with multiple methods
+  - PaymentMethod (CreditCard, BankTransfer, PayPal, Other)
+  - Payment application to invoices
+  - Account balance updates
+  - Payment reference tracking
+  - Payment history
+
+- **Billing Manager**
+  - Thread-safe billing operations with Arc<Mutex>
+  - create_account() / get_account()
+  - create_rate_plan() / get_rate_plan()
+  - record_usage() - Record usage and apply charges
+  - generate_invoice() - Create invoices for billing period
+  - issue_invoice() - Issue draft invoices with due dates
+  - record_payment() - Process payments
+  - get_account_invoices() - List invoices per account
+  - mark_overdue_invoices() - Batch overdue processing
+  - get_account_balance() - Query balance
+  - get_usage_summary() - Usage aggregation by type
+
+- **Billing Features**
+  - Usage aggregation by type and period
+  - Automatic charge calculation from rate plans
+  - Credit limit enforcement
+  - Account suspension on over-limit
+  - Overdue invoice detection
+  - Partial payment support
+  - Multi-currency invoicing
+  - Tax calculation and tracking
+
+- **Integration Points**
+  - Multi-tenancy system integration
+  - CDR (Call Detail Records) integration
+  - Usage metering from call sessions
+  - Conference and recording billing
+  - Real-time balance tracking
+  - Payment gateway integration ready
+
+- **Use Cases**
+  - Subscription billing (monthly/yearly plans)
+  - Usage-based billing (pay-as-you-go)
+  - Hybrid billing (base fee + usage)
+  - Credit limit enforcement
+  - Automated invoicing
+  - Payment processing
+  - Account receivables management
+  - Multi-tenant billing isolation
+
+- **Rate Calculation**
+  - Base rate per unit
+  - Included units (free allowance)
+  - Minimum charge thresholds
+  - Overage calculation
+  - Tiered pricing ready (via multiple rates)
+
+- **Invoice Line Items**
+  - Description, quantity, unit price
+  - Automatic amount calculation
+  - Monthly fee line items
+  - Usage-based line items
+  - Aggregated usage by type
+
+- **Unit Tests**
+  - Rate calculation (1 test)
+  - Rate plan configuration (1 test)
+  - Invoice lifecycle (1 test)
+  - Billing account operations (1 test)
+  - Billing manager usage recording (1 test)
+  - Invoice generation (1 test)
+  - Payment processing (1 test)
+  - Usage summary (1 test)
+  - Total: 8 comprehensive tests
+
+- **Performance Features**
+  - HashMap-based account lookup (O(1))
+  - Efficient usage aggregation
+  - Minimal lock contention
+  - Lazy invoice calculation
+  - Batch overdue processing
+
+- **Financial Compliance**
+  - Audit trail with timestamps
+  - Invoice numbering sequence
+  - Tax ID tracking
+  - Payment reference tracking
+  - Multi-currency support
+  - Balance reconciliation
+
+#### Phase 3.4 - User Presence and Status Management (COMPLETED)
+- **Presence States**
+  - PresenceState enum with 7 states
+  - Online: User is available
+  - Offline: User is unavailable
+  - Away: User is away from device
+  - Busy: User is busy/in a call
+  - DoNotDisturb: Do Not Disturb mode
+  - OnThePhone: User is on the phone
+  - InMeeting: User is in a meeting
+  - Availability checking (is_available)
+
+- **User Presence Tracking**
+  - UserPresence entity with comprehensive state
+  - Username identification
+  - Status message (custom text)
+  - Activity tracking (Working, Meeting, Lunch, Vacation, etc.)
+  - Last seen timestamp
+  - Last state change timestamp
+  - Device information
+  - Priority level
+  - Staleness detection for inactive users
+
+- **Presence Subscriptions**
+  - PresenceSubscription entity with UUID
+  - Subscriber → Target relationship tracking
+  - Expiration management (configurable expiry seconds)
+  - Dialog ID for SIP SUBSCRIBE/NOTIFY correlation
+  - Subscription refresh mechanism
+  - Created and expires timestamps
+  - Bidirectional subscription tracking
+
+- **Presence Manager**
+  - Thread-safe presence tracking with Arc<Mutex>
+  - update_presence() - Update user state and status
+  - set_online() / set_offline() / set_away() / set_busy() - State shortcuts
+  - get_presence() - Get single user presence
+  - get_all_presence() - Get all tracked presences
+  - get_online_users() - Filter online users
+  - subscribe() / unsubscribe() - Subscription management
+  - get_subscriptions() - Get user subscriptions (who am I watching)
+  - get_subscribers() - Get subscribers (who is watching me)
+  - cleanup_expired_subscriptions() - Remove expired subscriptions
+  - mark_inactive_users_away() - Auto-update stale users
+  - Event callback support for real-time notifications
+
+- **Presence Events**
+  - PresenceEvent with event ID and timestamp
+  - State change notifications
+  - Subscriber notification system
+  - Event callback mechanism
+  - Integration with SIP NOTIFY framework
+
+- **Subscription Management**
+  - Subscriber map for efficient lookup
+  - HashSet-based subscriber tracking
+  - Automatic subscriber map maintenance
+  - Expired subscription cleanup
+  - Subscription refresh support
+  - Configurable inactive threshold (default 5 minutes)
+
+- **Statistics and Monitoring**
+  - PresenceStatistics for system overview
+  - Total users count
+  - Count by state (online, offline, away, busy, dnd, on_phone, in_meeting)
+  - Total subscriptions count
+  - Real-time statistics generation
+
+- **Integration Points**
+  - SIP SUBSCRIBE/NOTIFY handler integration
+  - Real-time status updates
+  - Multi-user presence tracking
+  - Subscription expiration management
+  - User activity monitoring
+  - Automatic state transitions
+
+- **Use Cases**
+  - Real-time presence indicators in UI
+  - Buddy list management
+  - Call routing based on availability
+  - Status-based auto-reply
+  - Integration with calendars for meeting status
+  - Do Not Disturb enforcement
+  - Contact center agent status
+  - Team availability dashboards
+
+- **Activity Types**
+  - Activity enum with predefined and custom options
+  - None, Working, Meeting, Lunch, Vacation, Traveling
+  - Custom activity with free-form text
+  - Activity-based presence refinement
+
+- **Staleness Detection**
+  - is_stale() method with configurable threshold
+  - Automatic marking of inactive users as away
+  - Configurable inactive threshold (default 300 seconds)
+  - mark_inactive_users_away() batch operation
+  - Last seen timestamp tracking
+
+- **Unit Tests**
+  - Presence state availability check (1 test)
+  - User presence creation (1 test)
+  - State change tracking (1 test)
+  - Presence manager update (1 test)
+  - Subscription management (1 test)
+  - Unsubscribe operation (1 test)
+  - Get online users (1 test)
+  - Presence statistics (1 test)
+  - Subscription expiry (2 tests)
+  - Total: 9 comprehensive tests
+
+- **Performance Features**
+  - HashMap-based presence lookup (O(1))
+  - HashSet-based subscriber tracking
+  - Efficient state change detection
+  - Minimal lock contention with targeted mutations
+  - Circular subscription cleanup
+  - Batch staleness checking
+
 #### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
 - **TLS Configuration**
   - TlsMode enum (Disabled, Optional, Required)
