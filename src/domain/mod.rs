@@ -20,6 +20,7 @@ pub mod call_recording;
 pub mod cdr;
 pub mod conference;
 pub mod media;
+pub mod presence;
 pub mod registration;
 pub mod routing;
 pub mod security;

@@ -1444,6 +1444,125 @@ All notable changes to YakYak will be documented in this file.
   - Control buttons (hold/resume/hangup)
   - Call statistics widgets
 
+#### Phase 3.4 - User Presence and Status Management (COMPLETED)
+- **Presence States**
+  - PresenceState enum with 7 states
+  - Online: User is available
+  - Offline: User is unavailable
+  - Away: User is away from device
+  - Busy: User is busy/in a call
+  - DoNotDisturb: Do Not Disturb mode
+  - OnThePhone: User is on the phone
+  - InMeeting: User is in a meeting
+  - Availability checking (is_available)
+
+- **User Presence Tracking**
+  - UserPresence entity with comprehensive state
+  - Username identification
+  - Status message (custom text)
+  - Activity tracking (Working, Meeting, Lunch, Vacation, etc.)
+  - Last seen timestamp
+  - Last state change timestamp
+  - Device information
+  - Priority level
+  - Staleness detection for inactive users
+
+- **Presence Subscriptions**
+  - PresenceSubscription entity with UUID
+  - Subscriber → Target relationship tracking
+  - Expiration management (configurable expiry seconds)
+  - Dialog ID for SIP SUBSCRIBE/NOTIFY correlation
+  - Subscription refresh mechanism
+  - Created and expires timestamps
+  - Bidirectional subscription tracking
+
+- **Presence Manager**
+  - Thread-safe presence tracking with Arc<Mutex>
+  - update_presence() - Update user state and status
+  - set_online() / set_offline() / set_away() / set_busy() - State shortcuts
+  - get_presence() - Get single user presence
+  - get_all_presence() - Get all tracked presences
+  - get_online_users() - Filter online users
+  - subscribe() / unsubscribe() - Subscription management
+  - get_subscriptions() - Get user subscriptions (who am I watching)
+  - get_subscribers() - Get subscribers (who is watching me)
+  - cleanup_expired_subscriptions() - Remove expired subscriptions
+  - mark_inactive_users_away() - Auto-update stale users
+  - Event callback support for real-time notifications
+
+- **Presence Events**
+  - PresenceEvent with event ID and timestamp
+  - State change notifications
+  - Subscriber notification system
+  - Event callback mechanism
+  - Integration with SIP NOTIFY framework
+
+- **Subscription Management**
+  - Subscriber map for efficient lookup
+  - HashSet-based subscriber tracking
+  - Automatic subscriber map maintenance
+  - Expired subscription cleanup
+  - Subscription refresh support
+  - Configurable inactive threshold (default 5 minutes)
+
+- **Statistics and Monitoring**
+  - PresenceStatistics for system overview
+  - Total users count
+  - Count by state (online, offline, away, busy, dnd, on_phone, in_meeting)
+  - Total subscriptions count
+  - Real-time statistics generation
+
+- **Integration Points**
+  - SIP SUBSCRIBE/NOTIFY handler integration
+  - Real-time status updates
+  - Multi-user presence tracking
+  - Subscription expiration management
+  - User activity monitoring
+  - Automatic state transitions
+
+- **Use Cases**
+  - Real-time presence indicators in UI
+  - Buddy list management
+  - Call routing based on availability
+  - Status-based auto-reply
+  - Integration with calendars for meeting status
+  - Do Not Disturb enforcement
+  - Contact center agent status
+  - Team availability dashboards
+
+- **Activity Types**
+  - Activity enum with predefined and custom options
+  - None, Working, Meeting, Lunch, Vacation, Traveling
+  - Custom activity with free-form text
+  - Activity-based presence refinement
+
+- **Staleness Detection**
+  - is_stale() method with configurable threshold
+  - Automatic marking of inactive users as away
+  - Configurable inactive threshold (default 300 seconds)
+  - mark_inactive_users_away() batch operation
+  - Last seen timestamp tracking
+
+- **Unit Tests**
+  - Presence state availability check (1 test)
+  - User presence creation (1 test)
+  - State change tracking (1 test)
+  - Presence manager update (1 test)
+  - Subscription management (1 test)
+  - Unsubscribe operation (1 test)
+  - Get online users (1 test)
+  - Presence statistics (1 test)
+  - Subscription expiry (2 tests)
+  - Total: 9 comprehensive tests
+
+- **Performance Features**
+  - HashMap-based presence lookup (O(1))
+  - HashSet-based subscriber tracking
+  - Efficient state change detection
+  - Minimal lock contention with targeted mutations
+  - Circular subscription cleanup
+  - Batch staleness checking
+
 #### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
 - **TLS Configuration**
   - TlsMode enum (Disabled, Optional, Required)
