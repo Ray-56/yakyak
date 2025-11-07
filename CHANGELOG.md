@@ -945,9 +945,11 @@ New permission strings in format `resource:action`:
 - [x] Call queue domain model (completed)
 - [x] Multi-tenancy domain model (completed)
 - [x] SIP trunk domain model (completed)
-- [ ] Call queue API and integration
-- [ ] Multi-tenancy persistence and API
-- [ ] SIP trunk integration
+- [x] Call queue persistence and API (completed)
+- [x] Multi-tenancy persistence and API (completed)
+- [x] SIP trunk persistence and API (completed)
+- [ ] Call queue integration with SIP routing
+- [ ] SIP trunk integration with SIP registration
 - [ ] High availability clustering
 - [ ] Advanced codecs (Opus, H.264)
 
