@@ -1444,6 +1444,152 @@ All notable changes to YakYak will be documented in this file.
   - Control buttons (hold/resume/hangup)
   - Call statistics widgets
 
+#### Phase 2.5 - API Authentication and Authorization (COMPLETED)
+- **JWT Token-Based Authentication**
+  - TokenClaims with user ID, username, role, scopes
+  - Token types (Access, Refresh, ApiKey)
+  - Configurable token expiry (access: 1h, refresh: 30d)
+  - Token generation with user context
+  - Token verification and validation
+  - Automatic expiration checking
+  - Token revocation (blacklist)
+  - Refresh token support
+
+- **API Key Management**
+  - ApiKey entity for service-to-service auth
+  - Unique key generation (yk_prefix)
+  - Scope-based permissions
+  - Key expiry support
+  - Enable/disable functionality
+  - Usage tracking (count, last used)
+  - Key revocation
+
+- **Authorization Framework**
+  - AuthContext with user identity and scopes
+  - Permission checking (has_permission)
+  - Multiple permission checks (any/all)
+  - Role-based access control integration
+  - Scope-based authorization
+  - Method tracking (JWT, ApiKey, BasicAuth)
+
+- **Authentication Methods**
+  - JWT Bearer token authentication
+  - API key authentication (X-API-Key header)
+  - Support for multiple auth methods
+  - AuthResult with Success/Failed
+  - AuthError enum with detailed errors
+
+- **Rate Limiting**
+  - Per-identifier rate limiting
+  - Configurable max requests and time window
+  - Sliding window implementation
+  - Automatic window reset
+  - Rate limit exceeded detection
+
+- **Security Features**
+  - Token blacklist for revoked tokens
+  - Signature verification
+  - Expiration validation
+  - Scope-based access control
+  - Secure token generation
+  - Usage auditing
+
+- **ApiAuthManager**
+  - Thread-safe authentication management
+  - generate_token() - Create JWT tokens
+  - verify_token() - Validate and decode tokens
+  - refresh_token() - Obtain new access token
+  - revoke_token() - Blacklist tokens
+  - create_api_key() - Generate API keys
+  - verify_api_key() - Validate API keys
+  - revoke_api_key() - Disable API keys
+  - check_rate_limit() - Rate limiting
+  - authenticate_token() - Full JWT auth
+  - authenticate_api_key() - Full API key auth
+
+- **Token Features**
+  - JWT-like structure (simplified for framework)
+  - Issuer tracking (yakyak-pbx)
+  - Issued at (iat) and expiration (exp) timestamps
+  - Subject (sub) with user ID
+  - Custom scopes array
+  - Token type differentiation
+  - Expires-in calculation
+
+- **API Key Features**
+  - Unique ID and key
+  - Name and description
+  - Scope list
+  - Enabled/disabled flag
+  - Created at timestamp
+  - Optional expiration
+  - Last used tracking
+  - Usage counter
+
+- **Integration Points**
+  - REST API middleware integration
+  - RBAC system integration
+  - User authentication flow
+  - Service-to-service authentication
+  - WebSocket authentication
+  - Rate limiting middleware
+
+- **Use Cases**
+  - Secure REST API access
+  - User login and session management
+  - Service-to-service communication
+  - API rate limiting
+  - Token refresh flows
+  - Permission-based access control
+  - Audit trail with usage tracking
+
+- **Implementation Notes**
+  - Framework ready for jsonwebtoken crate
+  - Simplified encoding (production needs proper JWT library)
+  - Secret key-based signing
+  - Base64 encoding placeholder
+  - Production should use proper cryptographic libraries
+
+- **Error Handling**
+  - InvalidToken - Malformed or invalid token
+  - ExpiredToken - Token past expiration
+  - InvalidApiKey - API key not found or invalid
+  - InvalidCredentials - Login failed
+  - InsufficientPermissions - Access denied
+  - Unauthorized - No authentication provided
+  - RateLimitExceeded - Too many requests
+
+- **Unit Tests**
+  - Token claims creation (1 test)
+  - Token expiry checking (1 test)
+  - Token scopes (1 test)
+  - API key creation (1 test)
+  - API key expiry (1 test)
+  - API key usage tracking (1 test)
+  - Token generation (1 test)
+  - Token verification (1 test)
+  - Token revocation (1 test)
+  - API key verification (1 test)
+  - API key revocation (1 test)
+  - Permission checking (1 test)
+  - Rate limiting (1 test)
+  - Total: 13 comprehensive tests
+
+- **Performance**
+  - HashMap-based lookups (O(1))
+  - Efficient token blacklist
+  - Minimal memory per token
+  - Fast rate limit checking
+  - Thread-safe with Mutex
+
+- **Security Best Practices**
+  - Token expiration enforcement
+  - Revocation support
+  - Rate limiting built-in
+  - Scope-based permissions
+  - Usage auditing
+  - Secure key generation
+
 #### Phase 4.5 - Advanced Audio Codecs (COMPLETED)
 - **Opus Codec Support**
   - OpusConfig with multiple presets (VoIP, Audio, Low Latency)
