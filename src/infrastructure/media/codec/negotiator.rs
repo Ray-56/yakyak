@@ -37,12 +37,55 @@ pub struct CodecNegotiator {
 impl CodecNegotiator {
     /// Create negotiator with default supported codecs
     pub fn new() -> Self {
-        let supported_codecs = vec![
+        let mut supported_codecs = vec![
+            // Opus (modern, high-quality codec for WebRTC)
+            CodecInfo {
+                payload_type: 111,
+                name: "opus".to_string(),
+                clock_rate: 48000,
+                channels: 2,
+            },
+            // G.722 (wideband codec)
+            CodecInfo::new(9, "G722".to_string(), 8000), // Note: Clock rate is 8000 in RTP, but actual is 16000
+            // G.711 codecs (legacy but widely supported)
             CodecInfo::new(0, "PCMU".to_string(), 8000),
             CodecInfo::new(8, "PCMA".to_string(), 8000),
         ];
 
         Self { supported_codecs }
+    }
+
+    /// Create negotiator for VoIP (prioritizes quality and efficiency)
+    pub fn for_voip() -> Self {
+        let supported_codecs = vec![
+            CodecInfo::new(111, "opus".to_string(), 48000),
+            CodecInfo::new(9, "G722".to_string(), 8000),
+            CodecInfo::new(0, "PCMU".to_string(), 8000),
+            CodecInfo::new(8, "PCMA".to_string(), 8000),
+        ];
+
+        Self { supported_codecs }
+    }
+
+    /// Create negotiator for WebRTC (Opus-first)
+    pub fn for_webrtc() -> Self {
+        let mut supported_codecs = vec![
+            CodecInfo {
+                payload_type: 111,
+                name: "opus".to_string(),
+                clock_rate: 48000,
+                channels: 2,
+            },
+            CodecInfo::new(0, "PCMU".to_string(), 8000),
+            CodecInfo::new(8, "PCMA".to_string(), 8000),
+        ];
+
+        Self { supported_codecs }
+    }
+
+    /// Add custom codec to supported list
+    pub fn add_codec(&mut self, codec: CodecInfo) {
+        self.supported_codecs.push(codec);
     }
 
     /// Negotiate codecs based on offer
@@ -112,11 +155,44 @@ mod tests {
     #[test]
     fn test_negotiator_creation() {
         let negotiator = CodecNegotiator::new();
-        assert_eq!(negotiator.supported_codecs.len(), 2);
+        assert_eq!(negotiator.supported_codecs.len(), 4);
 
         let pts = negotiator.supported_payload_types();
-        assert!(pts.contains(&0));
-        assert!(pts.contains(&8));
+        assert!(pts.contains(&111)); // Opus
+        assert!(pts.contains(&9));   // G.722
+        assert!(pts.contains(&0));   // PCMU
+        assert!(pts.contains(&8));   // PCMA
+    }
+
+    #[test]
+    fn test_negotiator_for_voip() {
+        let negotiator = CodecNegotiator::for_voip();
+        assert_eq!(negotiator.supported_codecs.len(), 4);
+
+        // Verify Opus is first (highest priority)
+        let pts = negotiator.supported_payload_types();
+        assert_eq!(pts[0], 111);
+    }
+
+    #[test]
+    fn test_negotiator_for_webrtc() {
+        let negotiator = CodecNegotiator::for_webrtc();
+        let opus = negotiator.find_codec(111).unwrap();
+        assert_eq!(opus.name, "opus");
+        assert_eq!(opus.clock_rate, 48000);
+        assert_eq!(opus.channels, 2);
+    }
+
+    #[test]
+    fn test_add_custom_codec() {
+        let mut negotiator = CodecNegotiator::new();
+        let initial_count = negotiator.supported_codecs.len();
+
+        negotiator.add_codec(CodecInfo::new(96, "custom".to_string(), 16000));
+        assert_eq!(negotiator.supported_codecs.len(), initial_count + 1);
+
+        let custom = negotiator.find_codec(96).unwrap();
+        assert_eq!(custom.name, "custom");
     }
 
     #[test]
