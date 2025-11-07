@@ -825,6 +825,113 @@ All notable changes to YakYak will be documented in this file.
   - Round-robin strategy (1 test)
   - Total: 8 comprehensive tests
 
+#### Phase 4.1 - Call Announcer Service (COMPLETED)
+- **CallAnnouncer Service**
+  - Audio announcement playback into active calls
+  - Integration with AudioFileManager
+  - Multi-language support via Language enum
+  - Thread-safe active announcement tracking
+  - Scheduled announcement queue with time-based execution
+  - Frame-by-frame audio delivery (20ms frames)
+
+- **Announcement Types**
+  - QueuePosition: "You are caller number X"
+  - WaitTime: "Estimated wait time X minutes"
+  - Periodic: Recurring announcements at intervals
+  - Welcome: Queue entry greeting
+  - Goodbye: Queue exit message
+  - Custom: User-defined announcements
+
+- **Announcement Request**
+  - AnnouncementRequest with builder pattern
+  - Unique UUID per announcement
+  - Call ID targeting
+  - Audio file list for sequential playback
+  - Language selection
+  - Scheduled playback (play_at timestamp)
+  - Repeat interval for periodic announcements
+
+- **Position Announcements**
+  - announce_position() helper method
+  - Number-to-speech conversion (1-999)
+  - Multi-language prompts:
+    - "queue-position" (introductory prompt)
+    - Number words: "one", "two", ... "nine-hundred"
+    - Tens: "ten", "twenty", "thirty", etc.
+    - Teens: "eleven", "twelve", "thirteen", etc.
+  - Audio sequence building
+
+- **Wait Time Announcements**
+  - announce_wait_time() helper method
+  - Minute-based estimates
+  - Multi-language prompts:
+    - "estimated-wait" (introductory prompt)
+    - Number words for minutes
+    - "minute" / "minutes" (singular/plural)
+  - Automatic sequence generation
+
+- **Welcome Announcements**
+  - announce_welcome() helper
+  - Customizable audio file ID
+  - Immediate playback
+  - Queue greeting use case
+
+- **Active Announcement Tracking**
+  - Per-call announcement lists
+  - ActiveAnnouncement struct with player
+  - Automatic cleanup on completion
+  - Multiple simultaneous announcements per call
+  - UUID-based announcement identification
+
+- **Frame Delivery**
+  - get_next_frame() for RTP streaming
+  - Returns (samples: Vec<i16>, sample_rate: usize)
+  - Automatic advancement to next file
+  - Cleanup on sequence completion
+  - Integration with existing audio players
+
+- **Scheduled Announcements**
+  - Scheduled announcement queue
+  - process_scheduled() for time checking
+  - Automatic promotion to active on time match
+  - Repeat interval support for periodic announcements
+  - Manual stop via stop_announcement()
+
+- **Number-to-Speech Conversion**
+  - number_to_audio_id() helper function
+  - Handles 1-999 range
+  - Digit-by-digit decomposition:
+    - Hundreds place: "one-hundred", "two-hundred", etc.
+    - Tens place: "twenty", "thirty", etc.
+    - Teens: "eleven" through "nineteen"
+    - Ones place: "one" through "nine"
+  - Returns Vec<String> of audio file IDs
+  - Used for position and wait time announcements
+
+- **Integration Points**
+  - AudioFileManager for file lookup
+  - AudioPlayer for playback control
+  - CallQueue for position/wait time data
+  - RTP media stream for audio injection
+  - Multi-language audio file structure
+
+- **Error Handling**
+  - Audio file not found errors
+  - Invalid call ID detection
+  - Player creation failures
+  - Scheduled announcement validation
+  - Graceful degradation on missing files
+
+- **Unit Tests**
+  - Announcement creation (1 test)
+  - Position announcement (1 test)
+  - Wait time announcement (1 test)
+  - Welcome announcement (1 test)
+  - Frame retrieval (1 test)
+  - Number-to-speech conversion (1 test)
+  - Scheduled announcements (1 test)
+  - Total: 7 comprehensive tests
+
 #### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
 - **TLS Configuration**
   - TlsMode enum (Disabled, Optional, Required)
