@@ -493,6 +493,48 @@ All notable changes to YakYak will be documented in this file.
   - ICE candidate line formatting
   - DTLS fingerprint formatting
 
+#### Phase 3.3 - WebRTC Signaling Server (COMPLETED)
+- **WebSocket-based Signaling**
+  - WebSocket upgrade handler at `/webrtc/signaling/:peer_id`
+  - Bidirectional real-time communication
+  - Split send/receive tasks for concurrent operation
+  - Automatic peer cleanup on disconnect
+  - Ping/pong support for connection health
+  - Unit tests (4 tests)
+
+- **Signaling Protocol**
+  - SignalingMessage enum with 12 message types
+  - Register/Unregister: Peer registration and discovery
+  - Offer/Answer: SDP offer/answer exchange for WebRTC negotiation
+  - IceCandidate: ICE candidate exchange with sdp_mid and sdp_m_line_index
+  - Call/Accept/Reject/Hangup: Call control signaling
+  - PeerStatus: Online/offline presence notifications
+  - Error/Success: Status messages with codes and descriptions
+  - JSON serialization with tagged union format
+
+- **Peer Management**
+  - SignalingState with thread-safe peer tracking
+  - WebRtcPeer entity (peer_id, username, connected_at)
+  - Peer registration with duplicate detection
+  - Automatic online/offline status broadcasting
+  - Peer lookup by ID
+  - List all online peers
+
+- **Message Routing**
+  - Broadcast channel for pub/sub messaging (1000 message capacity)
+  - Send to specific peer by ID
+  - Broadcast to all peers
+  - Sender verification for security
+  - Recipient validation before forwarding
+  - Peer ID mismatch detection
+
+- **Security Features**
+  - Sender ID verification on all forwarded messages
+  - Peer ID must match WebSocket connection
+  - Recipient existence validation
+  - Error responses for invalid messages
+  - Parse error handling with detailed error messages
+
 #### Phase 4 - Call Queue and ACD System (COMPLETED)
 - **Queue Strategies**
   - RingAll: All available agents ring simultaneously
