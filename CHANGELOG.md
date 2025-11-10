@@ -1444,6 +1444,45 @@ All notable changes to YakYak will be documented in this file.
   - Control buttons (hold/resume/hangup)
   - Call statistics widgets
 
+#### Phase 2.3 - IP Blacklist and Rate Limiting (COMPLETED)
+- **IP Blacklist Management**
+  - BlacklistEntry with UUID and IP address
+  - Multiple block reasons (Manual, AuthFailures, RateLimit, BruteForce, etc.)
+  - Permanent and temporary blocks
+  - Expiry tracking and auto-cleanup
+  - 13 comprehensive unit tests
+
+- **IP Whitelist Support**
+  - WhitelistEntry for trusted IPs
+  - Whitelist overrides blacklist
+  - Whitelist bypasses rate limiting
+
+- **Rate Limiting**
+  - Per-IP request tracking with sliding window
+  - Configurable thresholds (100 req/min default)
+  - Auto-block on rate limit exceeded
+  - VecDeque-based efficient tracking
+
+- **Authentication Failure Tracking**
+  - Per-IP failure counter
+  - Auto-block on brute force (5 failures default)
+  - Success resets failure counter
+  - 24-hour default block duration
+
+- **IpBlacklistManager**
+  - Thread-safe IP management
+  - is_blocked() / block_ip() / unblock_ip()
+  - whitelist_ip() / check_rate_limit()
+  - record_auth_failure() / record_auth_success()
+  - cleanup_expired() / get_statistics()
+
+- **Use Cases**
+  - Prevent brute force attacks
+  - Block abusive IPs
+  - Rate limit excessive requests
+  - Whitelist trusted partners
+  - Automatic threat response
+
 #### Phase 3.6 - Message Waiting Indicator (MWI) (COMPLETED)
 - **MWI Subscription Management**
   - MwiSubscription entity with UUID
