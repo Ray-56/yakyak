@@ -37,13 +37,14 @@ pub mod dialog;
 pub mod handler;
 pub mod hold_manager;
 pub mod message;
-pub mod message_handler;
-pub mod notify_handler;
-pub mod refer_handler;
+// Temporarily disabled - under development
+// pub mod message_handler;
+// pub mod notify_handler;
+// pub mod refer_handler;
 pub mod registrar;
 pub mod sdp;
 pub mod server;
-pub mod subscribe_handler;
+// pub mod subscribe_handler;
 pub mod transaction;
 pub mod transport;
 
