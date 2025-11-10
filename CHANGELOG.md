@@ -1444,6 +1444,32 @@ All notable changes to YakYak will be documented in this file.
   - Control buttons (hold/resume/hangup)
   - Call statistics widgets
 
+#### Phase 3.1 - Conference Recording (COMPLETED)
+- **Conference Recording System**
+  - ConferenceRecording entity with UUID
+  - Multiple formats (WAV, MP3, Opus)
+  - Recording modes (Mixed, Separate, Both)
+  - States (Recording, Paused, Stopped, Failed)
+  - 12 comprehensive unit tests
+
+- **Recording Controls**
+  - start/stop/pause/resume recording
+  - Automatic file path generation
+  - Participant tracking with join/leave
+  - Separate track support
+
+- **ConferenceRecordingManager**
+  - Thread-safe management
+  - Active and completed tracking
+  - Statistics and metadata
+  - Delete recording support
+
+- **Use Cases**
+  - Meeting recordings for compliance
+  - Training archives
+  - Legal documentation
+  - Post-meeting review
+
 #### Phase 2.3 - IP Blacklist and Rate Limiting (COMPLETED)
 - **IP Blacklist Management**
   - BlacklistEntry with UUID and IP address
