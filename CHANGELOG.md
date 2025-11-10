@@ -1444,6 +1444,32 @@ All notable changes to YakYak will be documented in this file.
   - Control buttons (hold/resume/hangup)
   - Call statistics widgets
 
+#### Phase 3.1 - Conference Recording (COMPLETED)
+- **Conference Recording System**
+  - ConferenceRecording entity with UUID
+  - Multiple formats (WAV, MP3, Opus)
+  - Recording modes (Mixed, Separate, Both)
+  - States (Recording, Paused, Stopped, Failed)
+  - 12 comprehensive unit tests
+
+- **Recording Controls**
+  - start/stop/pause/resume recording
+  - Automatic file path generation
+  - Participant tracking with join/leave
+  - Separate track support
+
+- **ConferenceRecordingManager**
+  - Thread-safe management
+  - Active and completed tracking
+  - Statistics and metadata
+  - Delete recording support
+
+- **Use Cases**
+  - Meeting recordings for compliance
+  - Training archives
+  - Legal documentation
+  - Post-meeting review
+
 #### Phase 2.3 - IP Blacklist and Rate Limiting (COMPLETED)
 - **IP Blacklist Management**
   - BlacklistEntry with UUID and IP address
@@ -2162,6 +2188,305 @@ All notable changes to YakYak will be documented in this file.
   - Minimal lock contention with targeted mutations
   - Circular subscription cleanup
   - Batch staleness checking
+
+#### Phase 3.5 - Instant Messaging System (COMPLETED)
+- **Message Content Types**
+  - MessageContentType enum (TextPlain, TextHtml, ApplicationJson, ApplicationOctetStream, Custom)
+  - Content-Type aware message handling
+  - Binary content support for files
+  - Extensible content type system
+  - MIME type mapping
+
+- **Instant Message Entity**
+  - InstantMessage with UUID identification
+  - From/To SIP URI tracking
+  - Message content (binary Vec<u8>)
+  - MessageStatus enum (Pending, Delivered, Failed, Read)
+  - Timestamp tracking (sent, delivered, read)
+  - Group message support (optional group_id)
+  - Flexible content type support
+
+- **Message Routing**
+  - Online/offline user detection
+  - Automatic routing based on presence
+  - Online: Direct delivery with callback
+  - Offline: Queue message for later delivery
+  - Delivery confirmation tracking
+  - Status transition management
+
+- **Offline Message Queue**
+  - OfflineQueue per user
+  - Bounded queue (max 1000 messages default)
+  - FIFO message delivery
+  - Automatic delivery on user_online()
+  - Queue overflow handling (drop oldest)
+  - Message count tracking
+
+- **Group Messaging**
+  - MessageGroup entity with UUID
+  - Group name and description
+  - Member management (add/remove)
+  - Broadcast to all members
+  - Group message history
+  - Creator tracking
+  - Created timestamp
+
+- **Message History**
+  - In-memory message storage
+  - get_conversation_history() - 1-on-1 conversations
+  - get_group_history() - Group conversations
+  - Time-based filtering
+  - Message limit support
+  - Chronological ordering
+
+- **InstantMessagingManager**
+  - Thread-safe messaging with Arc<Mutex>
+  - send_message() - Send to individual or group
+  - user_online() / user_offline() - Presence tracking
+  - Offline message delivery on user_online()
+  - create_group() / get_group() / delete_group()
+  - add_group_member() / remove_group_member()
+  - get_conversation_history() - Get 1-on-1 history
+  - get_group_history() - Get group history
+  - get_statistics() - System statistics
+  - Delivery callback for SIP MESSAGE
+
+- **Delivery Callbacks**
+  - MessageDeliveryCallback trait
+  - Real-time message delivery notification
+  - Integration with SIP MESSAGE handler
+  - Asynchronous callback execution
+  - Error handling support
+
+- **Statistics and Monitoring**
+  - MessagingStatistics for system overview
+  - Total message count
+  - Messages by status (pending, delivered, failed, read)
+  - Active offline queue count
+  - Total queued messages
+  - Group count and average members
+  - Real-time statistics generation
+
+- **Integration Points**
+  - SIP MESSAGE handler integration
+  - Presence system integration for online/offline detection
+  - User registrar integration
+  - Real-time message delivery
+  - Push notification ready
+  - WebSocket message streaming ready
+
+- **Use Cases**
+  - 1-on-1 instant messaging
+  - Group chat rooms
+  - Offline message delivery
+  - Message history and archiving
+  - Team collaboration
+  - Customer support chat
+  - Internal communication
+  - File sharing via binary messages
+
+- **Message Features**
+  - Status tracking (pending → delivered → read)
+  - Timestamp tracking for delivery and read
+  - Binary content support
+  - Multiple content types
+  - Group broadcasting
+  - Offline queuing with bounded buffer
+  - Delivery confirmation
+
+- **Unit Tests**
+  - Message content types (1 test)
+  - Message creation and status (1 test)
+  - Group creation (1 test)
+  - Send message to online user (1 test)
+  - Send message to offline user (1 test)
+  - Offline queue delivery (1 test)
+  - User online/offline transitions (1 test)
+  - Group messaging (1 test)
+  - Conversation history (1 test)
+  - Message limit in history (1 test)
+  - Statistics generation (1 test)
+  - Total: 11 comprehensive tests
+
+- **Performance Features**
+  - HashMap-based message lookup (O(1))
+  - Efficient history filtering
+  - VecDeque for offline queues
+  - Minimal lock contention
+  - O(n) group broadcast where n = members
+  - Lazy statistics calculation
+
+- **Message Security**
+  - Message isolation per user
+  - Group membership validation
+  - Content type validation
+  - Queue size limits to prevent DoS
+  - Offline message expiration ready
+
+#### Phase 2.2 - Call Forwarding System (COMPLETED)
+- **Forwarding Types**
+  - ForwardingType enum (7 types)
+  - Unconditional: Forward all calls
+  - Busy: Forward when line is busy
+  - NoAnswer: Forward after timeout
+  - Unavailable: Forward when offline/not registered
+  - TimeBased: Forward based on time of day
+  - CallerBased: Forward based on caller ID
+  - Voicemail: Forward to voicemail
+  - Type descriptions for user interfaces
+
+- **Forwarding Destinations**
+  - ForwardingDestination with SIP URI/extension
+  - Display name support
+  - External/internal destination detection
+  - Automatic external flag based on URI format
+
+- **Time-Based Forwarding**
+  - TimeRange with start/end times
+  - Weekday filtering (Monday-Sunday)
+  - Midnight-crossing time ranges
+  - Business hours preset (Mon-Fri, 9am-5pm)
+  - After hours preset
+  - Day of week validation
+
+- **Caller-Based Forwarding**
+  - CallerFilter with allowed caller list
+  - Exact match mode
+  - Prefix match mode
+  - Multiple caller support
+  - Number pattern matching
+
+- **Forwarding Rules**
+  - ForwardingRule entity with UUID
+  - Per-user rule configuration
+  - Rule priority system (lower = higher priority)
+  - Enable/disable individual rules
+  - Timeout configuration for NoAnswer type
+  - Time range for TimeBased type
+  - Caller filter for CallerBased type
+  - Maximum forwarding hops (loop prevention)
+  - Rule description and metadata
+  - Created/updated timestamps
+
+- **Rule Conditions**
+  - should_apply() - Context-aware rule evaluation
+  - Time range checking
+  - Caller ID matching
+  - Enabled status validation
+  - Multiple condition support
+
+- **CallForwardingManager**
+  - Thread-safe rule management with Arc<Mutex>
+  - add_rule() - Add new forwarding rule
+  - update_rule() - Modify existing rule
+  - remove_rule() - Delete specific rule
+  - get_user_rules() - Get all rules for user
+  - get_rule() - Get specific rule by ID
+  - enable_rule() / disable_rule() - Toggle rules
+  - get_forward_destination() - Get destination by type
+  - get_any_forward_destination() - Get highest priority destination
+  - would_create_loop() - Loop detection
+  - record_forwarded_call() - Call tracking
+  - get_status() - Get user forwarding status
+  - get_statistics() - System statistics
+  - remove_all_user_rules() - Bulk deletion
+  - list_users_with_forwarding() - User list
+
+- **Forwarding Status**
+  - ForwardingStatus per user
+  - Active forwarding flag
+  - Unconditional destination tracking
+  - Busy destination tracking
+  - NoAnswer destination tracking
+  - Active rule count
+
+- **Loop Prevention**
+  - Forwarding chain detection
+  - Visited set tracking
+  - Recursive loop checking
+  - Maximum hops configuration
+  - Loop prevention before rule application
+
+- **Statistics and Monitoring**
+  - ForwardingStatistics for system overview
+  - Total rules count
+  - Active vs disabled rules
+  - Total forwarded calls counter
+  - Calls by forwarding type
+  - Users with active forwarding
+  - Real-time statistics generation
+
+- **Rule Validation**
+  - Duplicate unconditional forwarding prevention
+  - Priority-based rule sorting
+  - Automatic rule prioritization
+  - Rule conflict detection
+
+- **Integration Points**
+  - User registration status integration
+  - Call state integration (busy detection)
+  - Presence system integration
+  - Voicemail system integration
+  - Time-of-day routing
+  - Caller ID screening
+
+- **Use Cases**
+  - Unconditional call forwarding (vacation mode)
+  - Busy line forwarding (call overflow)
+  - No-answer forwarding (missed calls)
+  - After-hours forwarding to answering service
+  - VIP caller priority routing
+  - Business hours vs after-hours routing
+  - Mobile twinning (simultaneous ring)
+  - Call center overflow routing
+  - Personal assistant screening
+  - Geographic routing
+
+- **Advanced Features**
+  - Time-based automatic forwarding
+  - Caller whitelist/blacklist forwarding
+  - Multiple destination support via priority
+  - External number forwarding
+  - Internal extension forwarding
+  - Forwarding to voicemail integration
+  - Rule scheduling
+
+- **Unit Tests**
+  - Forwarding type descriptions (1 test)
+  - Forwarding destination creation (1 test)
+  - Time range contains logic (1 test)
+  - Time range weekday filtering (1 test)
+  - Time range midnight crossing (1 test)
+  - Caller filter exact match (1 test)
+  - Caller filter prefix match (1 test)
+  - Forwarding rule creation (1 test)
+  - Rule should_apply logic (1 test)
+  - Add forwarding rule (1 test)
+  - Duplicate unconditional prevention (1 test)
+  - Enable/disable rules (1 test)
+  - Remove rule (1 test)
+  - Get forward destination (1 test)
+  - Rule priority sorting (1 test)
+  - Forwarding status (1 test)
+  - Forwarding statistics (1 test)
+  - Loop detection (1 test)
+  - Remove all user rules (1 test)
+  - Total: 19 comprehensive tests
+
+- **Performance Features**
+  - HashMap-based rule storage (O(1) lookup)
+  - Priority-based sorting
+  - Efficient rule filtering
+  - Minimal lock contention
+  - O(1) user rule access
+  - Lazy statistics calculation
+
+- **Business Logic**
+  - Priority-based rule execution
+  - First matching rule wins
+  - Disabled rules skipped automatically
+  - Context-aware rule application
+  - Real-time condition evaluation
 
 #### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
 - **TLS Configuration**
