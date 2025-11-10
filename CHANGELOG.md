@@ -2687,6 +2687,197 @@ All notable changes to YakYak will be documented in this file.
   - State machine for slots
   - Call mapping maintenance
 
+#### Phase 2.2 - Do Not Disturb (DND) System (COMPLETED)
+- **DND Modes**
+  - DndMode enum (5 modes)
+  - RejectBusy: Reject with 486 Busy Here
+  - SendToVoicemail: Forward to voicemail (302)
+  - ForwardToAlternate: Forward to alternate number (302)
+  - SilentReject: Silent decline (603)
+  - PlayAnnouncementDisconnect: Play announcement then disconnect (480)
+  - Mode descriptions for UI
+  - SIP response code mapping
+
+- **Time-Based Schedules**
+  - DndSchedule entity with UUID
+  - Schedule name and description
+  - Start/end time configuration
+  - Days of week filtering
+  - Midnight-crossing time ranges
+  - Enable/disable individual schedules
+  - Per-schedule DND mode
+  - is_active() - Check if schedule is active
+  - Business hours preset (Mon-Fri 9am-5pm)
+  - Night hours preset (10pm-7am daily)
+
+- **Exception Rules**
+  - DndException entity with UUID
+  - ExceptionType enum (4 types)
+  - Exact: Exact caller ID match
+  - Prefix: Prefix matching (e.g., "555*")
+  - Contains: Substring matching
+  - Wildcard: Pattern matching with * wildcard
+  - matches_caller() - Caller ID matching
+  - Enable/disable individual exceptions
+  - Optional description
+  - VIP caller whitelist support
+
+- **Wildcard Matching**
+  - Simple wildcard pattern matching
+  - Start wildcards: "*911" matches "911", "0911"
+  - End wildcards: "555*" matches "5551234"
+  - Middle wildcards: "*emergency*"
+  - Multiple wildcard support
+  - Efficient pattern matching algorithm
+
+- **DND Status**
+  - DndStatus per user
+  - Enable/disable DND
+  - Current DND mode
+  - Alternate destination (for forwarding)
+  - Custom announcement file path
+  - Active schedules list
+  - Exception rules list
+  - Enabled/disabled timestamps
+  - Manual override flag
+  - should_block_call() - Check if call should be blocked
+  - is_scheduled_active() - Check schedule activation
+  - get_effective_mode() - Get current mode
+
+- **Manual and Scheduled DND**
+  - Manual override mode
+  - Manual DND activation/deactivation
+  - Schedule-based automatic activation
+  - Manual takes precedence over schedules
+  - Timestamp tracking for enable/disable
+
+- **DndManager**
+  - Thread-safe DND management with Arc<Mutex>
+  - enable_dnd() - Enable DND for user
+  - disable_dnd() - Disable DND for user
+  - toggle_dnd() - Toggle DND state
+  - is_enabled() - Check if DND is active
+  - get_status() - Get user DND status
+  - set_alternate_destination() - Set forward destination
+  - set_announcement_file() - Set custom announcement
+  - add_schedule() - Add time-based schedule
+  - remove_schedule() - Remove schedule
+  - add_exception() - Add exception rule
+  - remove_exception() - Remove exception rule
+  - should_block_call() - Check if call should be blocked
+  - get_statistics() - System statistics
+  - list_users_with_dnd() - List users with DND active
+  - clear_all() - Clear all DND settings
+
+- **Call Blocking Logic**
+  - Check manual DND state
+  - Check scheduled DND state
+  - Exception rule evaluation
+  - First matching exception wins
+  - Return block decision and mode
+  - Automatic statistics recording
+
+- **Statistics and Monitoring**
+  - DndStatistics for system overview
+  - Total users count
+  - Users with DND enabled
+  - Total blocked calls counter
+  - Blocked calls by mode
+  - Total exception matches
+  - Calls allowed by exceptions
+  - Real-time statistics generation
+
+- **Integration Points**
+  - SIP call routing integration
+  - Presence system integration
+  - Call forwarding integration
+  - Voicemail system integration
+  - Call state management
+  - User registration status
+
+- **Use Cases**
+  - Meeting/conference DND
+  - Sleep hours DND
+  - Focus time blocking
+  - VIP caller whitelist
+  - Emergency number exceptions
+  - Business hours vs after hours
+  - Vacation mode
+  - Executive assistant filtering
+  - Call center agent status
+  - Personal time protection
+
+- **Advanced Features**
+  - Time-based automatic DND
+  - Multiple schedule support
+  - VIP caller exceptions
+  - Wildcard pattern matching
+  - Per-schedule DND modes
+  - Manual override capability
+  - Alternate number forwarding
+  - Custom announcement playback
+  - Weekday filtering
+
+- **Schedule Features**
+  - Business hours preset
+  - Night hours preset
+  - Custom time ranges
+  - Midnight-crossing support
+  - Weekday-specific schedules
+  - Multiple schedules per user
+  - Per-schedule DND modes
+  - Enable/disable schedules
+
+- **Exception Features**
+  - 4 matching types (exact, prefix, contains, wildcard)
+  - Multiple exception rules
+  - Enable/disable exceptions
+  - VIP caller whitelist
+  - Emergency number exceptions
+  - Pattern-based matching
+  - Flexible caller ID filtering
+
+- **Unit Tests**
+  - DND mode descriptions (1 test)
+  - SIP response codes (1 test)
+  - Schedule is_active logic (1 test)
+  - Schedule midnight crossing (1 test)
+  - Schedule weekday filter (1 test)
+  - Exception exact match (1 test)
+  - Exception prefix match (1 test)
+  - Exception wildcard match (1 test)
+  - Wildcard matching patterns (1 test)
+  - Enable/disable DND (1 test)
+  - Toggle DND (1 test)
+  - Should block call basic (1 test)
+  - Should block with exception (1 test)
+  - Schedule-based DND (1 test)
+  - Add/remove schedule (1 test)
+  - Add/remove exception (1 test)
+  - Set alternate destination (1 test)
+  - DND statistics (1 test)
+  - List users with DND (1 test)
+  - Disabled exception handling (1 test)
+  - Disabled schedule handling (1 test)
+  - Total: 21 comprehensive tests
+
+- **Performance Features**
+  - HashMap-based user storage (O(1) lookup)
+  - Efficient schedule checking
+  - Efficient exception matching
+  - Minimal lock contention
+  - Iterator-based filtering
+  - Lazy statistics calculation
+
+- **Business Logic**
+  - Manual override takes precedence
+  - Schedule-based automatic activation
+  - Exception rules allow VIP callers
+  - First matching exception wins
+  - Statistics tracking for blocked calls
+  - Mode-specific call handling
+  - Real-time status evaluation
+
 #### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
 - **TLS Configuration**
   - TlsMode enum (Disabled, Optional, Required)
