@@ -2878,6 +2878,221 @@ All notable changes to YakYak will be documented in this file.
   - Mode-specific call handling
   - Real-time status evaluation
 
+#### Phase 2.2 - Call Pickup System (COMPLETED)
+- **Pickup Types**
+  - PickupType enum (4 types)
+  - Directed: Pickup specific extension (*8<ext>)
+  - Group: Pickup any call in group (*9)
+  - Any: Pickup any ringing call (*10, admin only)
+  - Blf: Pickup via BLF monitoring (*11<ext>)
+  - Dial code mapping
+  - Type descriptions for UI
+
+- **Pickup Groups**
+  - PickupGroup entity with UUID
+  - Group name and description
+  - Member management (HashSet)
+  - Enable/disable groups
+  - Created/updated timestamps
+  - add_member() - Add user to group
+  - remove_member() - Remove user
+  - has_member() - Check membership
+  - member_count() - Get member count
+
+- **Ringing Call Tracking**
+  - RingingCall entity
+  - Call ID and target extension
+  - Caller ID and display name
+  - Ringing timestamp
+  - Pickup group association
+  - BLF enabled flag
+  - ringing_duration_seconds() - Time ringing
+
+- **Pickup Permissions**
+  - PickupPermissions per user
+  - Directed pickup permission
+  - Group pickup permission
+  - Any pickup permission (admin)
+  - BLF pickup permission
+  - BLF monitored extensions list
+  - user_default() - Default permissions
+  - admin() - Full permissions
+  - restricted() - No pickup
+  - can_pickup() - Permission check
+  - monitors_extension() - BLF check
+
+- **CallPickupManager**
+  - Thread-safe pickup management with Arc<Mutex>
+  - create_group() - Create pickup group
+  - get_group() - Get group configuration
+  - update_group() - Modify group
+  - delete_group() - Remove group
+  - add_member_to_group() - Add member
+  - remove_member_from_group() - Remove member
+  - set_permissions() - Set user permissions
+  - get_permissions() - Get permissions
+  - register_ringing_call() - Register call
+  - unregister_ringing_call() - Unregister call
+  - attempt_directed_pickup() - Directed pickup
+  - attempt_group_pickup() - Group pickup
+  - attempt_blf_pickup() - BLF pickup
+  - attempt_any_pickup() - Admin pickup
+  - list_ringing_calls() - All ringing calls
+  - list_group_ringing_calls() - Group calls
+  - get_ringing_call() - Get specific call
+  - get_statistics() - System statistics
+  - list_groups() - All groups
+  - get_user_group() - User's group
+  - clear_ringing_calls() - Clear all
+
+- **Directed Pickup**
+  - Pickup call at specific extension
+  - Permission check
+  - Target extension validation
+  - Ringing call verification
+  - *8<extension> dial code
+
+- **Group Pickup**
+  - Pickup any call in user's group
+  - Group membership validation
+  - Permission check
+  - First ringing call in group
+  - *9 dial code
+
+- **BLF Pickup**
+  - Pickup monitored extension's call
+  - BLF monitoring list validation
+  - BLF enabled flag check
+  - Permission check
+  - *11<extension> dial code
+
+- **Any Pickup**
+  - Admin privilege to pickup any call
+  - Permission check (admin only)
+  - First ringing call selection
+  - *10 dial code
+
+- **Pickup Results**
+  - PickupResult enum
+  - Success(call_id)
+  - NoRingingCall
+  - PermissionDenied
+  - TargetNotFound
+  - NotInGroup
+  - AlreadyAnswered
+  - NotAllowed
+
+- **Call Registration**
+  - register_ringing_call() - Add ringing call
+  - unregister_ringing_call() - Remove call
+  - Call ID to extension mapping
+  - Extension to call ID mapping
+  - Automatic cleanup on pickup/answer
+
+- **Statistics and Monitoring**
+  - PickupStatistics for system overview
+  - Total pickup attempts
+  - Successful pickups
+  - Failed pickups
+  - Pickups by type
+  - Average time to pickup
+  - Current ringing calls count
+  - success_rate() - Calculate success %
+
+- **User-Group Mapping**
+  - HashMap-based user to group mapping
+  - O(1) group lookup per user
+  - Automatic mapping on member add/remove
+  - get_user_group() - Get user's group
+
+- **Integration Points**
+  - SIP call state integration
+  - Extension management
+  - Call routing integration
+  - BLF (Busy Lamp Field) integration
+  - User permission system
+  - Call state management
+
+- **Use Cases**
+  - Team call coverage
+  - Department call distribution
+  - Receptionist pickup
+  - Executive assistant pickup
+  - On-call rotation support
+  - Help desk call handling
+  - Sales team collaboration
+  - BLF key pickup
+  - Supervisor monitoring
+
+- **Advanced Features**
+  - Multiple pickup groups support
+  - Per-user permissions
+  - BLF monitoring lists
+  - Admin any-call pickup
+  - Pickup time tracking
+  - Success rate analytics
+  - Group membership management
+  - Real-time ringing call tracking
+
+- **Permission System**
+  - Three permission levels (user, admin, restricted)
+  - Granular pickup type permissions
+  - BLF monitoring per user
+  - Default user permissions
+  - Admin full access
+  - Restricted mode (no pickup)
+
+- **Group Features**
+  - Named pickup groups
+  - Flexible membership
+  - Enable/disable groups
+  - Group descriptions
+  - Member add/remove
+  - Multiple groups support
+  - User-to-group association
+
+- **Unit Tests**
+  - Pickup type descriptions (1 test)
+  - Dial codes (1 test)
+  - Pickup group creation (1 test)
+  - Add/remove group member (1 test)
+  - Pickup permissions (1 test)
+  - Ringing call creation (1 test)
+  - Create pickup group (1 test)
+  - Directed pickup success (1 test)
+  - Directed pickup no ringing call (1 test)
+  - Directed pickup permission denied (1 test)
+  - Group pickup success (1 test)
+  - Group pickup not in group (1 test)
+  - BLF pickup success (1 test)
+  - BLF pickup not monitored (1 test)
+  - Any pickup success (1 test)
+  - Any pickup permission denied (1 test)
+  - Unregister ringing call (1 test)
+  - List group ringing calls (1 test)
+  - Pickup statistics (1 test)
+  - Add/remove group member via manager (1 test)
+  - Get user group (1 test)
+  - Total: 21 comprehensive tests
+
+- **Performance Features**
+  - HashMap-based group storage (O(1) lookup)
+  - HashMap-based user-to-group mapping (O(1))
+  - HashMap-based ringing call storage
+  - HashSet for group members
+  - Efficient call registration
+  - Extension-to-call mapping (O(1))
+  - Minimal lock contention
+
+- **Business Logic**
+  - Permission-based pickup control
+  - Group membership validation
+  - BLF monitoring list enforcement
+  - First matching call selection
+  - Automatic statistics tracking
+  - Ringing call lifecycle management
+  - Time-to-pickup measurement
+
 #### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
 - **TLS Configuration**
   - TlsMode enum (Disabled, Optional, Required)
