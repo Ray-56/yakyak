@@ -2189,6 +2189,140 @@ All notable changes to YakYak will be documented in this file.
   - Circular subscription cleanup
   - Batch staleness checking
 
+#### Phase 3.5 - Instant Messaging System (COMPLETED)
+- **Message Content Types**
+  - MessageContentType enum (TextPlain, TextHtml, ApplicationJson, ApplicationOctetStream, Custom)
+  - Content-Type aware message handling
+  - Binary content support for files
+  - Extensible content type system
+  - MIME type mapping
+
+- **Instant Message Entity**
+  - InstantMessage with UUID identification
+  - From/To SIP URI tracking
+  - Message content (binary Vec<u8>)
+  - MessageStatus enum (Pending, Delivered, Failed, Read)
+  - Timestamp tracking (sent, delivered, read)
+  - Group message support (optional group_id)
+  - Flexible content type support
+
+- **Message Routing**
+  - Online/offline user detection
+  - Automatic routing based on presence
+  - Online: Direct delivery with callback
+  - Offline: Queue message for later delivery
+  - Delivery confirmation tracking
+  - Status transition management
+
+- **Offline Message Queue**
+  - OfflineQueue per user
+  - Bounded queue (max 1000 messages default)
+  - FIFO message delivery
+  - Automatic delivery on user_online()
+  - Queue overflow handling (drop oldest)
+  - Message count tracking
+
+- **Group Messaging**
+  - MessageGroup entity with UUID
+  - Group name and description
+  - Member management (add/remove)
+  - Broadcast to all members
+  - Group message history
+  - Creator tracking
+  - Created timestamp
+
+- **Message History**
+  - In-memory message storage
+  - get_conversation_history() - 1-on-1 conversations
+  - get_group_history() - Group conversations
+  - Time-based filtering
+  - Message limit support
+  - Chronological ordering
+
+- **InstantMessagingManager**
+  - Thread-safe messaging with Arc<Mutex>
+  - send_message() - Send to individual or group
+  - user_online() / user_offline() - Presence tracking
+  - Offline message delivery on user_online()
+  - create_group() / get_group() / delete_group()
+  - add_group_member() / remove_group_member()
+  - get_conversation_history() - Get 1-on-1 history
+  - get_group_history() - Get group history
+  - get_statistics() - System statistics
+  - Delivery callback for SIP MESSAGE
+
+- **Delivery Callbacks**
+  - MessageDeliveryCallback trait
+  - Real-time message delivery notification
+  - Integration with SIP MESSAGE handler
+  - Asynchronous callback execution
+  - Error handling support
+
+- **Statistics and Monitoring**
+  - MessagingStatistics for system overview
+  - Total message count
+  - Messages by status (pending, delivered, failed, read)
+  - Active offline queue count
+  - Total queued messages
+  - Group count and average members
+  - Real-time statistics generation
+
+- **Integration Points**
+  - SIP MESSAGE handler integration
+  - Presence system integration for online/offline detection
+  - User registrar integration
+  - Real-time message delivery
+  - Push notification ready
+  - WebSocket message streaming ready
+
+- **Use Cases**
+  - 1-on-1 instant messaging
+  - Group chat rooms
+  - Offline message delivery
+  - Message history and archiving
+  - Team collaboration
+  - Customer support chat
+  - Internal communication
+  - File sharing via binary messages
+
+- **Message Features**
+  - Status tracking (pending → delivered → read)
+  - Timestamp tracking for delivery and read
+  - Binary content support
+  - Multiple content types
+  - Group broadcasting
+  - Offline queuing with bounded buffer
+  - Delivery confirmation
+
+- **Unit Tests**
+  - Message content types (1 test)
+  - Message creation and status (1 test)
+  - Group creation (1 test)
+  - Send message to online user (1 test)
+  - Send message to offline user (1 test)
+  - Offline queue delivery (1 test)
+  - User online/offline transitions (1 test)
+  - Group messaging (1 test)
+  - Conversation history (1 test)
+  - Message limit in history (1 test)
+  - Statistics generation (1 test)
+  - Total: 11 comprehensive tests
+
+- **Performance Features**
+  - HashMap-based message lookup (O(1))
+  - Efficient history filtering
+  - VecDeque for offline queues
+  - Minimal lock contention
+  - O(n) group broadcast where n = members
+  - Lazy statistics calculation
+
+- **Message Security**
+  - Message isolation per user
+  - Group membership validation
+  - Content type validation
+  - Queue size limits to prevent DoS
+  - Offline message expiration ready
+
 #### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
 - **TLS Configuration**
   - TlsMode enum (Disabled, Optional, Required)

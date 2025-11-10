@@ -21,6 +21,7 @@ pub mod call_recording;
 pub mod cdr;
 pub mod conference;
 pub mod conference_recording;
+pub mod instant_messaging;
 pub mod ip_blacklist;
 pub mod media;
 pub mod music_on_hold;
