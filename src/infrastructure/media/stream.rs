@@ -1,6 +1,7 @@
 //! Media Stream Management
 
 use super::rtp::{RtpPacket, RtpSession, SenderReport};
+use super::srtp::{MediaCryptoContext, SrtpMasterKey, SrtpProfile};
 use bytes::Bytes;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -36,6 +37,8 @@ pub struct MediaStream {
     direction: Arc<RwLock<StreamDirection>>,
     /// Running flag
     running: Arc<RwLock<bool>>,
+    /// SRTP crypto context (optional)
+    srtp_context: Arc<RwLock<Option<MediaCryptoContext>>>,
 }
 
 impl MediaStream {
@@ -65,6 +68,7 @@ impl MediaStream {
             remote_rtcp: Arc::new(RwLock::new(None)),
             direction: Arc::new(RwLock::new(StreamDirection::Inactive)),
             running: Arc::new(RwLock::new(false)),
+            srtp_context: Arc::new(RwLock::new(None)),
         })
     }
 
@@ -91,6 +95,24 @@ impl MediaStream {
         Ok(self.rtp_socket.local_addr()?.port())
     }
 
+    /// Enable SRTP encryption
+    pub async fn enable_srtp(&self, master_key: SrtpMasterKey, profile: SrtpProfile) {
+        let crypto_ctx = MediaCryptoContext::new(master_key, profile);
+        *self.srtp_context.write().await = Some(crypto_ctx);
+        info!("SRTP enabled with profile: {:?}", profile);
+    }
+
+    /// Disable SRTP encryption
+    pub async fn disable_srtp(&self) {
+        *self.srtp_context.write().await = None;
+        info!("SRTP disabled");
+    }
+
+    /// Check if SRTP is enabled
+    pub async fn is_srtp_enabled(&self) -> bool {
+        self.srtp_context.read().await.is_some()
+    }
+
     /// Send RTP packet
     pub async fn send_rtp(&self, payload: Bytes, timestamp: u32, marker: bool) -> Result<(), std::io::Error> {
         let direction = *self.direction.read().await;
@@ -99,7 +121,19 @@ impl MediaStream {
         }
 
         let packet = self.rtp_session.create_packet(payload, timestamp, marker);
-        let data = packet.serialize();
+        let mut data = packet.serialize();
+
+        // Apply SRTP encryption if enabled
+        if let Some(ref ctx) = *self.srtp_context.read().await {
+            if let Err(e) = ctx.protect_rtp(&mut data) {
+                error!("SRTP encryption failed: {}", e);
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    format!("SRTP encryption failed: {}", e),
+                ));
+            }
+            debug!("Encrypted RTP packet with SRTP");
+        }
 
         if let Some(remote) = *self.remote_rtp.read().await {
             self.rtp_socket.send_to(&data, remote).await?;
@@ -119,6 +153,7 @@ impl MediaStream {
         let rtp_socket = self.rtp_socket.clone();
         let direction = self.direction.clone();
         let running = self.running.clone();
+        let srtp_context = self.srtp_context.clone();
 
         tokio::spawn(async move {
             let mut buf = vec![0u8; 2048];
@@ -134,7 +169,18 @@ impl MediaStream {
                     Ok((len, addr)) => {
                         debug!("Received RTP packet from {}: {} bytes", addr, len);
 
-                        match RtpPacket::parse(&buf[..len]) {
+                        let mut packet_data = buf[..len].to_vec();
+
+                        // Apply SRTP decryption if enabled
+                        if let Some(ref ctx) = *srtp_context.read().await {
+                            if let Err(e) = ctx.unprotect_rtp(&mut packet_data) {
+                                warn!("SRTP decryption failed: {}", e);
+                                continue;
+                            }
+                            debug!("Decrypted RTP packet with SRTP");
+                        }
+
+                        match RtpPacket::parse(&packet_data) {
                             Ok(packet) => {
                                 debug!("Parsed RTP: {}", packet);
                                 // TODO: Process received packet (decode, play, etc.)

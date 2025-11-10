@@ -40,3 +40,9 @@ logs/*.log.*
 logs/*.log.*.*
 logs/*.log.*.*.*
 logs/*.log.*.*.*.*
+
+# TLS certificates (test only)
+certs/
+*.crt
+*.key
+*.pem
