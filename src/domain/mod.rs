@@ -15,6 +15,7 @@ pub mod call;
 pub mod call_announcer;
 pub mod call_forwarding;
 pub mod call_manager;
+pub mod call_parking;
 pub mod call_quality;
 pub mod call_queue;
 pub mod call_queue_engine;
