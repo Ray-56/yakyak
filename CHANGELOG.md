@@ -2323,6 +2323,171 @@ All notable changes to YakYak will be documented in this file.
   - Queue size limits to prevent DoS
   - Offline message expiration ready
 
+#### Phase 2.2 - Call Forwarding System (COMPLETED)
+- **Forwarding Types**
+  - ForwardingType enum (7 types)
+  - Unconditional: Forward all calls
+  - Busy: Forward when line is busy
+  - NoAnswer: Forward after timeout
+  - Unavailable: Forward when offline/not registered
+  - TimeBased: Forward based on time of day
+  - CallerBased: Forward based on caller ID
+  - Voicemail: Forward to voicemail
+  - Type descriptions for user interfaces
+
+- **Forwarding Destinations**
+  - ForwardingDestination with SIP URI/extension
+  - Display name support
+  - External/internal destination detection
+  - Automatic external flag based on URI format
+
+- **Time-Based Forwarding**
+  - TimeRange with start/end times
+  - Weekday filtering (Monday-Sunday)
+  - Midnight-crossing time ranges
+  - Business hours preset (Mon-Fri, 9am-5pm)
+  - After hours preset
+  - Day of week validation
+
+- **Caller-Based Forwarding**
+  - CallerFilter with allowed caller list
+  - Exact match mode
+  - Prefix match mode
+  - Multiple caller support
+  - Number pattern matching
+
+- **Forwarding Rules**
+  - ForwardingRule entity with UUID
+  - Per-user rule configuration
+  - Rule priority system (lower = higher priority)
+  - Enable/disable individual rules
+  - Timeout configuration for NoAnswer type
+  - Time range for TimeBased type
+  - Caller filter for CallerBased type
+  - Maximum forwarding hops (loop prevention)
+  - Rule description and metadata
+  - Created/updated timestamps
+
+- **Rule Conditions**
+  - should_apply() - Context-aware rule evaluation
+  - Time range checking
+  - Caller ID matching
+  - Enabled status validation
+  - Multiple condition support
+
+- **CallForwardingManager**
+  - Thread-safe rule management with Arc<Mutex>
+  - add_rule() - Add new forwarding rule
+  - update_rule() - Modify existing rule
+  - remove_rule() - Delete specific rule
+  - get_user_rules() - Get all rules for user
+  - get_rule() - Get specific rule by ID
+  - enable_rule() / disable_rule() - Toggle rules
+  - get_forward_destination() - Get destination by type
+  - get_any_forward_destination() - Get highest priority destination
+  - would_create_loop() - Loop detection
+  - record_forwarded_call() - Call tracking
+  - get_status() - Get user forwarding status
+  - get_statistics() - System statistics
+  - remove_all_user_rules() - Bulk deletion
+  - list_users_with_forwarding() - User list
+
+- **Forwarding Status**
+  - ForwardingStatus per user
+  - Active forwarding flag
+  - Unconditional destination tracking
+  - Busy destination tracking
+  - NoAnswer destination tracking
+  - Active rule count
+
+- **Loop Prevention**
+  - Forwarding chain detection
+  - Visited set tracking
+  - Recursive loop checking
+  - Maximum hops configuration
+  - Loop prevention before rule application
+
+- **Statistics and Monitoring**
+  - ForwardingStatistics for system overview
+  - Total rules count
+  - Active vs disabled rules
+  - Total forwarded calls counter
+  - Calls by forwarding type
+  - Users with active forwarding
+  - Real-time statistics generation
+
+- **Rule Validation**
+  - Duplicate unconditional forwarding prevention
+  - Priority-based rule sorting
+  - Automatic rule prioritization
+  - Rule conflict detection
+
+- **Integration Points**
+  - User registration status integration
+  - Call state integration (busy detection)
+  - Presence system integration
+  - Voicemail system integration
+  - Time-of-day routing
+  - Caller ID screening
+
+- **Use Cases**
+  - Unconditional call forwarding (vacation mode)
+  - Busy line forwarding (call overflow)
+  - No-answer forwarding (missed calls)
+  - After-hours forwarding to answering service
+  - VIP caller priority routing
+  - Business hours vs after-hours routing
+  - Mobile twinning (simultaneous ring)
+  - Call center overflow routing
+  - Personal assistant screening
+  - Geographic routing
+
+- **Advanced Features**
+  - Time-based automatic forwarding
+  - Caller whitelist/blacklist forwarding
+  - Multiple destination support via priority
+  - External number forwarding
+  - Internal extension forwarding
+  - Forwarding to voicemail integration
+  - Rule scheduling
+
+- **Unit Tests**
+  - Forwarding type descriptions (1 test)
+  - Forwarding destination creation (1 test)
+  - Time range contains logic (1 test)
+  - Time range weekday filtering (1 test)
+  - Time range midnight crossing (1 test)
+  - Caller filter exact match (1 test)
+  - Caller filter prefix match (1 test)
+  - Forwarding rule creation (1 test)
+  - Rule should_apply logic (1 test)
+  - Add forwarding rule (1 test)
+  - Duplicate unconditional prevention (1 test)
+  - Enable/disable rules (1 test)
+  - Remove rule (1 test)
+  - Get forward destination (1 test)
+  - Rule priority sorting (1 test)
+  - Forwarding status (1 test)
+  - Forwarding statistics (1 test)
+  - Loop detection (1 test)
+  - Remove all user rules (1 test)
+  - Total: 19 comprehensive tests
+
+- **Performance Features**
+  - HashMap-based rule storage (O(1) lookup)
+  - Priority-based sorting
+  - Efficient rule filtering
+  - Minimal lock contention
+  - O(1) user rule access
+  - Lazy statistics calculation
+
+- **Business Logic**
+  - Priority-based rule execution
+  - First matching rule wins
+  - Disabled rules skipped automatically
+  - Context-aware rule application
+  - Real-time condition evaluation
+
 #### Phase 2.1 - TLS/DTLS Configuration (COMPLETED)
 - **TLS Configuration**
   - TlsMode enum (Disabled, Optional, Required)
