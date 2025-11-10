@@ -1444,6 +1444,347 @@ All notable changes to YakYak will be documented in this file.
   - Control buttons (hold/resume/hangup)
   - Call statistics widgets
 
+#### Phase 2.3 - IP Blacklist and Rate Limiting (COMPLETED)
+- **IP Blacklist Management**
+  - BlacklistEntry with UUID and IP address
+  - Multiple block reasons (Manual, AuthFailures, RateLimit, BruteForce, etc.)
+  - Permanent and temporary blocks
+  - Expiry tracking and auto-cleanup
+  - 13 comprehensive unit tests
+
+- **IP Whitelist Support**
+  - WhitelistEntry for trusted IPs
+  - Whitelist overrides blacklist
+  - Whitelist bypasses rate limiting
+
+- **Rate Limiting**
+  - Per-IP request tracking with sliding window
+  - Configurable thresholds (100 req/min default)
+  - Auto-block on rate limit exceeded
+  - VecDeque-based efficient tracking
+
+- **Authentication Failure Tracking**
+  - Per-IP failure counter
+  - Auto-block on brute force (5 failures default)
+  - Success resets failure counter
+  - 24-hour default block duration
+
+- **IpBlacklistManager**
+  - Thread-safe IP management
+  - is_blocked() / block_ip() / unblock_ip()
+  - whitelist_ip() / check_rate_limit()
+  - record_auth_failure() / record_auth_success()
+  - cleanup_expired() / get_statistics()
+
+- **Use Cases**
+  - Prevent brute force attacks
+  - Block abusive IPs
+  - Rate limit excessive requests
+  - Whitelist trusted partners
+  - Automatic threat response
+
+#### Phase 3.6 - Message Waiting Indicator (MWI) (COMPLETED)
+- **MWI Subscription Management**
+  - MwiSubscription entity with UUID
+  - Subscribe/unsubscribe/refresh operations
+  - Subscription expiry tracking
+  - Dialog information (Call-ID, tags)
+  - Subscription state (Active, Pending, Terminated)
+  - 10 comprehensive unit tests
+
+- **Message Summary (RFC 3842)**
+  - MessageSummary entity per account
+  - Voice message counts (new/old/urgent)
+  - RFC 3842 message-summary body generation
+  - Messages-Waiting header
+  - Voice-Message format: new/old (urgent_new/urgent_old)
+
+- **MWI Manager**
+  - Thread-safe subscription management
+  - subscribe() / unsubscribe() / refresh_subscription()
+  - update_summary() - Update and notify all subscribers
+  - list_subscriptions() / cleanup_expired()
+  - get_statistics() - System statistics
+  - Notification callback for SIP NOTIFY
+
+- **Integration Features**
+  - Voicemail system integration
+  - SIP SUBSCRIBE/NOTIFY handlers
+  - Real-time message count updates
+  - Automatic NOTIFY on subscribe/unsubscribe
+  - Multi-device notification support
+
+- **Use Cases**
+  - Visual voicemail indicators
+  - Message waiting lamp on phones
+  - Email/SMS notifications
+  - Unified messaging
+  - Multi-device synchronization
+
+#### Phase 2.2 - Music on Hold (MOH) System (COMPLETED)
+- **MOH Playlist Management**
+  - MohPlaylist entity with UUID identification
+  - Multiple playback modes (Sequential, Random, Once, Loop)
+  - Add/remove audio files from playlist
+  - Enable/disable playlists
+  - Default playlist support
+  - Playlist description and metadata
+  - Total duration calculation
+
+- **Audio File Management**
+  - MohAudioFile entity with metadata
+  - Support for multiple formats (WAV, MP3, Opus, Raw PCM)
+  - File format auto-detection from extension
+  - Duration, sample rate, channels tracking
+  - File size tracking
+  - Enable/disable individual files
+  - File validation (existence check)
+  - Added timestamp tracking
+
+- **Playback Modes**
+  - Sequential: Play files in order, then repeat
+  - Random: Randomized playback order
+  - Once: Play through once, then silence
+  - Loop: Continuous loop of single file
+  - Configurable per playlist
+
+- **MOH Session Management**
+  - MohSession for active call tracking
+  - Current file index and playback position
+  - Pause/resume functionality
+  - Session duration tracking
+  - Loop count tracking
+  - Automatic file advancement
+  - Session reset capability
+
+- **MohFileManager**
+  - Centralized audio file management
+  - Add/remove files
+  - Enable/disable files
+  - List all or enabled files only
+  - Directory scanning and auto-import
+  - File format detection
+  - Storage usage tracking
+  - File count statistics
+
+- **MohManager**
+  - Complete MOH orchestration
+  - create_playlist() / get_playlist() / update_playlist() / delete_playlist()
+  - set_default_playlist() / get_default_playlist()
+  - start_moh() / stop_moh() - Session lifecycle
+  - pause_moh() / resume_moh() - Playback control
+  - get_session() / get_current_file()
+  - advance_to_next_file() - Manual advancement
+  - list_active_sessions() - Active session tracking
+  - get_statistics() - System-wide statistics
+
+- **Integration Points**
+  - Call hold integration (play MOH during hold)
+  - Call queue integration (waiting callers)
+  - Conference integration (pre-call music)
+  - Audio player system integration
+  - File management for admin UI
+
+- **Use Cases**
+  - Music during call hold
+  - Queue waiting music
+  - Conference waiting room
+  - Custom on-hold messages
+  - Multi-language announcements
+  - Branded audio content
+  - Time-of-day playlists
+
+- **MOH Statistics**
+  - MohStatistics for system monitoring
+  - Total and enabled playlists count
+  - Total and enabled audio files count
+  - Active session count
+  - Total storage bytes
+  - Real-time statistics generation
+
+- **Session Features**
+  - Unique session ID per call
+  - Call ID association
+  - Playlist association
+  - Current playback position tracking
+  - Pause state management
+  - Started timestamp
+  - Duration calculation
+  - Loop count tracking
+
+- **Performance**
+  - HashMap-based O(1) lookups
+  - Thread-safe operations with Arc<Mutex>
+  - Efficient file indexing
+  - Minimal memory per session
+  - Lazy loading support ready
+
+- **Unit Tests**
+  - Playback mode default (1 test)
+  - Audio format detection (1 test)
+  - Audio file creation and metadata (1 test)
+  - Playlist CRUD operations (1 test)
+  - Session lifecycle and controls (1 test)
+  - File manager operations (1 test)
+  - Manager playlist operations (1 test)
+  - Manager session operations (1 test)
+  - Statistics generation (1 test)
+  - Total: 9 comprehensive tests
+
+- **Integration Ready**
+  - Ready for call hold handlers
+  - Ready for queue system integration
+  - Ready for conference system
+  - Admin API endpoints ready
+  - File upload/management ready
+  - Real-time playback control ready
+
+#### Phase 2.5 - API Authentication and Authorization (COMPLETED)
+- **JWT Token-Based Authentication**
+  - TokenClaims with user ID, username, role, scopes
+  - Token types (Access, Refresh, ApiKey)
+  - Configurable token expiry (access: 1h, refresh: 30d)
+  - Token generation with user context
+  - Token verification and validation
+  - Automatic expiration checking
+  - Token revocation (blacklist)
+  - Refresh token support
+
+- **API Key Management**
+  - ApiKey entity for service-to-service auth
+  - Unique key generation (yk_prefix)
+  - Scope-based permissions
+  - Key expiry support
+  - Enable/disable functionality
+  - Usage tracking (count, last used)
+  - Key revocation
+
+- **Authorization Framework**
+  - AuthContext with user identity and scopes
+  - Permission checking (has_permission)
+  - Multiple permission checks (any/all)
+  - Role-based access control integration
+  - Scope-based authorization
+  - Method tracking (JWT, ApiKey, BasicAuth)
+
+- **Authentication Methods**
+  - JWT Bearer token authentication
+  - API key authentication (X-API-Key header)
+  - Support for multiple auth methods
+  - AuthResult with Success/Failed
+  - AuthError enum with detailed errors
+
+- **Rate Limiting**
+  - Per-identifier rate limiting
+  - Configurable max requests and time window
+  - Sliding window implementation
+  - Automatic window reset
+  - Rate limit exceeded detection
+
+- **Security Features**
+  - Token blacklist for revoked tokens
+  - Signature verification
+  - Expiration validation
+  - Scope-based access control
+  - Secure token generation
+  - Usage auditing
+
+- **ApiAuthManager**
+  - Thread-safe authentication management
+  - generate_token() - Create JWT tokens
+  - verify_token() - Validate and decode tokens
+  - refresh_token() - Obtain new access token
+  - revoke_token() - Blacklist tokens
+  - create_api_key() - Generate API keys
+  - verify_api_key() - Validate API keys
+  - revoke_api_key() - Disable API keys
+  - check_rate_limit() - Rate limiting
+  - authenticate_token() - Full JWT auth
+  - authenticate_api_key() - Full API key auth
+
+- **Token Features**
+  - JWT-like structure (simplified for framework)
+  - Issuer tracking (yakyak-pbx)
+  - Issued at (iat) and expiration (exp) timestamps
+  - Subject (sub) with user ID
+  - Custom scopes array
+  - Token type differentiation
+  - Expires-in calculation
+
+- **API Key Features**
+  - Unique ID and key
+  - Name and description
+  - Scope list
+  - Enabled/disabled flag
+  - Created at timestamp
+  - Optional expiration
+  - Last used tracking
+  - Usage counter
+
+- **Integration Points**
+  - REST API middleware integration
+  - RBAC system integration
+  - User authentication flow
+  - Service-to-service authentication
+  - WebSocket authentication
+  - Rate limiting middleware
+
+- **Use Cases**
+  - Secure REST API access
+  - User login and session management
+  - Service-to-service communication
+  - API rate limiting
+  - Token refresh flows
+  - Permission-based access control
+  - Audit trail with usage tracking
+
+- **Implementation Notes**
+  - Framework ready for jsonwebtoken crate
+  - Simplified encoding (production needs proper JWT library)
+  - Secret key-based signing
+  - Base64 encoding placeholder
+  - Production should use proper cryptographic libraries
+
+- **Error Handling**
+  - InvalidToken - Malformed or invalid token
+  - ExpiredToken - Token past expiration
+  - InvalidApiKey - API key not found or invalid
+  - InvalidCredentials - Login failed
+  - InsufficientPermissions - Access denied
+  - Unauthorized - No authentication provided
+  - RateLimitExceeded - Too many requests
+
+- **Unit Tests**
+  - Token claims creation (1 test)
+  - Token expiry checking (1 test)
+  - Token scopes (1 test)
+  - API key creation (1 test)
+  - API key expiry (1 test)
+  - API key usage tracking (1 test)
+  - Token generation (1 test)
+  - Token verification (1 test)
+  - Token revocation (1 test)
+  - API key verification (1 test)
+  - API key revocation (1 test)
+  - Permission checking (1 test)
+  - Rate limiting (1 test)
+  - Total: 13 comprehensive tests
+
+- **Performance**
+  - HashMap-based lookups (O(1))
+  - Efficient token blacklist
+  - Minimal memory per token
+  - Fast rate limit checking
+  - Thread-safe with Mutex
+
+- **Security Best Practices**
+  - Token expiration enforcement
+  - Revocation support
+  - Rate limiting built-in
+  - Scope-based permissions
+  - Usage auditing
+  - Secure key generation
+
 #### Phase 4.5 - Advanced Audio Codecs (COMPLETED)
 - **Opus Codec Support**
   - OpusConfig with multiple presets (VoIP, Audio, Low Latency)
