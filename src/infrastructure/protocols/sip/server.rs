@@ -18,6 +18,14 @@ pub struct SipServerConfig {
     pub tcp_bind: SocketAddr,
     pub domain: String,
     pub enable_tcp: bool,
+    /// Enable TLS transport (SIPS)
+    pub enable_tls: bool,
+    /// TLS bind address (default: port 5061)
+    pub tls_bind: SocketAddr,
+    /// Path to TLS certificate file
+    pub tls_cert_path: String,
+    /// Path to TLS private key file
+    pub tls_key_path: String,
 }
 
 impl Default for SipServerConfig {
@@ -27,15 +35,22 @@ impl Default for SipServerConfig {
             tcp_bind: "0.0.0.0:5060".parse().unwrap(),
             domain: "localhost".to_string(),
             enable_tcp: true,
+            enable_tls: false,
+            tls_bind: "0.0.0.0:5061".parse().unwrap(),
+            tls_cert_path: "certs/server.crt".to_string(),
+            tls_key_path: "certs/server.key".to_string(),
         }
     }
 }
+
+use super::transport::TlsTransport;
 
 /// SIP server
 pub struct SipServer {
     config: SipServerConfig,
     udp_transport: Option<UdpTransport>,
     tcp_transport: Option<TcpTransport>,
+    tls_transport: Option<TlsTransport>,
     handlers: Arc<RwLock<HashMap<SipMethod, Arc<dyn SipHandler>>>>,
 }
 
@@ -46,6 +61,15 @@ impl SipServer {
             udp_transport: Some(UdpTransport::new(config.udp_bind)),
             tcp_transport: if config.enable_tcp {
                 Some(TcpTransport::new(config.tcp_bind))
+            } else {
+                None
+            },
+            tls_transport: if config.enable_tls {
+                Some(TlsTransport::new(
+                    config.tls_bind,
+                    config.tls_cert_path.clone(),
+                    config.tls_key_path.clone(),
+                ))
             } else {
                 None
             },
@@ -88,6 +112,23 @@ impl SipServer {
             ));
         }
 
+        // Start TLS transport and get receiver
+        let mut tls_rx = None;
+        if let Some(transport) = &mut self.tls_transport {
+            match transport.start().await {
+                Ok(_) => {
+                    info!("TLS transport started on {}", self.config.tls_bind);
+                    tls_rx = Some(std::mem::replace(
+                        transport.receiver(),
+                        mpsc::channel(1).1,
+                    ));
+                }
+                Err(e) => {
+                    warn!("Failed to start TLS transport: {}. Continuing without TLS.", e);
+                }
+            }
+        }
+
         // Start message processing
         if let Some(mut rx) = udp_rx {
             let handlers = self.handlers.clone();
@@ -113,6 +154,20 @@ impl SipServer {
                     tokio::spawn(async move {
                         if let Err(e) = Self::process_tcp_message(incoming, handlers).await {
                             error!("Error processing TCP message: {}", e);
+                        }
+                    });
+                }
+            });
+        }
+
+        if let Some(mut rx) = tls_rx {
+            let handlers = self.handlers.clone();
+            tokio::spawn(async move {
+                while let Some(incoming) = rx.recv().await {
+                    let handlers = handlers.clone();
+                    tokio::spawn(async move {
+                        if let Err(e) = Self::process_tls_message(incoming, handlers).await {
+                            error!("Error processing TLS message: {}", e);
                         }
                     });
                 }
@@ -210,6 +265,39 @@ impl SipServer {
         Ok(())
     }
 
+    async fn process_tls_message(
+        incoming: IncomingMessage,
+        handlers: Arc<RwLock<HashMap<SipMethod, Arc<dyn SipHandler>>>>,
+    ) -> Result<(), SipError> {
+        match incoming.message {
+            SipMessage::Request(request) => {
+                let method = request.method();
+                debug!("Processing SIP request via TLS: {:?}", method);
+
+                let handlers = handlers.read().await;
+                if let Some(method) = method {
+                    if let Some(handler) = handlers.get(&method) {
+                        match handler.handle_request(request).await {
+                            Ok(response) => {
+                                debug!("Response generated: {}", response.status_code());
+                            }
+                            Err(e) => {
+                                error!("Handler error: {}", e);
+                            }
+                        }
+                    } else {
+                        warn!("No handler registered for method: {}", method);
+                    }
+                }
+            }
+            SipMessage::Response(response) => {
+                debug!("Received SIP response via TLS: {}", response.status_code());
+            }
+        }
+
+        Ok(())
+    }
+
     pub async fn stop(&mut self) -> Result<(), SipError> {
         info!("Stopping SIP server");
 
@@ -218,6 +306,10 @@ impl SipServer {
         }
 
         if let Some(transport) = &mut self.tcp_transport {
+            transport.stop().await?;
+        }
+
+        if let Some(transport) = &mut self.tls_transport {
             transport.stop().await?;
         }
 
