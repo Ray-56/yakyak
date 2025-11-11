@@ -3,6 +3,7 @@
 use super::calls_handler::{get_active_call, get_active_calls, get_call_stats, hangup_call};
 use super::cdr_handler::{export_cdrs_csv, export_cdrs_json, get_cdr, get_cdr_by_call_id, list_cdrs};
 use super::metrics_handler::metrics_handler;
+use super::monitoring::{get_prometheus_metrics, get_system_health};
 use super::user_handler::{
     change_password, create_user, delete_user, get_online_count, get_online_users, get_user,
     get_user_by_username, get_user_registration_status, health_check, list_users, set_enabled,
@@ -56,6 +57,11 @@ pub fn build_router(
         .route("/calls/:call_id/hangup", post(hangup_call))
         .route("/calls/stats", get(get_call_stats));
 
+    // Monitoring routes
+    let monitoring_routes = Router::new()
+        .route("/monitoring/health", get(get_system_health))
+        .route("/monitoring/prometheus", get(get_prometheus_metrics));
+
     // Metrics route (separate state)
     let metrics_routes = Router::new()
         .route("/metrics", get(metrics_handler))
@@ -72,6 +78,7 @@ pub fn build_router(
         .merge(user_routes)
         .merge(cdr_routes)
         .merge(call_routes)
+        .merge(monitoring_routes)
         .with_state(state)
         .merge(metrics_routes)
         .merge(ws_routes)
