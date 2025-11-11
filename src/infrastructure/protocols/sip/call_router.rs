@@ -4,10 +4,11 @@
 
 use super::builder::ResponseBuilder;
 use super::call_state::{CallEvent, CallState, CallStateMachine};
+use super::hold_manager::HoldManager;
 use super::message::{SipError, SipRequest, SipResponse};
 use super::registrar::Registrar;
 use crate::domain::cdr::{CallDetailRecord, CallDirection, CallStatus, CdrRepository};
-use crate::infrastructure::media::{MediaBridge, MediaStream};
+use crate::infrastructure::media::{MediaBridge, MediaStream, MohPlayer};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -26,6 +27,7 @@ pub struct ActiveCallInfo {
     pub duration: i64,
     pub caller_contact: Option<String>,
     pub callee_contact: Option<String>,
+    pub on_hold: bool,
 }
 
 /// Call Leg Information
@@ -83,6 +85,8 @@ pub struct CallRouter {
     registrar: Arc<Registrar>,
     active_calls: Arc<RwLock<HashMap<String, BridgedCall>>>,
     cdr_repository: Option<Arc<dyn CdrRepository>>,
+    hold_manager: Arc<HoldManager>,
+    moh_players: Arc<RwLock<HashMap<String, Arc<MohPlayer>>>>,
 }
 
 impl CallRouter {
@@ -91,6 +95,8 @@ impl CallRouter {
             registrar,
             active_calls: Arc::new(RwLock::new(HashMap::new())),
             cdr_repository: None,
+            hold_manager: Arc::new(HoldManager::new()),
+            moh_players: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
@@ -348,6 +354,18 @@ impl CallRouter {
                 debug!("Media bridge stopped for call {}", call_id);
             }
 
+            // Stop and cleanup MOH if playing
+            {
+                let mut moh_players = self.moh_players.write().await;
+                if let Some(moh_player) = moh_players.remove(call_id) {
+                    let _ = moh_player.stop().await;
+                    debug!("MOH stopped and removed for call {}", call_id);
+                }
+            }
+
+            // Clean up hold state
+            self.hold_manager.remove_call(call_id).await;
+
             info!("Call {} terminated", call_id);
             Ok(())
         } else {
@@ -377,39 +395,18 @@ impl CallRouter {
     /// Get all active calls
     pub async fn get_active_calls(&self) -> Vec<ActiveCallInfo> {
         let calls = self.active_calls.read().await;
-        calls
-            .values()
-            .map(|call| {
-                let stats = call.state_machine.stats();
-                let duration = stats.ended_at
-                    .unwrap_or_else(|| std::time::Instant::now())
-                    .duration_since(stats.created_at)
-                    .as_secs() as i64;
+        let mut result = Vec::new();
 
-                ActiveCallInfo {
-                    call_id: call.call_id.clone(),
-                    caller_uri: call.caller.uri.clone(),
-                    callee_uri: call.callee.uri.clone(),
-                    state: format!("{:?}", call.state()),
-                    duration,
-                    caller_contact: call.caller.contact.map(|c| c.to_string()),
-                    callee_contact: call.callee.contact.map(|c| c.to_string()),
-                }
-            })
-            .collect()
-    }
-
-    /// Get active call by ID
-    pub async fn get_active_call(&self, call_id: &str) -> Option<ActiveCallInfo> {
-        let calls = self.active_calls.read().await;
-        calls.get(call_id).map(|call| {
+        for call in calls.values() {
             let stats = call.state_machine.stats();
             let duration = stats.ended_at
                 .unwrap_or_else(|| std::time::Instant::now())
                 .duration_since(stats.created_at)
                 .as_secs() as i64;
 
-            ActiveCallInfo {
+            let on_hold = self.hold_manager.is_on_hold(&call.call_id).await;
+
+            result.push(ActiveCallInfo {
                 call_id: call.call_id.clone(),
                 caller_uri: call.caller.uri.clone(),
                 callee_uri: call.callee.uri.clone(),
@@ -417,8 +414,38 @@ impl CallRouter {
                 duration,
                 caller_contact: call.caller.contact.map(|c| c.to_string()),
                 callee_contact: call.callee.contact.map(|c| c.to_string()),
-            }
-        })
+                on_hold,
+            });
+        }
+
+        result
+    }
+
+    /// Get active call by ID
+    pub async fn get_active_call(&self, call_id: &str) -> Option<ActiveCallInfo> {
+        let calls = self.active_calls.read().await;
+        if let Some(call) = calls.get(call_id) {
+            let stats = call.state_machine.stats();
+            let duration = stats.ended_at
+                .unwrap_or_else(|| std::time::Instant::now())
+                .duration_since(stats.created_at)
+                .as_secs() as i64;
+
+            let on_hold = self.hold_manager.is_on_hold(call_id).await;
+
+            Some(ActiveCallInfo {
+                call_id: call.call_id.clone(),
+                caller_uri: call.caller.uri.clone(),
+                callee_uri: call.callee.uri.clone(),
+                state: format!("{:?}", call.state()),
+                duration,
+                caller_contact: call.caller.contact.map(|c| c.to_string()),
+                callee_contact: call.callee.contact.map(|c| c.to_string()),
+                on_hold,
+            })
+        } else {
+            None
+        }
     }
 
     /// Force hangup a call (for admin/management use)
@@ -575,6 +602,99 @@ impl CallRouter {
                 ResponseBuilder::new(481).build_for_request(request)
             }
         }
+    }
+
+    /// Put call on hold (local hold)
+    ///
+    /// This will mark the call as on hold and update the media stream direction
+    /// to sendonly (sending music on hold)
+    pub async fn hold_call(&self, call_id: &str) -> Result<(), String> {
+        // Check if call exists and is established
+        {
+            let calls = self.active_calls.read().await;
+            if let Some(call) = calls.get(call_id) {
+                if !call.state().is_established() {
+                    return Err("Call must be established to be put on hold".to_string());
+                }
+            } else {
+                return Err(format!("Call {} not found", call_id));
+            }
+        }
+
+        // Mark call as on hold in hold manager
+        self.hold_manager.hold_call(call_id).await?;
+
+        // Start music on hold
+        let moh_player = Arc::new(MohPlayer::new());
+        if let Err(e) = moh_player.start().await {
+            warn!("Failed to start MOH for call {}: {}", call_id, e);
+        } else {
+            // Store MOH player for this call
+            let mut moh_players = self.moh_players.write().await;
+            moh_players.insert(call_id.to_string(), moh_player);
+            debug!("Started MOH for call {}", call_id);
+        }
+
+        // TODO: Update media stream direction to sendonly
+        // This requires accessing the media stream and changing its direction
+
+        info!("Call {} placed on hold with MOH", call_id);
+        Ok(())
+    }
+
+    /// Resume call from hold
+    ///
+    /// This will mark the call as active and restore media stream direction
+    /// to sendrecv
+    pub async fn resume_call(&self, call_id: &str) -> Result<(), String> {
+        // Check if call exists
+        {
+            let calls = self.active_calls.read().await;
+            if !calls.contains_key(call_id) {
+                return Err(format!("Call {} not found", call_id));
+            }
+        }
+
+        // Resume call in hold manager
+        self.hold_manager.resume_call(call_id).await?;
+
+        // Stop music on hold
+        {
+            let mut moh_players = self.moh_players.write().await;
+            if let Some(moh_player) = moh_players.remove(call_id) {
+                if let Err(e) = moh_player.stop().await {
+                    warn!("Failed to stop MOH for call {}: {}", call_id, e);
+                } else {
+                    debug!("Stopped MOH for call {}", call_id);
+                }
+            }
+        }
+
+        // TODO: Update media stream direction to sendrecv
+        // This requires accessing the media stream and changing its direction
+
+        info!("Call {} resumed from hold", call_id);
+        Ok(())
+    }
+
+    /// Mark remote party as holding (detected from re-INVITE with sendonly/recvonly SDP)
+    pub async fn remote_hold(&self, call_id: &str) -> Result<(), String> {
+        self.hold_manager.remote_hold(call_id).await
+    }
+
+    /// Mark remote party as resuming (detected from re-INVITE with sendrecv SDP)
+    pub async fn remote_resume(&self, call_id: &str) -> Result<(), String> {
+        self.hold_manager.remote_resume(call_id).await
+    }
+
+    /// Get hold manager reference (for advanced use cases)
+    pub fn hold_manager(&self) -> Arc<HoldManager> {
+        self.hold_manager.clone()
+    }
+
+    /// Check if call is on hold
+    pub async fn is_call_on_hold(&self, call_id: &str) -> bool {
+        self.hold_manager.is_on_hold(call_id).await
     }
 }
 
@@ -868,6 +988,112 @@ mod tests {
         // Verify call state is Failed
         let state = router.get_call_state("call-terminate").await;
         assert_eq!(state, Some(CallState::Failed));
+    }
+
+    #[tokio::test]
+    async fn test_call_hold_resume() {
+        let registrar = Arc::new(Registrar::new());
+        let router = CallRouter::new(registrar);
+
+        // Create and answer a call
+        router
+            .create_call(
+                "call-hold-test".to_string(),
+                "sip:alice@example.com".to_string(),
+                "sip:bob@example.com".to_string(),
+            )
+            .await
+            .unwrap();
+
+        router.answer_call("call-hold-test").await.unwrap();
+        assert_eq!(router.get_call_state("call-hold-test").await, Some(CallState::Established));
+
+        // Put call on hold
+        router.hold_call("call-hold-test").await.unwrap();
+        assert!(router.is_call_on_hold("call-hold-test").await);
+
+        // Try to hold again (should fail)
+        assert!(router.hold_call("call-hold-test").await.is_err());
+
+        // Resume call
+        router.resume_call("call-hold-test").await.unwrap();
+        assert!(!router.is_call_on_hold("call-hold-test").await);
+
+        // Terminate call
+        router.terminate_call("call-hold-test").await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_call_hold_before_established() {
+        let registrar = Arc::new(Registrar::new());
+        let router = CallRouter::new(registrar);
+
+        // Create call but don't answer
+        router
+            .create_call(
+                "call-early-hold".to_string(),
+                "sip:alice@example.com".to_string(),
+                "sip:bob@example.com".to_string(),
+            )
+            .await
+            .unwrap();
+
+        // Try to hold call before it's established (should fail)
+        let result = router.hold_call("call-early-hold").await;
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("must be established"));
+    }
+
+    #[tokio::test]
+    async fn test_remote_hold_resume() {
+        let registrar = Arc::new(Registrar::new());
+        let router = CallRouter::new(registrar);
+
+        // Create and answer a call
+        router
+            .create_call(
+                "call-remote-hold".to_string(),
+                "sip:alice@example.com".to_string(),
+                "sip:bob@example.com".to_string(),
+            )
+            .await
+            .unwrap();
+
+        router.answer_call("call-remote-hold").await.unwrap();
+
+        // Remote party puts us on hold
+        router.remote_hold("call-remote-hold").await.unwrap();
+        assert!(router.is_call_on_hold("call-remote-hold").await);
+
+        // Remote party resumes
+        router.remote_resume("call-remote-hold").await.unwrap();
+        assert!(!router.is_call_on_hold("call-remote-hold").await);
+    }
+
+    #[tokio::test]
+    async fn test_moh_cleanup_on_terminate() {
+        let registrar = Arc::new(Registrar::new());
+        let router = CallRouter::new(registrar);
+
+        // Create, answer, and hold a call
+        router
+            .create_call(
+                "call-moh-cleanup".to_string(),
+                "sip:alice@example.com".to_string(),
+                "sip:bob@example.com".to_string(),
+            )
+            .await
+            .unwrap();
+
+        router.answer_call("call-moh-cleanup").await.unwrap();
+        router.hold_call("call-moh-cleanup").await.unwrap();
+        assert!(router.is_call_on_hold("call-moh-cleanup").await);
+
+        // Terminate call (should cleanup MOH)
+        router.terminate_call("call-moh-cleanup").await.unwrap();
+
+        // Verify call is removed
+        assert_eq!(router.get_call_state("call-moh-cleanup").await, None);
     }
 
     // Helper function to create a test request
