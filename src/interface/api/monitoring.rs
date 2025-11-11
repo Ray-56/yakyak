@@ -11,7 +11,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::sync::RwLock;
 use tracing::info;
 
-use crate::interface::api::router::AppState;
+use super::user_handler::AppState;
 
 /// System metrics
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -305,8 +305,60 @@ pub async fn get_system_health(
 ) -> impl IntoResponse {
     info!("Fetching system health");
 
-    // TODO: Get actual metrics from state
-    let health = SystemHealth::new();
+    let mut health = SystemHealth::new();
+
+    // Get active calls
+    if let Some(ref call_router) = state.call_router {
+        let active_calls = call_router.active_call_count().await;
+        health.metrics.active_calls = active_calls;
+        health.call_metrics.active_calls = active_calls;
+    }
+
+    // Get registered users
+    if let Some(ref registrar) = state.registrar {
+        let registered_count = registrar.get_registration_count().await;
+        health.metrics.registered_users = registered_count;
+        health.registration_metrics.active_registrations = registered_count;
+    }
+
+    // Get CDR statistics
+    if let Some(ref cdr_repo) = state.cdr_repository {
+        // Count total calls
+        if let Ok(total) = cdr_repo.count(Default::default()).await {
+            health.call_metrics.total_calls = total as u64;
+            health.metrics.total_calls_all_time = total as u64;
+        }
+
+        // Get today's calls
+        let today_start = chrono::Utc::now()
+            .date_naive()
+            .and_hms_opt(0, 0, 0)
+            .unwrap()
+            .and_utc();
+
+        let mut today_filter = crate::domain::cdr::CdrFilters::default();
+        today_filter.start_time_from = Some(today_start);
+
+        if let Ok(today_count) = cdr_repo.count(today_filter).await {
+            health.metrics.total_calls_today = today_count as u64;
+        }
+
+        // Count completed/failed calls
+        let mut completed_filter = crate::domain::cdr::CdrFilters::default();
+        completed_filter.status = Some(crate::domain::cdr::CallStatus::Completed);
+        if let Ok(completed) = cdr_repo.count(completed_filter).await {
+            health.call_metrics.completed_calls = completed as u64;
+        }
+
+        let mut failed_filter = crate::domain::cdr::CdrFilters::default();
+        failed_filter.status = Some(crate::domain::cdr::CallStatus::Failed);
+        if let Ok(failed) = cdr_repo.count(failed_filter).await {
+            health.call_metrics.failed_calls = failed as u64;
+        }
+    }
+
+    // Check health status
+    health.check_health();
 
     (StatusCode::OK, Json(health)).into_response()
 }
@@ -317,19 +369,62 @@ pub async fn get_prometheus_metrics(
 ) -> impl IntoResponse {
     info!("Fetching Prometheus metrics");
 
-    // TODO: Get actual metrics
+    let mut active_calls = 0;
+    let mut registered_users = 0;
+    let mut total_calls = 0;
+    let mut completed_calls = 0;
+    let mut failed_calls = 0;
+
+    // Get active calls
+    if let Some(ref call_router) = state.call_router {
+        active_calls = call_router.active_call_count().await;
+    }
+
+    // Get registered users
+    if let Some(ref registrar) = state.registrar {
+        registered_users = registrar.get_registration_count().await;
+    }
+
+    // Get call statistics
+    if let Some(ref cdr_repo) = state.cdr_repository {
+        if let Ok(total) = cdr_repo.count(Default::default()).await {
+            total_calls = total;
+        }
+
+        let mut completed_filter = crate::domain::cdr::CdrFilters::default();
+        completed_filter.status = Some(crate::domain::cdr::CallStatus::Completed);
+        if let Ok(completed) = cdr_repo.count(completed_filter).await {
+            completed_calls = completed;
+        }
+
+        let mut failed_filter = crate::domain::cdr::CdrFilters::default();
+        failed_filter.status = Some(crate::domain::cdr::CallStatus::Failed);
+        if let Ok(failed) = cdr_repo.count(failed_filter).await {
+            failed_calls = failed;
+        }
+    }
+
+    // Format Prometheus metrics
     let metrics = format!(
         "# HELP yakyak_active_calls Number of active calls\n\
          # TYPE yakyak_active_calls gauge\n\
-         yakyak_active_calls 0\n\
+         yakyak_active_calls {}\n\
          \n\
          # HELP yakyak_registered_users Number of registered SIP endpoints\n\
          # TYPE yakyak_registered_users gauge\n\
-         yakyak_registered_users 0\n\
+         yakyak_registered_users {}\n\
          \n\
          # HELP yakyak_total_calls Total calls processed\n\
          # TYPE yakyak_total_calls counter\n\
-         yakyak_total_calls 0\n\
+         yakyak_total_calls {}\n\
+         \n\
+         # HELP yakyak_completed_calls Total completed calls\n\
+         # TYPE yakyak_completed_calls counter\n\
+         yakyak_completed_calls {}\n\
+         \n\
+         # HELP yakyak_failed_calls Total failed calls\n\
+         # TYPE yakyak_failed_calls counter\n\
+         yakyak_failed_calls {}\n\
          \n\
          # HELP yakyak_call_duration_seconds Call duration histogram\n\
          # TYPE yakyak_call_duration_seconds histogram\n\
@@ -339,7 +434,12 @@ pub async fn get_prometheus_metrics(
          yakyak_call_duration_seconds_bucket{{le=\"300\"}} 0\n\
          yakyak_call_duration_seconds_bucket{{le=\"+Inf\"}} 0\n\
          yakyak_call_duration_seconds_sum 0\n\
-         yakyak_call_duration_seconds_count 0\n"
+         yakyak_call_duration_seconds_count 0\n",
+        active_calls,
+        registered_users,
+        total_calls,
+        completed_calls,
+        failed_calls
     );
 
     (StatusCode::OK, metrics).into_response()

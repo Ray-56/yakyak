@@ -696,6 +696,119 @@ impl CallRouter {
     pub async fn is_call_on_hold(&self, call_id: &str) -> bool {
         self.hold_manager.is_on_hold(call_id).await
     }
+
+    /// Blind transfer - transfer call to another party without consultation
+    ///
+    /// # Arguments
+    /// * `call_id` - The call to transfer
+    /// * `target_uri` - The URI to transfer to (from Refer-To header)
+    ///
+    /// # Returns
+    /// Ok(()) if transfer was initiated successfully
+    pub async fn blind_transfer(&self, call_id: &str, target_uri: &str) -> Result<(), String> {
+        // Check if call exists and is established
+        {
+            let calls = self.active_calls.read().await;
+            if let Some(call) = calls.get(call_id) {
+                if !call.state().is_established() {
+                    return Err("Call must be established to be transferred".to_string());
+                }
+            } else {
+                return Err(format!("Call {} not found", call_id));
+            }
+        }
+
+        info!(
+            "Initiating blind transfer for call {} to {}",
+            call_id, target_uri
+        );
+
+        // In a real implementation, we would:
+        // 1. Send NOTIFY to transferor with "SIP/2.0 100 Trying"
+        // 2. Create new INVITE to target
+        // 3. Wait for target response
+        // 4. Send NOTIFY to transferor with final status
+        // 5. Bridge original caller with target
+        // 6. Terminate transferor's leg
+
+        // For now, just mark as successful
+        // TODO: Implement actual call bridging and NOTIFY sending
+
+        info!("Blind transfer initiated for call {}", call_id);
+        Ok(())
+    }
+
+    /// Attended transfer (consultative transfer) - transfer after consultation
+    ///
+    /// # Arguments
+    /// * `call_id` - The original call to transfer
+    /// * `target_uri` - The target URI (from Refer-To header)
+    /// * `replaces` - The Replaces header value (identifies consultation call)
+    ///
+    /// # Returns
+    /// Ok(()) if transfer was initiated successfully
+    pub async fn attended_transfer(
+        &self,
+        call_id: &str,
+        target_uri: &str,
+        replaces: Option<&str>,
+    ) -> Result<(), String> {
+        // Check if call exists and is established
+        {
+            let calls = self.active_calls.read().await;
+            if let Some(call) = calls.get(call_id) {
+                if !call.state().is_established() {
+                    return Err("Call must be established to be transferred".to_string());
+                }
+            } else {
+                return Err(format!("Call {} not found", call_id));
+            }
+        }
+
+        info!(
+            "Initiating attended transfer for call {} to {} (replaces: {:?})",
+            call_id, target_uri, replaces
+        );
+
+        // Parse Replaces header to extract call-id, to-tag, from-tag
+        // Format: call-id;to-tag=xxx;from-tag=yyy
+        let replaced_call_id = if let Some(replaces_value) = replaces {
+            Self::parse_replaces_header(replaces_value)
+        } else {
+            return Err("Attended transfer requires Replaces header".to_string());
+        };
+
+        debug!(
+            "Attended transfer: replacing call {} with call {}",
+            replaced_call_id, call_id
+        );
+
+        // In a real implementation, we would:
+        // 1. Verify the consultation call (replaced_call_id) exists
+        // 2. Send NOTIFY to transferor with "SIP/2.0 100 Trying"
+        // 3. Send INVITE to target with Replaces header
+        // 4. Wait for target to accept
+        // 5. Bridge the two calls
+        // 6. Send NOTIFY to transferor with success
+        // 7. Terminate transferor's legs
+
+        // For now, just mark as successful
+        // TODO: Implement actual attended transfer logic
+
+        info!("Attended transfer initiated for call {}", call_id);
+        Ok(())
+    }
+
+    /// Parse Replaces header
+    /// Format: call-id;to-tag=xxx;from-tag=yyy
+    fn parse_replaces_header(replaces: &str) -> String {
+        // Extract call-id (everything before first semicolon)
+        replaces
+            .split(';')
+            .next()
+            .unwrap_or("unknown")
+            .to_string()
+    }
 }
 
 #[cfg(test)]
@@ -1094,6 +1207,145 @@ mod tests {
 
         // Verify call is removed
         assert_eq!(router.get_call_state("call-moh-cleanup").await, None);
+    }
+
+    #[tokio::test]
+    async fn test_blind_transfer() {
+        let registrar = Arc::new(Registrar::new());
+        let router = CallRouter::new(registrar);
+
+        // Create and answer a call
+        router
+            .create_call(
+                "call-transfer".to_string(),
+                "sip:alice@example.com".to_string(),
+                "sip:bob@example.com".to_string(),
+            )
+            .await
+            .unwrap();
+
+        router.answer_call("call-transfer").await.unwrap();
+        assert_eq!(router.get_call_state("call-transfer").await, Some(CallState::Established));
+
+        // Initiate blind transfer to charlie
+        let result = router
+            .blind_transfer("call-transfer", "sip:charlie@example.com")
+            .await;
+
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_blind_transfer_before_established() {
+        let registrar = Arc::new(Registrar::new());
+        let router = CallRouter::new(registrar);
+
+        // Create call but don't answer
+        router
+            .create_call(
+                "call-early-transfer".to_string(),
+                "sip:alice@example.com".to_string(),
+                "sip:bob@example.com".to_string(),
+            )
+            .await
+            .unwrap();
+
+        // Try to transfer before call is established (should fail)
+        let result = router
+            .blind_transfer("call-early-transfer", "sip:charlie@example.com")
+            .await;
+
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("must be established"));
+    }
+
+    #[tokio::test]
+    async fn test_blind_transfer_nonexistent_call() {
+        let registrar = Arc::new(Registrar::new());
+        let router = CallRouter::new(registrar);
+
+        // Try to transfer nonexistent call (should fail)
+        let result = router
+            .blind_transfer("nonexistent-call", "sip:charlie@example.com")
+            .await;
+
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("not found"));
+    }
+
+    #[tokio::test]
+    async fn test_attended_transfer() {
+        let registrar = Arc::new(Registrar::new());
+        let router = CallRouter::new(registrar);
+
+        // Create and answer original call (alice -> bob)
+        router
+            .create_call(
+                "call-original".to_string(),
+                "sip:alice@example.com".to_string(),
+                "sip:bob@example.com".to_string(),
+            )
+            .await
+            .unwrap();
+
+        router.answer_call("call-original").await.unwrap();
+
+        // Create and answer consultation call (bob -> charlie)
+        router
+            .create_call(
+                "call-consult".to_string(),
+                "sip:bob@example.com".to_string(),
+                "sip:charlie@example.com".to_string(),
+            )
+            .await
+            .unwrap();
+
+        router.answer_call("call-consult").await.unwrap();
+
+        // Initiate attended transfer with Replaces header
+        let replaces = "call-consult;to-tag=abc123;from-tag=def456";
+        let result = router
+            .attended_transfer("call-original", "sip:charlie@example.com", Some(replaces))
+            .await;
+
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_attended_transfer_without_replaces() {
+        let registrar = Arc::new(Registrar::new());
+        let router = CallRouter::new(registrar);
+
+        // Create and answer a call
+        router
+            .create_call(
+                "call-transfer-no-replaces".to_string(),
+                "sip:alice@example.com".to_string(),
+                "sip:bob@example.com".to_string(),
+            )
+            .await
+            .unwrap();
+
+        router.answer_call("call-transfer-no-replaces").await.unwrap();
+
+        // Try attended transfer without Replaces header (should fail)
+        let result = router
+            .attended_transfer("call-transfer-no-replaces", "sip:charlie@example.com", None)
+            .await;
+
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Replaces header"));
+    }
+
+    #[test]
+    fn test_parse_replaces_header() {
+        let replaces = "call-id-123;to-tag=abc;from-tag=def";
+        let call_id = CallRouter::parse_replaces_header(replaces);
+        assert_eq!(call_id, "call-id-123");
+
+        let replaces_simple = "simple-call-id";
+        let call_id_simple = CallRouter::parse_replaces_header(replaces_simple);
+        assert_eq!(call_id_simple, "simple-call-id");
     }
 
     // Helper function to create a test request

@@ -587,6 +587,149 @@ impl SipHandler for ByeHandler {
     }
 }
 
+/// REFER handler - handles blind and attended transfers
+pub struct ReferHandler {
+    call_router: Arc<CallRouter>,
+}
+
+impl ReferHandler {
+    pub fn new(call_router: Arc<CallRouter>) -> Self {
+        Self { call_router }
+    }
+}
+
+#[async_trait]
+impl SipHandler for ReferHandler {
+    async fn handle_request(&self, request: SipRequest) -> Result<SipResponse, SipError> {
+        let call_id = request.call_id().unwrap_or_else(|| "unknown".to_string());
+        info!("Received REFER for call {}", call_id);
+
+        // Extract Refer-To header
+        let refer_to = request
+            .headers()
+            .iter()
+            .find_map(|h| match h {
+                Header::Other(name, value) if name.eq_ignore_ascii_case("Refer-To") => {
+                    Some(value.clone())
+                }
+                _ => None,
+            });
+
+        if refer_to.is_none() {
+            warn!("REFER without Refer-To header for call {}", call_id);
+            return ResponseBuilder::new(400).build_for_request(&request);
+        }
+
+        let refer_to_uri = refer_to.unwrap();
+        info!("Transfer target: {}", refer_to_uri);
+
+        // Check if Replaces header exists (attended transfer)
+        let replaces = request
+            .headers()
+            .iter()
+            .find_map(|h| match h {
+                Header::Other(name, value) if name.eq_ignore_ascii_case("Replaces") => {
+                    Some(value.clone())
+                }
+                _ => None,
+            });
+
+        // Initiate transfer in call router
+        let transfer_result = if replaces.is_some() {
+            // Attended transfer
+            info!("Attended transfer requested for call {}", call_id);
+            self.call_router
+                .attended_transfer(&call_id, &refer_to_uri, replaces.as_deref())
+                .await
+        } else {
+            // Blind transfer
+            info!("Blind transfer requested for call {}", call_id);
+            self.call_router
+                .blind_transfer(&call_id, &refer_to_uri)
+                .await
+        };
+
+        match transfer_result {
+            Ok(_) => {
+                info!("Transfer initiated for call {}", call_id);
+                // Return 202 Accepted
+                ResponseBuilder::new(202).build_for_request(&request)
+            }
+            Err(e) => {
+                warn!("Transfer failed for call {}: {}", call_id, e);
+                // Return 503 Service Unavailable
+                ResponseBuilder::new(503).build_for_request(&request)
+            }
+        }
+    }
+
+    fn can_handle(&self, method: SipMethod) -> bool {
+        matches!(method, SipMethod::Refer)
+    }
+}
+
+/// NOTIFY handler - handles transfer status notifications
+pub struct NotifyHandler {
+    call_router: Arc<CallRouter>,
+}
+
+impl NotifyHandler {
+    pub fn new(call_router: Arc<CallRouter>) -> Self {
+        Self { call_router }
+    }
+}
+
+#[async_trait]
+impl SipHandler for NotifyHandler {
+    async fn handle_request(&self, request: SipRequest) -> Result<SipResponse, SipError> {
+        let call_id = request.call_id().unwrap_or_else(|| "unknown".to_string());
+        info!("Received NOTIFY for call {}", call_id);
+
+        // Extract Event header
+        let event = request
+            .headers()
+            .iter()
+            .find_map(|h| match h {
+                Header::Other(name, value) if name.eq_ignore_ascii_case("Event") => {
+                    Some(value.clone())
+                }
+                _ => None,
+            });
+
+        // Extract Subscription-State header
+        let subscription_state = request
+            .headers()
+            .iter()
+            .find_map(|h| match h {
+                Header::Other(name, value) if name.eq_ignore_ascii_case("Subscription-State") => {
+                    Some(value.clone())
+                }
+                _ => None,
+            });
+
+        debug!(
+            "NOTIFY event: {:?}, subscription-state: {:?}",
+            event, subscription_state
+        );
+
+        // Parse body for SIP message fragment (transfer status)
+        if !request.body().is_empty() {
+            let body_str = String::from_utf8_lossy(request.body());
+            debug!("NOTIFY body: {}", body_str);
+
+            // TODO: Parse the SIP message fragment to determine transfer status
+            // For now, just log it
+        }
+
+        // Return 200 OK
+        ResponseBuilder::ok().build_for_request(&request)
+    }
+
+    fn can_handle(&self, method: SipMethod) -> bool {
+        matches!(method, SipMethod::Notify)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
