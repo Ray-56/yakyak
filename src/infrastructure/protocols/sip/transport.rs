@@ -2,7 +2,10 @@
 
 use super::message::{SipError, SipMessage};
 use bytes::Bytes;
-use rustls::ServerConfig;
+use rustls::{ClientConfig, ServerConfig};
+use rustls::client::danger::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier};
+use rustls::pki_types::{CertificateDer, ServerName, UnixTime};
+use rustls::DigitallySignedStruct;
 use rustls_pemfile::{certs, rsa_private_keys};
 use std::fs::File;
 use std::io::BufReader;
@@ -11,8 +14,51 @@ use std::path::Path;
 use std::sync::Arc;
 use tokio::net::{TcpListener, TcpStream, UdpSocket};
 use tokio::sync::mpsc;
-use tokio_rustls::TlsAcceptor;
+use tokio_rustls::{TlsAcceptor, TlsConnector};
 use tracing::{debug, error, info, warn};
+
+/// Custom certificate verifier that accepts any certificate
+/// Used for SIP where self-signed certificates are common
+struct NoCertificateVerification;
+
+impl ServerCertVerifier for NoCertificateVerification {
+    fn verify_server_cert(
+        &self,
+        _end_entity: &CertificateDer<'_>,
+        _intermediates: &[CertificateDer<'_>],
+        _server_name: &ServerName<'_>,
+        _ocsp_response: &[u8],
+        _now: UnixTime,
+    ) -> Result<ServerCertVerified, rustls::Error> {
+        Ok(ServerCertVerified::assertion())
+    }
+
+    fn verify_tls12_signature(
+        &self,
+        _message: &[u8],
+        _cert: &CertificateDer<'_>,
+        _dss: &DigitallySignedStruct,
+    ) -> Result<HandshakeSignatureValid, rustls::Error> {
+        Ok(HandshakeSignatureValid::assertion())
+    }
+
+    fn verify_tls13_signature(
+        &self,
+        _message: &[u8],
+        _cert: &CertificateDer<'_>,
+        _dss: &DigitallySignedStruct,
+    ) -> Result<HandshakeSignatureValid, rustls::Error> {
+        Ok(HandshakeSignatureValid::assertion())
+    }
+
+    fn supported_verify_schemes(&self) -> Vec<rustls::SignatureScheme> {
+        vec![
+            rustls::SignatureScheme::RSA_PKCS1_SHA256,
+            rustls::SignatureScheme::ECDSA_NISTP256_SHA256,
+            rustls::SignatureScheme::ED25519,
+        ]
+    }
+}
 
 /// Transport protocol type
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -517,6 +563,8 @@ impl Transport for TlsTransport {
 
     async fn send(&self, message: OutgoingMessage) -> Result<(), SipError> {
         use tokio::io::AsyncWriteExt;
+        use rustls::pki_types::ServerName;
+        use rustls::RootCertStore;
 
         debug!(
             "Sending {} bytes to {} via TLS",
@@ -524,8 +572,16 @@ impl Transport for TlsTransport {
             message.destination
         );
 
-        // For TLS client connections, we need to implement a connection pool
-        // For now, we create a new connection each time (simplified)
+        // Create TLS client configuration (accept any certificate for SIP flexibility)
+        let root_store = RootCertStore::empty();
+        let config = ClientConfig::builder()
+            .dangerous()
+            .with_custom_certificate_verifier(Arc::new(NoCertificateVerification))
+            .with_no_client_auth();
+
+        let connector = TlsConnector::from(Arc::new(config));
+
+        // Connect to destination
         let stream = TcpStream::connect(message.destination)
             .await
             .map_err(|e| {
@@ -535,25 +591,30 @@ impl Transport for TlsTransport {
                 ))
             })?;
 
-        // Note: For proper TLS client implementation, we'd need to:
-        // 1. Create a TLS connector with proper configuration
-        // 2. Perform TLS handshake
-        // 3. Use a connection pool to reuse connections
-        // For now, fall back to plain TCP for outgoing connections
-        // This is sufficient for server-side TLS (receiving encrypted SIP messages)
+        // Use IP address as server name (SIP often uses IPs)
+        let server_name = ServerName::try_from(message.destination.ip().to_string())
+            .unwrap_or_else(|_| ServerName::try_from("sip.server").unwrap());
 
-        let mut stream = stream;
-        stream
+        // Perform TLS handshake
+        let mut tls_stream = connector
+            .connect(server_name, stream)
+            .await
+            .map_err(|e| {
+                SipError::TransportError(format!("TLS handshake failed: {}", e))
+            })?;
+
+        // Send data over TLS
+        tls_stream
             .write_all(&message.data)
             .await
             .map_err(|e| SipError::TransportError(format!("Failed to send TLS data: {}", e)))?;
 
-        stream
+        tls_stream
             .flush()
             .await
             .map_err(|e| SipError::TransportError(format!("Failed to flush TLS stream: {}", e)))?;
 
-        warn!("TLS client connections not fully implemented - sent via plain TCP");
+        debug!("Successfully sent {} bytes via TLS", message.data.len());
 
         Ok(())
     }

@@ -4,6 +4,7 @@ use super::auth::SipAuthenticator;
 use super::builder::ResponseBuilder;
 use super::call_router::CallRouter;
 use super::handler::SipHandler;
+use super::hold_manager::SdpHoldHelper;
 use super::message::{SipError, SipMethod, SipRequest, SipResponse};
 use super::registrar::Registrar;
 use super::sdp::SdpSession;
@@ -162,6 +163,12 @@ impl InviteHandler {
 
         debug!("Call: {} -> {}", from_uri, to_uri);
 
+        // Check if this is a re-INVITE (call already exists)
+        if let Some(_call_state) = self.call_router.get_call_state(&call_id).await {
+            info!("Detected re-INVITE for existing call {}", call_id);
+            return self.handle_reinvite(request, &call_id).await;
+        }
+
         // Check if callee is registered
         let callee_available = self.call_router.is_callee_available(&to_uri).await;
 
@@ -298,6 +305,97 @@ impl InviteHandler {
         info!("Sent 200 OK for call {}", call_id);
 
         Ok(response)
+    }
+
+    /// Handle re-INVITE for session modification (hold/resume)
+    async fn handle_reinvite(&self, request: &SipRequest, call_id: &str) -> Result<SipResponse, SipError> {
+        info!("Handling re-INVITE for call {}", call_id);
+
+        // Parse SDP from request body
+        let sdp_offer = {
+            let body = request.body();
+            if !body.is_empty() {
+                let body_str = String::from_utf8_lossy(body);
+                SdpSession::parse(&body_str)
+            } else {
+                None
+            }
+        };
+
+        if let Some(offer) = sdp_offer {
+            let sdp_str = String::from_utf8_lossy(request.body());
+
+            // Detect hold state from SDP
+            let hold_state = SdpHoldHelper::detect_hold_state(&sdp_str);
+
+            info!("Detected hold state: {:?} for call {}", hold_state, call_id);
+
+            // Update hold state in call router
+            use super::hold_manager::HoldState;
+            match hold_state {
+                HoldState::Active => {
+                    // Remote party is resuming from hold
+                    if let Err(e) = self.call_router.remote_resume(call_id).await {
+                        warn!("Failed to resume call {}: {}", call_id, e);
+                    }
+                }
+                HoldState::RemoteHold | HoldState::LocalHold => {
+                    // Remote party is placing us on hold (sendonly from their perspective)
+                    if let Err(e) = self.call_router.remote_hold(call_id).await {
+                        warn!("Failed to hold call {}: {}", call_id, e);
+                    }
+                }
+                HoldState::BothHold => {
+                    // Both parties on hold (inactive)
+                    if let Err(e) = self.call_router.remote_hold(call_id).await {
+                        warn!("Failed to hold call {}: {}", call_id, e);
+                    }
+                }
+            }
+
+            // Create SDP answer
+            // For now, we'll mirror the hold state back
+            // In a real implementation, you'd use the actual local media parameters
+            let media_port = offer.audio_media().map(|m| m.port).unwrap_or(10000);
+            let sdp = SdpSession::create_audio_session(
+                self.local_ip,
+                media_port,
+            );
+            let mut sdp_body = sdp.to_string();
+
+            // Apply hold state to answer SDP
+            match hold_state {
+                HoldState::Active => {
+                    // Remote is active, we're active (sendrecv)
+                    sdp_body = SdpHoldHelper::create_resume_sdp(&sdp_body);
+                }
+                HoldState::RemoteHold | HoldState::LocalHold => {
+                    // Remote is on hold, we send recvonly
+                    // (we're receiving only, they're sending music on hold)
+                    // Note: This is the opposite of their sendonly
+                    sdp_body = sdp_body.replace("a=sendrecv", "a=recvonly");
+                    if !sdp_body.contains("a=recvonly") {
+                        sdp_body.push_str("a=recvonly\r\n");
+                    }
+                }
+                HoldState::BothHold => {
+                    // Both on hold
+                    sdp_body = SdpHoldHelper::create_hold_sdp(&sdp_body, true);
+                }
+            }
+
+            // Build 200 OK response with SDP
+            let response = ResponseBuilder::ok()
+                .body(sdp_body.into_bytes())
+                .build_for_request(request)?;
+
+            info!("Sent 200 OK for re-INVITE (call {})", call_id);
+            Ok(response)
+        } else {
+            // No SDP in re-INVITE, just return 200 OK
+            warn!("re-INVITE without SDP for call {}", call_id);
+            ResponseBuilder::ok().build_for_request(request)
+        }
     }
 
     fn extract_from_uri(&self, request: &SipRequest) -> String {

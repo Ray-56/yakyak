@@ -1,6 +1,7 @@
 //! Simple SDP (Session Description Protocol) handling
 
 use std::net::IpAddr;
+use crate::infrastructure::media::srtp::{SrtpMasterKey, SrtpProfile};
 
 /// Simple SDP session
 #[derive(Debug, Clone)]
@@ -29,13 +30,121 @@ pub struct SdpConnection {
     pub address: String,
 }
 
+/// SRTP crypto line (SDES)
+#[derive(Debug, Clone)]
+pub struct SdpCrypto {
+    pub tag: u32,
+    pub crypto_suite: String,
+    pub key_params: String, // base64-encoded key material
+    pub session_params: Option<String>,
+}
+
+impl SdpCrypto {
+    /// Create from SRTP master key
+    pub fn from_master_key(tag: u32, master_key: &SrtpMasterKey, profile: SrtpProfile) -> Self {
+        // Concatenate master key and salt
+        let mut key_material = Vec::new();
+        key_material.extend_from_slice(&master_key.key);
+        key_material.extend_from_slice(&master_key.salt);
+
+        // Base64 encode
+        let key_params = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &key_material);
+
+        let crypto_suite = match profile {
+            SrtpProfile::Aes128CmHmacSha1_80 => "AES_CM_128_HMAC_SHA1_80",
+            SrtpProfile::Aes128CmHmacSha1_32 => "AES_CM_128_HMAC_SHA1_32",
+            SrtpProfile::Aes256CmHmacSha1_80 => "AES_CM_256_HMAC_SHA1_80",
+            SrtpProfile::Aes256CmHmacSha1_32 => "AES_CM_256_HMAC_SHA1_32",
+        };
+
+        Self {
+            tag,
+            crypto_suite: crypto_suite.to_string(),
+            key_params,
+            session_params: None,
+        }
+    }
+
+    /// Parse from crypto attribute line
+    pub fn parse(value: &str) -> Option<Self> {
+        // Format: <tag> <crypto-suite> inline:<key-params> [<session-params>]
+        let parts: Vec<&str> = value.split_whitespace().collect();
+        if parts.len() < 3 {
+            return None;
+        }
+
+        let tag = parts[0].parse().ok()?;
+        let crypto_suite = parts[1].to_string();
+
+        let inline_part = parts[2];
+        if !inline_part.starts_with("inline:") {
+            return None;
+        }
+        let key_params = inline_part[7..].to_string();
+
+        let session_params = if parts.len() > 3 {
+            Some(parts[3..].join(" "))
+        } else {
+            None
+        };
+
+        Some(Self {
+            tag,
+            crypto_suite,
+            key_params,
+            session_params,
+        })
+    }
+
+    /// Convert to master key
+    pub fn to_master_key(&self) -> Option<(SrtpMasterKey, SrtpProfile)> {
+        // Decode base64
+        let key_material = base64::Engine::decode(
+            &base64::engine::general_purpose::STANDARD,
+            &self.key_params
+        ).ok()?;
+
+        // Determine profile and key/salt lengths
+        let profile = match self.crypto_suite.as_str() {
+            "AES_CM_128_HMAC_SHA1_80" => SrtpProfile::Aes128CmHmacSha1_80,
+            "AES_CM_128_HMAC_SHA1_32" => SrtpProfile::Aes128CmHmacSha1_32,
+            "AES_CM_256_HMAC_SHA1_80" => SrtpProfile::Aes256CmHmacSha1_80,
+            "AES_CM_256_HMAC_SHA1_32" => SrtpProfile::Aes256CmHmacSha1_32,
+            _ => return None,
+        };
+
+        let key_len = profile.master_key_len();
+        let salt_len = profile.master_salt_len();
+
+        if key_material.len() < key_len + salt_len {
+            return None;
+        }
+
+        let key = key_material[..key_len].to_vec();
+        let salt = key_material[key_len..key_len + salt_len].to_vec();
+
+        Some((SrtpMasterKey::new(key, salt), profile))
+    }
+
+    /// Convert to attribute string
+    pub fn to_string(&self) -> String {
+        let mut result = format!("{} {} inline:{}", self.tag, self.crypto_suite, self.key_params);
+        if let Some(ref params) = self.session_params {
+            result.push(' ');
+            result.push_str(params);
+        }
+        result
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct SdpMedia {
     pub media_type: String,  // "audio", "video"
     pub port: u16,
-    pub protocol: String,    // "RTP/AVP"
+    pub protocol: String,    // "RTP/AVP" or "RTP/SAVP"
     pub formats: Vec<String>, // Codec payload types
     pub rtpmap: Vec<(String, String)>, // (payload_type, encoding)
+    pub crypto: Vec<SdpCrypto>, // SRTP crypto lines
 }
 
 impl SdpSession {
@@ -67,6 +176,7 @@ impl SdpSession {
                     ("8".to_string(), "PCMA/8000".to_string()),
                     ("101".to_string(), "telephone-event/8000".to_string()),
                 ],
+                crypto: Vec::new(),
             }],
         }
     }
@@ -110,6 +220,11 @@ impl SdpSession {
                 media.protocol,
                 media.formats.join(" ")
             ));
+
+            // Crypto (SRTP)
+            for crypto in &media.crypto {
+                sdp.push_str(&format!("a=crypto:{}\r\n", crypto.to_string()));
+            }
 
             // RTP map
             for (pt, encoding) in &media.rtpmap {
@@ -203,6 +318,7 @@ impl SdpSession {
                             protocol,
                             formats,
                             rtpmap: Vec::new(),
+                            crypto: Vec::new(),
                         });
                     }
                 }
@@ -215,6 +331,11 @@ impl SdpSession {
                                 let pt = rtpmap_value[..space_pos].to_string();
                                 let encoding = rtpmap_value[space_pos + 1..].to_string();
                                 media.rtpmap.push((pt, encoding));
+                            }
+                        } else if value.starts_with("crypto:") {
+                            let crypto_value = &value[7..]; // Skip "crypto:"
+                            if let Some(crypto) = SdpCrypto::parse(crypto_value) {
+                                media.crypto.push(crypto);
                             }
                         }
                     }
@@ -258,6 +379,37 @@ impl SdpSession {
                 .collect()
         } else {
             Vec::new()
+        }
+    }
+
+    /// Add SRTP crypto to audio media
+    pub fn add_srtp_crypto(&mut self, master_key: &SrtpMasterKey, profile: SrtpProfile) {
+        if let Some(media) = self.media.iter_mut().find(|m| m.media_type == "audio") {
+            // Change protocol to RTP/SAVP for SRTP
+            media.protocol = "RTP/SAVP".to_string();
+
+            // Add crypto line
+            let tag = (media.crypto.len() + 1) as u32;
+            media.crypto.push(SdpCrypto::from_master_key(tag, master_key, profile));
+        }
+    }
+
+    /// Get SRTP crypto from audio media
+    pub fn get_srtp_crypto(&self) -> Option<(SrtpMasterKey, SrtpProfile)> {
+        if let Some(audio) = self.audio_media() {
+            // Get first crypto line (highest priority)
+            audio.crypto.first()?.to_master_key()
+        } else {
+            None
+        }
+    }
+
+    /// Check if SRTP is enabled
+    pub fn is_srtp_enabled(&self) -> bool {
+        if let Some(audio) = self.audio_media() {
+            !audio.crypto.is_empty() && audio.protocol.contains("SAVP")
+        } else {
+            false
         }
     }
 }
@@ -319,5 +471,92 @@ a=rtpmap:8 PCMA/8000
         let audio = parsed.audio_media().unwrap();
         assert_eq!(audio.port, 20000);
         assert_eq!(audio.media_type, "audio");
+    }
+
+    #[test]
+    fn test_sdp_crypto_parse() {
+        let crypto_str = "1 AES_CM_128_HMAC_SHA1_80 inline:d0RmdmcmVCspeEc3QGZiNWpVLFJhQX1cfHAwJSoj";
+        let crypto = SdpCrypto::parse(crypto_str).unwrap();
+
+        assert_eq!(crypto.tag, 1);
+        assert_eq!(crypto.crypto_suite, "AES_CM_128_HMAC_SHA1_80");
+        assert_eq!(crypto.key_params, "d0RmdmcmVCspeEc3QGZiNWpVLFJhQX1cfHAwJSoj");
+    }
+
+    #[test]
+    fn test_sdp_crypto_roundtrip() {
+        use crate::infrastructure::media::srtp::{SrtpMasterKey, SrtpProfile};
+
+        let profile = SrtpProfile::Aes128CmHmacSha1_80;
+        let master_key = SrtpMasterKey::generate(profile);
+
+        // Create crypto line
+        let crypto = SdpCrypto::from_master_key(1, &master_key, profile);
+
+        // Convert back to master key
+        let (decoded_key, decoded_profile) = crypto.to_master_key().unwrap();
+
+        assert_eq!(decoded_profile, profile);
+        assert_eq!(decoded_key.key, master_key.key);
+        assert_eq!(decoded_key.salt, master_key.salt);
+    }
+
+    #[test]
+    fn test_sdp_with_srtp() {
+        use crate::infrastructure::media::srtp::{SrtpMasterKey, SrtpProfile};
+
+        let local_ip: IpAddr = "192.168.1.100".parse().unwrap();
+        let mut sdp = SdpSession::create_audio_session(local_ip, 10000);
+
+        // Initially no SRTP
+        assert!(!sdp.is_srtp_enabled());
+
+        // Add SRTP
+        let profile = SrtpProfile::Aes128CmHmacSha1_80;
+        let master_key = SrtpMasterKey::generate(profile);
+        sdp.add_srtp_crypto(&master_key, profile);
+
+        // Check SRTP enabled
+        assert!(sdp.is_srtp_enabled());
+
+        // Convert to string
+        let sdp_str = sdp.to_string();
+        assert!(sdp_str.contains("RTP/SAVP"));
+        assert!(sdp_str.contains("a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:"));
+
+        // Parse back
+        let parsed = SdpSession::parse(&sdp_str).unwrap();
+        assert!(parsed.is_srtp_enabled());
+
+        // Get crypto
+        let (decoded_key, decoded_profile) = parsed.get_srtp_crypto().unwrap();
+        assert_eq!(decoded_profile, profile);
+        assert_eq!(decoded_key.key, master_key.key);
+        assert_eq!(decoded_key.salt, master_key.salt);
+    }
+
+    #[test]
+    fn test_parse_sdp_with_crypto() {
+        let sdp_str = r#"v=0
+o=user1 123456 7890 IN IP4 192.168.1.100
+s=Test Session
+c=IN IP4 192.168.1.100
+t=0 0
+m=audio 10000 RTP/SAVP 0 8
+a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:d0RmdmcmVCspeEc3QGZiNWpVLFJhQX1cfHAwJSoj
+a=rtpmap:0 PCMU/8000
+a=rtpmap:8 PCMA/8000
+"#;
+
+        let sdp = SdpSession::parse(sdp_str).unwrap();
+        assert!(sdp.is_srtp_enabled());
+
+        let audio = sdp.audio_media().unwrap();
+        assert_eq!(audio.protocol, "RTP/SAVP");
+        assert_eq!(audio.crypto.len(), 1);
+
+        let crypto = &audio.crypto[0];
+        assert_eq!(crypto.tag, 1);
+        assert_eq!(crypto.crypto_suite, "AES_CM_128_HMAC_SHA1_80");
     }
 }
