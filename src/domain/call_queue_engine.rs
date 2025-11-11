@@ -1,7 +1,7 @@
 /// Call Queue Engine for managing queued calls and agent distribution
 use crate::domain::call_queue::*;
 use crate::domain::audio::{AudioFileManager, StreamingAudioPlayer, SequenceBuilder, PlaybackOptions};
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use chrono::{DateTime, Utc};
