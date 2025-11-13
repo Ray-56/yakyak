@@ -4,4 +4,4 @@ pub mod candidate;
 pub mod agent;
 
 pub use candidate::{IceCandidate, CandidateType, IceCandidatePair};
-pub use agent::{IceAgent, IceConnectionState, IceGatheringState};
+pub use agent::{IceAgent, IceConfig, IceConnectionState, IceGatheringState};

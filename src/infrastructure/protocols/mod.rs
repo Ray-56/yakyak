@@ -1,6 +1,7 @@
 //! Protocol implementations
 
 pub mod ice;
+pub mod nat_manager;
 pub mod sip;
 pub mod stun;
 pub mod turn;

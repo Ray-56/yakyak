@@ -31,6 +31,7 @@ pub enum NatType {
 }
 
 /// STUN client
+#[derive(Debug, Clone)]
 pub struct StunClient {
     server_addr: SocketAddr,
     timeout: Duration,
@@ -138,6 +139,43 @@ impl StunClient {
     pub fn refresh_binding(&self, local_addr: SocketAddr) -> Result<StunResult, String> {
         debug!("Refreshing STUN binding");
         self.binding_request(local_addr)
+    }
+
+    /// Get public IP and port (async-compatible wrapper)
+    pub async fn get_public_address(&self) -> Result<(std::net::IpAddr, u16), String> {
+        let local_addr: SocketAddr = "0.0.0.0:0".parse().unwrap();
+        let result = self.binding_request(local_addr)?;
+        Ok((result.public_addr.ip(), result.public_addr.port()))
+    }
+
+    /// Detect NAT type with enhanced algorithm
+    pub async fn detect_nat_type_enhanced(&self, local_addr: SocketAddr) -> Result<NatType, String> {
+        info!("Performing enhanced NAT type detection");
+
+        // Test 1: Basic binding request
+        let result1 = self.binding_request(local_addr)?;
+
+        // If local and public IPs are the same, no NAT
+        if result1.local_addr.ip() == result1.public_addr.ip() {
+            info!("NAT type: Open Internet (no NAT)");
+            return Ok(NatType::OpenInternet);
+        }
+
+        // Test 2: Check if port changed (symmetric NAT indicator)
+        if result1.local_addr.port() != result1.public_addr.port() {
+            // Port changed - likely symmetric or port-restricted
+            info!("Port mapping detected: local {} -> public {}",
+                  result1.local_addr.port(), result1.public_addr.port());
+
+            // For more accurate detection, would need multiple STUN servers
+            // and compare if public IP/port changes across servers
+            info!("NAT type: Likely Symmetric or Port Restricted");
+            return Ok(NatType::Symmetric);
+        }
+
+        // If port same, likely Full Cone or Restricted Cone
+        info!("NAT type: Likely Full Cone or Restricted Cone");
+        Ok(NatType::FullCone)
     }
 }
 
