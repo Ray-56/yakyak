@@ -26,6 +26,8 @@ pub struct AppState {
     pub call_router: Option<Arc<CallRouter>>,
     pub registrar: Option<Arc<Registrar>>,
     pub event_broadcaster: Option<Arc<EventBroadcaster>>,
+    pub conference_repository: Option<Arc<dyn crate::domain::conference::ConferenceRepository>>,
+    pub conference_manager: Option<Arc<crate::domain::conference_manager::ConferenceManager>>,
 }
 
 /// Query parameters for listing users

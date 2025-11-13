@@ -2,6 +2,11 @@
 
 use super::calls_handler::{get_active_call, get_active_calls, get_call_stats, hangup_call};
 use super::cdr_handler::{export_cdrs_csv, export_cdrs_json, get_cdr, get_cdr_by_call_id, list_cdrs};
+use super::conference_handler::{
+    create_conference_room, end_conference, get_conference_details, join_conference_room,
+    leave_conference_room, list_active_conferences, mute_conference_participant,
+    unmute_conference_participant,
+};
 use super::metrics_handler::metrics_handler;
 use super::monitoring::{get_prometheus_metrics, get_system_health};
 use super::user_handler::{
@@ -62,6 +67,17 @@ pub fn build_router(
         .route("/monitoring/health", get(get_system_health))
         .route("/monitoring/prometheus", get(get_prometheus_metrics));
 
+    // Conference routes
+    let conference_routes = Router::new()
+        .route("/conferences", post(create_conference_room))
+        .route("/conferences", get(list_active_conferences))
+        .route("/conferences/:room_id", get(get_conference_details))
+        .route("/conferences/:room_id/join", post(join_conference_room))
+        .route("/conferences/:room_id/end", post(end_conference))
+        .route("/conferences/leave", post(leave_conference_room))
+        .route("/conferences/participants/mute", post(mute_conference_participant))
+        .route("/conferences/participants/unmute", post(unmute_conference_participant));
+
     // Metrics route (separate state)
     let metrics_routes = Router::new()
         .route("/metrics", get(metrics_handler))
@@ -79,6 +95,7 @@ pub fn build_router(
         .merge(cdr_routes)
         .merge(call_routes)
         .merge(monitoring_routes)
+        .merge(conference_routes)
         .with_state(state)
         .merge(metrics_routes)
         .merge(ws_routes)

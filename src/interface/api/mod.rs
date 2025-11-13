@@ -6,6 +6,7 @@ pub mod calls_handler;
 pub mod cdr_dto;
 pub mod cdr_handler;
 // pub mod conference;
+pub mod conference_handler;
 pub mod jsonrpc;
 pub mod metrics_handler;
 pub mod monitoring;

@@ -23,6 +23,7 @@ pub mod call_queue_engine;
 pub mod call_recording;
 pub mod cdr;
 pub mod conference;
+pub mod conference_manager;
 pub mod conference_recording;
 pub mod dnd;
 pub mod instant_messaging;

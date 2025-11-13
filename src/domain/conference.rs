@@ -4,44 +4,87 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;
 
+/// Participant role in conference
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ParticipantRole {
+    Moderator,
+    Presenter,
+    Attendee,
+    Listener,
+}
+
+/// Participant state
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ParticipantState {
+    Connecting,
+    Active,
+    OnHold,
+    Muted,
+    Disconnected,
+}
+
 /// Conference participant
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Participant {
     pub id: Uuid,
-    pub user_uri: String,
-    pub display_name: Option<String>,
-    pub joined_at: DateTime<Utc>,
+    pub name: String,
+    pub call_id: String,
+    pub role: ParticipantRole,
+    pub state: ParticipantState,
     pub is_muted: bool,
-    pub is_moderator: bool,
-    pub audio_codec: Option<String>,
+    pub volume: f32,
+    pub joined_at: DateTime<Utc>,
+    pub left_at: Option<DateTime<Utc>>,
 }
 
 impl Participant {
-    pub fn new(user_uri: String, display_name: Option<String>, is_moderator: bool) -> Self {
+    pub fn new(name: String, call_id: String, role: ParticipantRole) -> Self {
         Self {
             id: Uuid::new_v4(),
-            user_uri,
-            display_name,
-            joined_at: Utc::now(),
+            name,
+            call_id,
+            role,
+            state: ParticipantState::Connecting,
             is_muted: false,
-            is_moderator,
-            audio_codec: None,
+            volume: 1.0,
+            joined_at: Utc::now(),
+            left_at: None,
         }
     }
 
     /// Mute participant
     pub fn mute(&mut self) {
         self.is_muted = true;
+        if self.state == ParticipantState::Active {
+            self.state = ParticipantState::Muted;
+        }
     }
 
     /// Unmute participant
     pub fn unmute(&mut self) {
         self.is_muted = false;
+        if self.state == ParticipantState::Muted {
+            self.state = ParticipantState::Active;
+        }
     }
 
     /// Toggle mute status
     pub fn toggle_mute(&mut self) {
-        self.is_muted = !self.is_muted;
+        if self.is_muted {
+            self.unmute();
+        } else {
+            self.mute();
+        }
+    }
+
+    /// Set volume (0.0 to 2.0)
+    pub fn set_volume(&mut self, volume: f32) {
+        self.volume = volume.clamp(0.0, 2.0);
+    }
+
+    /// Check if participant is moderator
+    pub fn is_moderator(&self) -> bool {
+        self.role == ParticipantRole::Moderator
     }
 }
 
@@ -68,7 +111,7 @@ pub struct ConferenceRoom {
     pub started_at: Option<DateTime<Utc>>,
     pub ended_at: Option<DateTime<Utc>>,
     pub recording_enabled: bool,
-    pub recording_path: Option<String>,
+    pub recording_file: Option<String>,
 }
 
 impl ConferenceRoom {
@@ -85,7 +128,7 @@ impl ConferenceRoom {
             started_at: None,
             ended_at: None,
             recording_enabled: false,
-            recording_path: None,
+            recording_file: None,
         }
     }
 
@@ -95,6 +138,21 @@ impl ConferenceRoom {
             Some(room_pin) => room_pin == pin,
             None => true, // No PIN required
         }
+    }
+
+    /// Start conference
+    pub fn start(&mut self) -> Result<(), String> {
+        if self.state == ConferenceState::Active {
+            return Err("Conference is already active".to_string());
+        }
+
+        if self.state == ConferenceState::Ended {
+            return Err("Conference has already ended".to_string());
+        }
+
+        self.state = ConferenceState::Active;
+        self.started_at = Some(Utc::now());
+        Ok(())
     }
 
     /// Add participant to conference
@@ -112,7 +170,7 @@ impl ConferenceRoom {
         }
 
         let participant_id = participant.id;
-        let is_moderator = participant.is_moderator;
+        let is_moderator = participant.is_moderator();
 
         self.participants.insert(participant_id, participant);
 
@@ -136,7 +194,7 @@ impl ConferenceRoom {
             // Try to assign another moderator
             self.moderator_id = self.participants
                 .iter()
-                .find(|(_, p)| p.is_moderator)
+                .find(|(_, p)| p.is_moderator())
                 .map(|(id, _)| *id);
 
             // If no moderator left, end conference
@@ -196,23 +254,29 @@ impl ConferenceRoom {
     }
 
     /// Lock conference (no new participants)
-    pub fn lock(&mut self) {
+    pub fn lock(&mut self) -> Result<(), String> {
         if self.state == ConferenceState::Active {
             self.state = ConferenceState::Locked;
+            Ok(())
+        } else {
+            Err("Conference must be active to be locked".to_string())
         }
     }
 
     /// Unlock conference
-    pub fn unlock(&mut self) {
+    pub fn unlock(&mut self) -> Result<(), String> {
         if self.state == ConferenceState::Locked {
             self.state = ConferenceState::Active;
+            Ok(())
+        } else {
+            Err("Conference is not locked".to_string())
         }
     }
 
     /// Start recording
     pub fn start_recording(&mut self, path: String) {
         self.recording_enabled = true;
-        self.recording_path = Some(path);
+        self.recording_file = Some(path);
     }
 
     /// Stop recording
@@ -251,19 +315,39 @@ impl ConferenceRoom {
 #[async_trait::async_trait]
 pub trait ConferenceRepository: Send + Sync {
     /// Create conference room
-    async fn create(&self, room: ConferenceRoom) -> Result<ConferenceRoom, String>;
+    async fn create_room(&self, room: ConferenceRoom) -> Result<ConferenceRoom, String>;
 
     /// Get conference by ID
-    async fn get(&self, id: Uuid) -> Result<Option<ConferenceRoom>, String>;
-
-    /// List all active conferences
-    async fn list_active(&self) -> Result<Vec<ConferenceRoom>, String>;
+    async fn get_room(&self, id: Uuid) -> Result<Option<ConferenceRoom>, String>;
 
     /// Update conference
-    async fn update(&self, room: ConferenceRoom) -> Result<(), String>;
+    async fn update_room(&self, room: &ConferenceRoom) -> Result<(), String>;
 
     /// Delete conference
-    async fn delete(&self, id: Uuid) -> Result<(), String>;
+    async fn delete_room(&self, id: Uuid) -> Result<(), String>;
+
+    /// List conference rooms
+    async fn list_rooms(&self, state: Option<ConferenceState>) -> Result<Vec<ConferenceRoom>, String>;
+
+    /// Add participant to conference
+    async fn add_participant(&self, room_id: Uuid, participant: Participant) -> Result<(), String>;
+
+    /// Remove participant from conference
+    async fn remove_participant(&self, room_id: Uuid, participant_id: Uuid) -> Result<(), String>;
+
+    /// Get participants in conference
+    async fn get_participants(&self, room_id: Uuid) -> Result<Vec<Participant>, String>;
+
+    /// Update participant
+    async fn update_participant(
+        &self,
+        room_id: Uuid,
+        participant_id: Uuid,
+        participant: &Participant,
+    ) -> Result<(), String>;
+
+    /// Find rooms by user ID
+    async fn find_rooms_by_user(&self, user_id: i32) -> Result<Vec<ConferenceRoom>, String>;
 }
 
 #[cfg(test)]
@@ -304,9 +388,9 @@ mod tests {
         let mut room = ConferenceRoom::new("Test".to_string(), None, 10);
 
         let participant = Participant::new(
-            "sip:alice@example.com".to_string(),
-            Some("Alice".to_string()),
-            false,
+            "Alice".to_string(),
+            "call-123".to_string(),
+            ParticipantRole::Attendee,
         );
 
         room.add_participant(participant).unwrap();
@@ -319,9 +403,9 @@ mod tests {
         assert_eq!(room.state, ConferenceState::Waiting);
 
         let moderator = Participant::new(
-            "sip:mod@example.com".to_string(),
-            Some("Moderator".to_string()),
-            true,
+            "Moderator".to_string(),
+            "call-mod".to_string(),
+            ParticipantRole::Moderator,
         );
 
         room.add_participant(moderator).unwrap();
@@ -334,9 +418,9 @@ mod tests {
     fn test_conference_full() {
         let mut room = ConferenceRoom::new("Test".to_string(), None, 2);
 
-        let p1 = Participant::new("sip:user1@example.com".to_string(), None, false);
-        let p2 = Participant::new("sip:user2@example.com".to_string(), None, false);
-        let p3 = Participant::new("sip:user3@example.com".to_string(), None, false);
+        let p1 = Participant::new("User1".to_string(), "call-1".to_string(), ParticipantRole::Attendee);
+        let p2 = Participant::new("User2".to_string(), "call-2".to_string(), ParticipantRole::Attendee);
+        let p3 = Participant::new("User3".to_string(), "call-3".to_string(), ParticipantRole::Attendee);
 
         room.add_participant(p1).unwrap();
         room.add_participant(p2).unwrap();
@@ -350,7 +434,7 @@ mod tests {
     fn test_mute_operations() {
         let mut room = ConferenceRoom::new("Test".to_string(), None, 10);
 
-        let p1 = Participant::new("sip:user1@example.com".to_string(), None, true);
+        let p1 = Participant::new("User1".to_string(), "call-1".to_string(), ParticipantRole::Moderator);
         let p1_id = p1.id;
 
         room.add_participant(p1).unwrap();
@@ -368,9 +452,9 @@ mod tests {
     fn test_mute_all() {
         let mut room = ConferenceRoom::new("Test".to_string(), None, 10);
 
-        let moderator = Participant::new("sip:mod@example.com".to_string(), None, true);
-        let p1 = Participant::new("sip:user1@example.com".to_string(), None, false);
-        let p2 = Participant::new("sip:user2@example.com".to_string(), None, false);
+        let moderator = Participant::new("Moderator".to_string(), "call-mod".to_string(), ParticipantRole::Moderator);
+        let p1 = Participant::new("User1".to_string(), "call-1".to_string(), ParticipantRole::Attendee);
+        let p2 = Participant::new("User2".to_string(), "call-2".to_string(), ParticipantRole::Attendee);
 
         let p1_id = p1.id;
         let p2_id = p2.id;
@@ -392,19 +476,19 @@ mod tests {
     fn test_lock_unlock() {
         let mut room = ConferenceRoom::new("Test".to_string(), None, 10);
 
-        let moderator = Participant::new("sip:mod@example.com".to_string(), None, true);
+        let moderator = Participant::new("Moderator".to_string(), "call-mod".to_string(), ParticipantRole::Moderator);
         room.add_participant(moderator).unwrap();
 
         assert_eq!(room.state, ConferenceState::Active);
 
-        room.lock();
+        room.lock().unwrap();
         assert_eq!(room.state, ConferenceState::Locked);
 
         // Cannot add when locked
-        let p1 = Participant::new("sip:user1@example.com".to_string(), None, false);
+        let p1 = Participant::new("User1".to_string(), "call-1".to_string(), ParticipantRole::Attendee);
         assert!(room.add_participant(p1).is_err());
 
-        room.unlock();
+        room.unlock().unwrap();
         assert_eq!(room.state, ConferenceState::Active);
     }
 
@@ -416,7 +500,7 @@ mod tests {
 
         room.start_recording("/path/to/recording.wav".to_string());
         assert!(room.recording_enabled);
-        assert_eq!(room.recording_path, Some("/path/to/recording.wav".to_string()));
+        assert_eq!(room.recording_file, Some("/path/to/recording.wav".to_string()));
 
         room.stop_recording();
         assert!(!room.recording_enabled);
@@ -426,7 +510,7 @@ mod tests {
     fn test_end_conference() {
         let mut room = ConferenceRoom::new("Test".to_string(), None, 10);
 
-        let moderator = Participant::new("sip:mod@example.com".to_string(), None, true);
+        let moderator = Participant::new("Moderator".to_string(), "call-mod".to_string(), ParticipantRole::Moderator);
         room.add_participant(moderator).unwrap();
 
         room.start_recording("/path/recording.wav".to_string());
@@ -440,9 +524,9 @@ mod tests {
     #[test]
     fn test_participant_toggle_mute() {
         let mut participant = Participant::new(
-            "sip:user@example.com".to_string(),
-            None,
-            false,
+            "User".to_string(),
+            "call-1".to_string(),
+            ParticipantRole::Attendee,
         );
 
         assert!(!participant.is_muted);
