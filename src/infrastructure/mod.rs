@@ -5,8 +5,10 @@
 //! - Protocol implementations (SIP, WebRTC)
 //! - Message bus implementations
 //! - External service integrations
+//! - Protocol bridges
 
 pub mod audit;
+pub mod bridge;
 pub mod ivr;
 pub mod media;
 pub mod messaging;
