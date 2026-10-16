@@ -1,0 +1,104 @@
+# INIT-001 初始化执行报告
+
+状态：执行中；以下为删除前审阅的迁移清单，尚非最终验收。
+
+保留：LICENSE（原文/版权）、assets/images/logo.png（独立品牌资料）。
+
+旧文件已由验证过的 tag `legacy/pre-rewrite-20261016-160959` 与外部 bundle 保存。原工作区不变。
+
+## 已审阅的旧跟踪文件迁移清单
+
+- `.github/workflows/rust.yml`：从新分支活跃树移除；历史 tag 保留。
+- `.gitignore`：从新分支活跃树移除；历史 tag 保留。
+- `AUTH.md`：从新分支活跃树移除；历史 tag 保留。
+- `CALL_FLOW.md`：从新分支活跃树移除；历史 tag 保留。
+- `Cargo.lock`：从新分支活跃树移除；历史 tag 保留。
+- `Cargo.toml`：从新分支活跃树移除；历史 tag 保留。
+- `README.md`：从新分支活跃树移除；历史 tag 保留。
+- `ROADMAP.md`：从新分支活跃树移除；历史 tag 保留。
+- `migrations/202511040002_add_sip_ha1.sql`：从新分支活跃树移除；历史 tag 保留。
+- `migrations/20251104_01_create_users_table.sql`：从新分支活跃树移除；历史 tag 保留。
+- `migrations/202511050003_create_call_records_table.sql`：从新分支活跃树移除；历史 tag 保留。
+- `src/application/call/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/application/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/application/registration/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/application/session/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/config/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/billing/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/call/aggregate.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/call/entity.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/call/event.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/call/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/call/repository.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/call/service.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/call/value_object.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/cdr.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/media/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/registration/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/routing/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/session/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/shared/error.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/shared/events.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/shared/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/shared/result.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/shared/value_objects.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/user/entity.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/user/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/domain/user/repository.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/media/bridge.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/media/codec/g711.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/media/codec/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/media/codec/negotiator.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/media/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/media/rtp/jitter_buffer.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/media/rtp/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/media/rtp/packet.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/media/rtp/rtcp.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/media/rtp/session.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/media/stream.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/messaging/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/persistence/cdr_repository.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/persistence/database.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/persistence/memory/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/persistence/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/persistence/postgres/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/persistence/user_repository.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/persistence/user_repository.rs.bak`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/auth.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/auth_db.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/builder.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/call_handler.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/call_router.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/call_state.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/dialog.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/handler.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/message.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/registrar.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/sdp.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/server.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/transaction.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/sip/transport.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/infrastructure/protocols/webrtc/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/interface/api/calls_handler.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/interface/api/cdr_dto.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/interface/api/cdr_handler.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/interface/api/jsonrpc/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/interface/api/metrics_handler.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/interface/api/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/interface/api/rest/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/interface/api/router.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/interface/api/user_dto.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/interface/api/user_handler.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/interface/api/ws_handler.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/interface/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/interface/websocket/mod.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/lib.rs`：从新分支活跃树移除；历史 tag 保留。
+- `src/main.rs`：从新分支活跃树移除；历史 tag 保留。
+- `test_api.sh`：从新分支活跃树移除；历史 tag 保留。
+- `tests/cdr_api_test.rs`：从新分支活跃树移除；历史 tag 保留。
+- `tests/cdr_repository_test.rs`：从新分支活跃树移除；历史 tag 保留。
+- `tests/monitoring_api_test.rs`：从新分支活跃树移除；历史 tag 保留。
