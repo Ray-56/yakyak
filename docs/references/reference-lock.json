@@ -1,0 +1,11 @@
+{
+  "reference_repository": "https://github.com/restsend/rustpbx",
+  "branch_inspected": "main",
+  "inspected_on": "2026-10-16",
+  "commit_sha": null,
+  "commit_status": "must_be_verified_and_filled_in_chapter_00",
+  "scope_version": "1.0",
+  "notes": "编写本交接包时仍未获得可验证的完整 SHA。由 Codex 在初始化现场解析、获取对应对象并记录；禁止猜测。范围冻结为 docs/roadmap/SCOPE.md，不随 main 自动扩张。",
+  "resolved_at": null,
+  "verification_command": null
+}

@@ -1,0 +1,25 @@
+{
+  "planning_version": "1.0",
+  "chapters": 27,
+  "objectives": 125,
+  "original_files": [
+    {
+      "filename": "YakYak-通信引擎路线图-v1.0.zip",
+      "sha256": "a75c8c649fd072e798cd773995b95f365cff7c1a70a5f50cc487ed54b25fc09e",
+      "bytes": 108743
+    },
+    {
+      "filename": "YakYak-通信引擎路线图-v1.0.md",
+      "sha256": "1265b627098ebf8b9e27ac3d269ca6c810feefff545242aff2952c00bd23def5",
+      "bytes": 96273
+    }
+  ],
+  "transformations": [
+    "保留125个目标的id/title/exercise/acceptance/test_type全部原文。",
+    "从targets.json移出status/evidence，进度独立到progress.json。",
+    "分章、完整阅读版、索引与进度视图改为自动生成。",
+    "reference-lock.json迁移到docs/references；未获得SHA的字段继续为空。",
+    "本地原始证据目录由evidence改名artifacts；验收摘要进入docs/acceptance。"
+  ],
+  "bootstrap_delegation": "用户授权Codex只执行工程初始化；本人实现通信核心的长期约定不变。"
+}

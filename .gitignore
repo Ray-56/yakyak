@@ -1,0 +1,18 @@
+/target/
+/artifacts/
+/.local/
+/.worktrees/
+*.rs.bk
+.DS_Store
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+/certs/
+__pycache__/
+*.py[cod]
+# Cargo.lock is intentionally tracked.
+# 原始抓包/录音只能放artifacts，不使用全局*.wav忽略来掩盖暂存错误。

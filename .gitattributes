@@ -1,0 +1,16 @@
+* text=auto
+*.rs text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+*.toml text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+# Protocol fixtures are raw bytes; do not normalize CRLF/body bytes.
+*.sip -text
+*.sdp -text
+*.bin -text
+*.pcap -text
+*.pcapng -text
+*.wav -text

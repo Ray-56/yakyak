@@ -1,0 +1,1349 @@
+{
+  "project": "YakYak",
+  "planning_version": "1.0",
+  "planning_date": "2026-10-16",
+  "total_chapters": 27,
+  "total_objectives": 125,
+  "ai_excluded": true,
+  "chapters": [
+    {
+      "number": "00",
+      "title": "重写基线、范围与测试实验室",
+      "phase": "P0",
+      "dependencies": [],
+      "goal": "留下可复现的起点，并为以后每一项“完成”定义证据。",
+      "stop_line": "不做业务数据库、管理后台、WebRTC，也不提前生成大量空模块。",
+      "references": [
+        "R01",
+        "R02",
+        "T01"
+      ],
+      "objectives": [
+        {
+          "id": "AC-00-01",
+          "title": "固定历史与参考范围",
+          "exercise": "保留 YakYak 旧实现的分支或 tag；记录本路线图版本、参考项目 commit、工具链及测试端版本。",
+          "acceptance": "旧实现可以独立检出；reference-lock.json 的 SHA 已真实填写；AI 排除项、支持范围和依赖边界经本人确认。不能填写猜测的 SHA。",
+          "test_type": "文档检查"
+        },
+        {
+          "id": "AC-00-02",
+          "title": "最小工程与持续检查",
+          "exercise": "本人建立一个 Rust crate，加入格式检查、静态检查、单元测试与 Linux 构建。",
+          "acceptance": "全新检出后 cargo fmt --check、cargo clippy --all-targets -- -D warnings、cargo test、cargo build --release 通过；不存在空测试冒充通过。",
+          "test_type": "CI"
+        },
+        {
+          "id": "AC-00-03",
+          "title": "独立协议测试端",
+          "exercise": "准备 SIPp 场景执行环境及至少一个真实 SIP 客户端；先对受控测试端验证发包、抓包与音频设备。",
+          "acceptance": "能保存一份非 YakYak 生成的合法 SIP 样例和对应抓包；测试工具版本、地址、端口与网络拓扑有记录。没有使用公网随机目标。",
+          "test_type": "实验室"
+        },
+        {
+          "id": "AC-00-04",
+          "title": "协议执行与时钟边界",
+          "exercise": "写 ADR，区分协议状态机与 I/O 执行器、单调时钟与墙上时间、消息与定时器输入。",
+          "acceptance": "能描述一次超时如何产生发送动作、执行器如何实际发包、取消后如何回收；测试设计不依赖长时间 sleep。",
+          "test_type": "设计评审"
+        },
+        {
+          "id": "AC-00-05",
+          "title": "证据和问题登记",
+          "exercise": "采用本包的章节验收模板与不支持功能表。",
+          "acceptance": "每个目标都有未开始/实现中/待验收/通过状态；通过必须有 commit、命令、结果与证据路径；所有目标初始为未开始。",
+          "test_type": "文档检查"
+        }
+      ]
+    },
+    {
+      "number": "01",
+      "title": "SIP 消息、URI 与解析器",
+      "phase": "P0",
+      "dependencies": [
+        "00"
+      ],
+      "goal": "把字节安全地转换为可用协议对象，并能正确序列化。",
+      "stop_line": "不在解析器内做呼叫业务，也不尝试一次实现全部 SIP 扩展。",
+      "references": [
+        "S01",
+        "S04"
+      ],
+      "objectives": [
+        {
+          "id": "AC-01-01",
+          "title": "消息与 URI 模型",
+          "exercise": "实现请求行、状态行、SIP URI、头字段与原始 body；保留未知但合法字段。",
+          "acceptance": "正常样例可解析和序列化；重复 Via、Contact 与头参数不丢失；头名大小写和已支持紧凑形式均有测试。",
+          "test_type": "单元/属性"
+        },
+        {
+          "id": "AC-01-02",
+          "title": "字节边界",
+          "exercise": "覆盖 Content-Length、UTF-8 文本 body、非文本 body、空 body 与截断输入。",
+          "acceptance": "长度按字节而非字符计算；不把 body 内的换行当成新消息；截断、超长、冲突长度得到明确错误或受控丢弃。",
+          "test_type": "单元"
+        },
+        {
+          "id": "AC-01-03",
+          "title": "不可相信的输入",
+          "exercise": "为行长、头数、消息总长和解析工作量设上限；选取 RFC 4475 中与范围相关的测试消息。",
+          "acceptance": "坏输入不会 panic、无限循环或越界；合法但不支持与非法语法被区分；错误处理不制造无界响应。",
+          "test_type": "语料/模糊"
+        },
+        {
+          "id": "AC-01-04",
+          "title": "语义往返与独立验证",
+          "exercise": "将合法样例 parse→serialize→parse，并由独立工具读取输出。",
+          "acceptance": "关键字段语义一致；不以自己的序列化器和解析器互相认可作为唯一证据。",
+          "test_type": "属性/互通"
+        }
+      ]
+    },
+    {
+      "number": "02",
+      "title": "UDP 传输与可取消运行时",
+      "phase": "P0",
+      "dependencies": [
+        "01"
+      ],
+      "goal": "在真实网络上收发 SIP，具备有界队列与可靠关闭。",
+      "stop_line": "本章先限制 IPv4、SIP/UDP 和受控网络；不声称支持公网。",
+      "references": [
+        "S01"
+      ],
+      "objectives": [
+        {
+          "id": "AC-02-01",
+          "title": "真实 UDP 收发",
+          "exercise": "实现监听、接收元数据、发送动作；响应 OPTIONS。",
+          "acceptance": "独立测试端发送请求后收到格式正确且字段匹配的响应；抓包能证明实际出站数据，而非日志中的“send”。",
+          "test_type": "网络集成"
+        },
+        {
+          "id": "AC-02-02",
+          "title": "对端与传输信息",
+          "exercise": "每条消息携带来源、接收接口和连接/传输标识，区分监听地址与公布地址。",
+          "acceptance": "两个不同来源同时发请求时响应不会串到另一方；测试覆盖多监听地址的选择。",
+          "test_type": "网络集成"
+        },
+        {
+          "id": "AC-02-03",
+          "title": "队列与资源上限",
+          "exercise": "为收包队列、发送队列、任务数和消息大小规定上限及拒绝策略。",
+          "acceptance": "在配置上限下压入额外请求会受控拒绝/丢弃并计数；不会为每个垃圾包无界 spawn。",
+          "test_type": "故障/负载"
+        },
+        {
+          "id": "AC-02-04",
+          "title": "无流量也能关闭",
+          "exercise": "启动 recv 等待后，不发送任何包，主动取消服务并等待任务退出。",
+          "acceptance": "受控本地测试中 2 秒内退出，UDP 端口可重新绑定；重复启停 100 次无遗留收包任务。",
+          "test_type": "生命周期"
+        }
+      ]
+    },
+    {
+      "number": "03",
+      "title": "SIP 事务、重传与定时器",
+      "phase": "P0",
+      "dependencies": [
+        "02"
+      ],
+      "goal": "建立客户端/服务端事务，而不把 SIP 当作普通 HTTP 请求响应。",
+      "stop_line": "先实现声明范围内的基础事务；扩展 PRACK 与会话刷新在第 12 章。",
+      "references": [
+        "S01",
+        "S02"
+      ],
+      "objectives": [
+        {
+          "id": "AC-03-01",
+          "title": "非 INVITE 事务",
+          "exercise": "先用 OPTIONS/REGISTER 场景实现客户端与服务端状态机、匹配和响应缓存。",
+          "acceptance": "重复同一请求不会重复执行业务副作用；丢失首个响应时能从抓包看到正确重传/缓存响应。",
+          "test_type": "单元/网络"
+        },
+        {
+          "id": "AC-03-02",
+          "title": "INVITE 失败路径",
+          "exercise": "覆盖 1xx、非 2xx 最终响应、相应 ACK 和结束定时器。",
+          "acceptance": "180→486 后呼叫结果唯一；丢失最终响应会重传；匹配的 ACK 停止相应重传；不能给 ACK 再回 200。",
+          "test_type": "状态机/网络"
+        },
+        {
+          "id": "AC-03-03",
+          "title": "INVITE 成功路径",
+          "exercise": "结合 RFC 6026 设计 Accepted 状态与 2xx 生命周期，区分成功 ACK 与非成功 ACK。",
+          "acceptance": "重复 2xx 不会创建第二通业务呼叫；必要的 ACK 仍会发送；收到成功 ACK 后按层次停止重传并保留必要状态。",
+          "test_type": "状态机/网络"
+        },
+        {
+          "id": "AC-03-04",
+          "title": "匹配与重复处理",
+          "exercise": "为 method、branch、CSeq、响应匹配及 CANCEL 的关联规则建立测试表。",
+          "acceptance": "乱序或无关响应不会推进错误事务；重复数据只触发规范允许的动作；不能仅按 Call-ID 查找事务。",
+          "test_type": "单元/性质"
+        },
+        {
+          "id": "AC-03-05",
+          "title": "虚拟时间与真实 I/O",
+          "exercise": "对所有已实现定时器使用可控时间测试，并选至少一个案例验证实际网络重传。",
+          "acceptance": "无需等待完整现实超时便能覆盖分支；执行器确实落实 Send/CancelTimer；不存在“状态改变但网络没发”的假通过。",
+          "test_type": "单元/网络"
+        },
+        {
+          "id": "AC-03-06",
+          "title": "回收规则",
+          "exercise": "为每类事务列出 terminal 状态与最终删除条件。",
+          "acceptance": "推进到所需协议定时器结束后事务数量回到基线；不得为了让测试归零而在 BYE 后立即删除所有事务。",
+          "test_type": "生命周期"
+        }
+      ]
+    },
+    {
+      "number": "04",
+      "title": "注册、Digest 认证与位置服务",
+      "phase": "P0",
+      "dependencies": [
+        "03"
+      ],
+      "goal": "让真实客户端安全注册，并把账号和当前位置分开。",
+      "stop_line": "先固定配置账号、内存位置表；持久化、外部用户后端和多节点后做。",
+      "references": [
+        "S01",
+        "S05"
+      ],
+      "objectives": [
+        {
+          "id": "AC-04-01",
+          "title": "注册绑定生命周期",
+          "exercise": "实现 REGISTER、更新、续期、指定 Contact 注销、全部注销及有效期。",
+          "acceptance": "1001/1002 可注册；旧绑定按规则更新；到期后不可继续路由；单绑定和全部注销分别有测试。",
+          "test_type": "互通/虚拟时间"
+        },
+        {
+          "id": "AC-04-02",
+          "title": "Digest 验证",
+          "exercise": "实现 realm、nonce、过期、qop=auth 等约定；优先支持 SHA-256，MD5 仅作为明确开启的旧端兼容。",
+          "acceptance": "正确凭据成功；错误密码、错误 realm、过期 nonce 与非法重复认证被拒绝；同一 SIP 事务的合法重传不被误判为新攻击。",
+          "test_type": "安全/互通"
+        },
+        {
+          "id": "AC-04-03",
+          "title": "账号与位置分离",
+          "exercise": "使用 AOR/域标识身份，用 Contact、过期时间和传输来源描述位置。",
+          "acceptance": "修改注册 Contact 不会改变账号归属；相同分机字符串在不同测试域不会意外覆盖。完整租户管理仍在后续章节。",
+          "test_type": "单元/集成"
+        },
+        {
+          "id": "AC-04-04",
+          "title": "鉴权不止注册",
+          "exercise": "明确哪些来电、外拨与查询需要用户认证或受信任线路身份。",
+          "acceptance": "匿名来源不能借已注册的被叫形成开放中继；错误凭据不能发起未授权外呼；权限失败留结构化事件。",
+          "test_type": "安全"
+        },
+        {
+          "id": "AC-04-05",
+          "title": "可观察注册事件",
+          "exercise": "输出 registered/updated/expired/unregistered 事件及绑定数量。",
+          "acceptance": "重复同一请求不会重复产生业务事件；日志不记录可复用凭据；10 个账号并行注册/注销不串绑定。",
+          "test_type": "集成"
+        }
+      ]
+    },
+    {
+      "number": "05",
+      "title": "SDP 与 Offer/Answer 协商",
+      "phase": "P1",
+      "dependencies": [
+        "01",
+        "04"
+      ],
+      "goal": "协商实际可用的音频，而不是无论输入是什么都返回固定 SDP。",
+      "stop_line": "先做单音轨、PCMU、IPv4、early offer；不支持的范围必须明确标识。",
+      "references": [
+        "S06",
+        "S07"
+      ],
+      "objectives": [
+        {
+          "id": "AC-05-01",
+          "title": "SDP 结构与作用域",
+          "exercise": "实现 v/o/s/t/c/m/a 等当前所需字段及 session/media 作用域。",
+          "acceptance": "会话级与媒体级连接信息按作用域生效；body 不完整时失败且不分配媒体；多 m 行不能被误拼成一路。",
+          "test_type": "单元"
+        },
+        {
+          "id": "AC-05-02",
+          "title": "编码交集",
+          "exercise": "以 PCMU 起步，实现编码名、时钟、声道、payload type 与 fmtp 能力匹配。",
+          "acceptance": "有共同能力才接收；无可用音频时明确拒绝；不声称支持未实现的编码；动态 PT 不写死。",
+          "test_type": "表驱动"
+        },
+        {
+          "id": "AC-05-03",
+          "title": "方向与端口",
+          "exercise": "处理 sendrecv/sendonly/recvonly/inactive、拒绝媒体的零端口、RTP/RTCP 地址。",
+          "acceptance": "answer 与 offer 相容；保留 m 行对应关系；拒绝的视频轨不能偷偷开始传送；暂停语音不等于随意关闭所有 RTCP。",
+          "test_type": "单元/规范"
+        },
+        {
+          "id": "AC-05-04",
+          "title": "每条呼叫腿独立参数",
+          "exercise": "建立 NegotiatedMedia 一类内部模型，将两端 SDP 和实际运行参数分开。",
+          "acceptance": "两端 PT/地址不同仍有明确映射；公布地址不是硬编码 localhost；协商结果可直接驱动端口分配。",
+          "test_type": "集成"
+        }
+      ]
+    },
+    {
+      "number": "06",
+      "title": "RTP、RTCP 与媒体资源",
+      "phase": "P1",
+      "dependencies": [
+        "02",
+        "05"
+      ],
+      "goal": "建立真正可收发、可验证、可清理的媒体基础。",
+      "stop_line": "先转发或产生 PCMU；不做 Opus、转码、混音与自适应抖动缓冲。",
+      "references": [
+        "S08"
+      ],
+      "objectives": [
+        {
+          "id": "AC-06-01",
+          "title": "RTP 编解包",
+          "exercise": "实现头部、序列号、时间戳、SSRC、扩展、padding 与边界检查。",
+          "acceptance": "序列号回绕、截断、错误长度和扩展头均有测试；错误包不污染另一通电话的状态。",
+          "test_type": "单元/语料"
+        },
+        {
+          "id": "AC-06-02",
+          "title": "测试媒体发生与接收",
+          "exercise": "实现固定节奏测试包/测试音，与独立媒体接收端比较。",
+          "acceptance": "PCMU 8kHz、20ms 示例的时间戳与采样数一致；能区分收到 RTP、payload 正确和真正解码有声三种结果。",
+          "test_type": "网络/音频"
+        },
+        {
+          "id": "AC-06-03",
+          "title": "基础 RTCP",
+          "exercise": "支持当前 RTP profile 所需报告/结束信息，或在透明中继模式正确转发并统计。",
+          "acceptance": "SR/RR 等选定报文通过解析和网络测试；RTCP 与正确媒体会话关联；后续改写 SSRC 时必须同步处理对应 RTCP 语义。",
+          "test_type": "单元/网络"
+        },
+        {
+          "id": "AC-06-04",
+          "title": "端口和任务所有权",
+          "exercise": "为每路媒体分配拥有者、取消令牌、任务句柄和端口租约。",
+          "acceptance": "媒体分配失败能回滚；显式停止后本地 2 秒内退出并释放端口；对端完全不发包也可停止。",
+          "test_type": "生命周期"
+        },
+        {
+          "id": "AC-06-05",
+          "title": "隔离与来源约束",
+          "exercise": "最初固定已知媒体目的地址，限制未知来源，媒体学习留到第 11 章。",
+          "acceptance": "第三个测试端不能把随机 RTP 注入另一通通话；两个并行会话的 payload/SSRC/计数不混用。",
+          "test_type": "安全/网络"
+        }
+      ]
+    },
+    {
+      "number": "07",
+      "title": "单端 UAS/UAC 与 Dialog",
+      "phase": "P1",
+      "dependencies": [
+        "03",
+        "05",
+        "06"
+      ],
+      "goal": "先实现可独立接听或发起的一通电话，理解持续 SIP 会话的生命周期。",
+      "stop_line": "自动接听仅用于测试，不记作双端 PBX 呼叫已完成。",
+      "references": [
+        "S01",
+        "S02"
+      ],
+      "objectives": [
+        {
+          "id": "AC-07-01",
+          "title": "Dialog 标识与路由",
+          "exercise": "实现 Call-ID、本地/远端 tag、CSeq、remote target、route set 和会话事件。",
+          "acceptance": "同 Call-ID 不同 tag 不被当作同一个 Dialog；未知 Dialog 请求安全失败；后续请求使用正确会话路由。",
+          "test_type": "单元/网络"
+        },
+        {
+          "id": "AC-07-02",
+          "title": "UAS 接入测试电话",
+          "exercise": "终端拨测试分机：100/180 或 183、200+SDP、ACK、播放测试音、BYE。",
+          "acceptance": "真实客户端听到测试音；信令与媒体抓包对应；ACK 不收到多余响应；双方挂断路径都能回收。",
+          "test_type": "真实终端"
+        },
+        {
+          "id": "AC-07-03",
+          "title": "UAC 主动呼叫",
+          "exercise": "引擎主动呼叫独立测试端，处理响铃、应答、拒绝和超时。",
+          "acceptance": "对端实际收到 INVITE；成功后正确 ACK；486/超时只产生一个终止结果；不把“请求已发送”当作接听。",
+          "test_type": "网络/E2E"
+        },
+        {
+          "id": "AC-07-04",
+          "title": "取消与接听竞态",
+          "exercise": "在初始失败场景测试 CANCEL，并安排成功响应与取消交错。",
+          "acceptance": "按实际最终结果结束：接听已成功时确认成功会话后再结束；失败时按失败事务收尾；不存在无人管理的已接听 Dialog。",
+          "test_type": "确定性故障"
+        },
+        {
+          "id": "AC-07-05",
+          "title": "统一会话命令",
+          "exercise": "提供内部 Answer/Reject/Hangup 等命令，绑定明确的 SessionId/LegId。",
+          "acceptance": "重复挂断无第二次业务终止；命令已接受与 call.answered 分别记录；一次失败不影响其他会话。",
+          "test_type": "单元/集成"
+        }
+      ]
+    },
+    {
+      "number": "08",
+      "title": "B2BUA 双端呼叫与双向媒体",
+      "phase": "P1",
+      "dependencies": [
+        "04",
+        "07"
+      ],
+      "goal": "让 1001 真实呼叫 1002，经 YakYak 建立两侧会话并交换音频。",
+      "stop_line": "先一个被叫目标，不做分叉、队列、录音或 AI。",
+      "references": [
+        "S01",
+        "R04",
+        "R06"
+      ],
+      "objectives": [
+        {
+          "id": "AC-08-01",
+          "title": "两侧呼叫协调",
+          "exercise": "查找被叫注册位置，创建 B 侧呼叫，与 A 侧建立映射。",
+          "acceptance": "B 端真实收到 INVITE；未接听前 A 端不被无条件报接听；B 的响铃、拒绝和接听传达为正确 A 侧行为。",
+          "test_type": "独立 E2E"
+        },
+        {
+          "id": "AC-08-02",
+          "title": "双向中继",
+          "exercise": "A/B 分别向引擎发送不同可识别音频，经桥接转发到另一端。",
+          "acceptance": "A 端解码得到 B 的信号、B 得到 A 的信号；两向 payload 有独立证据；不能用 echo 自己的声音代替双向测试。",
+          "test_type": "网络/音频"
+        },
+        {
+          "id": "AC-08-03",
+          "title": "多会话隔离",
+          "exercise": "运行至少两对不同账号，使用不同测试媒体。",
+          "acceptance": "任何一对都不会收到另一对的媒体、按键或挂断事件；端口分配与会话对应。",
+          "test_type": "并发 E2E"
+        },
+        {
+          "id": "AC-08-04",
+          "title": "桥接与会话生命周期分离",
+          "exercise": "桥接动作不承担创建/销毁所有 Dialog 的隐式职责。",
+          "acceptance": "unbridge 能断开媒体但保留明确需要保留的通话腿；hangup 结束目标会话；重复 bridge/unbridge 不泄漏任务。",
+          "test_type": "状态/生命周期"
+        },
+        {
+          "id": "AC-08-05",
+          "title": "端到端收尾",
+          "exercise": "覆盖 A/B 任一方挂断、被叫不存在、拒接与无人接听。",
+          "acceptance": "双方结果一致；媒体及时回收；协议状态在各自定时器结束后回到基线；形成最初 CallSummary。",
+          "test_type": "E2E"
+        }
+      ]
+    },
+    {
+      "number": "09",
+      "title": "第一道可靠性关卡",
+      "phase": "P1",
+      "dependencies": [
+        "08"
+      ],
+      "goal": "把“偶尔打通”提升为可重复运行的小型通信内核。",
+      "stop_line": "本章没过，不新增 WebRTC、数据库、后台或复杂电话应用。",
+      "references": [
+        "S01",
+        "S02",
+        "R06",
+        "T01"
+      ],
+      "objectives": [
+        {
+          "id": "AC-09-01",
+          "title": "确定性信令丢包",
+          "exercise": "分别丢弃首个 INVITE、180、200、ACK、BYE 响应，并注入重复和乱序。",
+          "acceptance": "每个场景明确期望为成功或规范超时；实际重传可见；成功事件/终止业务结果不重复。",
+          "test_type": "故障 E2E"
+        },
+        {
+          "id": "AC-09-02",
+          "title": "生命周期压力",
+          "exercise": "重复执行 100 通串行短呼叫及 10 路同时呼叫，至少重复三轮。",
+          "acceptance": "所有预期成功场景通过；无串音、无残留活动媒体任务；等待必要协议定时器后事务/会话回到基线。",
+          "test_type": "回归/压力"
+        },
+        {
+          "id": "AC-09-03",
+          "title": "取消竞态回归",
+          "exercise": "用可控顺序运行取消先到、200 先到、重复 200、对端随后 BYE。",
+          "acceptance": "每个成功建立的 Dialog 都被正确管理和终止；无双重接通或遗留振铃；不能只增加 sleep 让测试偶然通过。",
+          "test_type": "确定性状态/网络"
+        },
+        {
+          "id": "AC-09-04",
+          "title": "坏包与端口耗尽",
+          "exercise": "注入非 SIP/非 RTP、截断消息、媒体端口全部占用及发送错误。",
+          "acceptance": "服务不崩溃；分配失败完整回滚；拒绝原因可查；解除资源不足后新呼叫恢复。",
+          "test_type": "故障"
+        },
+        {
+          "id": "AC-09-05",
+          "title": "v0.1 证据归档",
+          "exercise": "保存双真实终端演示、独立场景报告、pcap、音频和资源计数。",
+          "acceptance": "当前 commit 可重复上述结果；不存在只有 mock 测试的关键呼叫链路；发布说明明确仅受控网络学习版。",
+          "test_type": "里程碑"
+        }
+      ]
+    },
+    {
+      "number": "10",
+      "title": "TCP、TLS、WS/WSS 与地址解析",
+      "phase": "P2",
+      "dependencies": [
+        "09"
+      ],
+      "goal": "摆脱只在一个 UDP 局域网场景工作的限制。",
+      "stop_line": "本章有 SIP over WebSocket 不等于已经实现 WebRTC 音频。",
+      "references": [
+        "S01",
+        "S19"
+      ],
+      "objectives": [
+        {
+          "id": "AC-10-01",
+          "title": "TCP 消息分帧",
+          "exercise": "增加累计缓冲，按 SIP 消息头及 Content-Length 提取消息。",
+          "acceptance": "半包、一个 read 多条消息、body 含换行和连接中断均正确；单消息不得消费下一消息字节。",
+          "test_type": "网络/分块属性"
+        },
+        {
+          "id": "AC-10-02",
+          "title": "可靠传输事务差异",
+          "exercise": "将协议事务与 transport 绑定，处理连接复用、断连与重连。",
+          "acceptance": "可靠传输不错误照搬 UDP 请求重传；断连使所属流程受控失败，不影响其他连接。",
+          "test_type": "集成"
+        },
+        {
+          "id": "AC-10-03",
+          "title": "TLS 与 WSS",
+          "exercise": "通过成熟 TLS 实现校验证书、主机名和信任链；默认禁止跳过验证。",
+          "acceptance": "有效证书互通；过期、不可信或错误名称连接失败；密钥不进入日志；安全配置不存在静默降级。",
+          "test_type": "安全/互通"
+        },
+        {
+          "id": "AC-10-04",
+          "title": "SIP WebSocket",
+          "exercise": "按 SIP WebSocket 子协议建立消息传输、帧大小限制与关闭语义。",
+          "acceptance": "独立浏览器 SIP 库可注册和交换信令；WebSocket 分片与连接关闭不破坏 SIP 边界。",
+          "test_type": "浏览器/协议"
+        },
+        {
+          "id": "AC-10-05",
+          "title": "DNS 与 IPv6",
+          "exercise": "分步实现已声明的 SIP 服务定位、A/AAAA、SRV/NAPTR 策略和 IPv6 地址处理。",
+          "acceptance": "本地受控 DNS 能触发主备地址选择；TTL/失败可测；IPv6 测试中注册与通话可用；不承诺未测试的所有 DNS 组合。",
+          "test_type": "网络实验室"
+        }
+      ]
+    },
+    {
+      "number": "11",
+      "title": "NAT、媒体可达性与安全媒体",
+      "phase": "P2",
+      "dependencies": [
+        "10"
+      ],
+      "goal": "建立明确的网络拓扑支持矩阵，而不是笼统宣称“支持 NAT”。",
+      "stop_line": "先完成常规 SIP 场景；浏览器 ICE/TURN 全流程在第 21 章。",
+      "references": [
+        "S20",
+        "S08",
+        "S18"
+      ],
+      "objectives": [
+        {
+          "id": "AC-11-01",
+          "title": "SIP 返回路径",
+          "exercise": "实现 rport/received、连接复用和注册绑定的可达性更新策略。",
+          "acceptance": "客户端 Contact 与真实网络来源不同时，在声明的 NAT 拓扑中仍可注册及被叫；未知来源不能覆盖他人位置。",
+          "test_type": "NAT E2E"
+        },
+        {
+          "id": "AC-11-02",
+          "title": "媒体来源学习",
+          "exercise": "对 symmetric RTP/source learning 规定已授权呼叫、地址范围、学习窗口与重新学习条件。",
+          "acceptance": "受控 NAT 媒体可通；第三方提前发包不能任意抢占媒体；来源变化有审计且不导致开放 UDP 转发器。",
+          "test_type": "安全/NAT"
+        },
+        {
+          "id": "AC-11-03",
+          "title": "网络场景矩阵",
+          "exercise": "测试同网段、终端在 NAT 后、引擎具公布地址、两终端不同 NAT 等声明场景。",
+          "acceptance": "每个支持场景至少一次自动化收包验证与真实双向音频验证；不支持的 CGNAT/复杂场景明确标注而非假通过。",
+          "test_type": "互通矩阵"
+        },
+        {
+          "id": "AC-11-04",
+          "title": "SRTP 边界",
+          "exercise": "复用成熟密码实现，完成加密媒体协商与每条腿的密钥上下文；限定支持的协商方式。",
+          "acceptance": "有效密钥端到端有声；篡改包/错误密钥被拒绝；重放控制生效；TLS 成功不被当作媒体已加密。",
+          "test_type": "安全/媒体"
+        },
+        {
+          "id": "AC-11-05",
+          "title": "保持与超时",
+          "exercise": "实现有界 keepalive、可配置媒体空闲策略与连接失效行为。",
+          "acceptance": "终端断线能够被检测；静音/保持不会被无条件当作故障；过期连接不能永久占用媒体端口。",
+          "test_type": "时间/故障"
+        }
+      ]
+    },
+    {
+      "number": "12",
+      "title": "高级 SIP 协商与会话维护",
+      "phase": "P2",
+      "dependencies": [
+        "11"
+      ],
+      "goal": "让协商更新、早期媒体和会话刷新成为可靠的协议能力。",
+      "stop_line": "不把“支持某个方法的字符串”当作该方法完整实现。",
+      "references": [
+        "S07",
+        "S09",
+        "S10",
+        "S11"
+      ],
+      "objectives": [
+        {
+          "id": "AC-12-01",
+          "title": "re-INVITE 与方向修改",
+          "exercise": "实现通话中地址/媒体方向变更、CSeq 和 SDP 版本管理。",
+          "acceptance": "hold/unhold 及媒体端口更新可互通；失败的新协商不破坏原通话；旧媒体管线被正确退出。",
+          "test_type": "互通"
+        },
+        {
+          "id": "AC-12-02",
+          "title": "UPDATE 与协商冲突",
+          "exercise": "实现声明范围内 UPDATE，处理同时发起 offer 的冲突与重试。",
+          "acceptance": "交错更新不会同时存在两份互相覆盖的有效协商；失败/491 等受控回退；无死锁。",
+          "test_type": "状态/网络"
+        },
+        {
+          "id": "AC-12-03",
+          "title": "100rel/PRACK",
+          "exercise": "实现可靠临时响应、RSeq/RAck、相关事务与早期 SDP。",
+          "acceptance": "要求 100rel 的对端成功互通；漏发 PRACK 有重传/超时；重复 PRACK 不重复创建媒体。",
+          "test_type": "协议 E2E"
+        },
+        {
+          "id": "AC-12-04",
+          "title": "Session Timer",
+          "exercise": "实现会话刷新角色、Session-Expires/Min-SE 及失败处理。",
+          "acceptance": "在压缩测试时间下续期维持会话；刷新失效按协商规则结束；不会永久保留僵尸通话。",
+          "test_type": "虚拟时间/互通"
+        },
+        {
+          "id": "AC-12-05",
+          "title": "Early/late offer 与早期媒体",
+          "exercise": "扩展最初 early offer 到声明的 late offer 路径，并区分响铃与早期音频。",
+          "acceptance": "真实 183 音频可被主叫听到；不能同时叠加本地回铃与上游语音；late offer 的答复/ACK SDP 正确匹配。",
+          "test_type": "网络/音频"
+        }
+      ]
+    },
+    {
+      "number": "13",
+      "title": "外线中继、路由、分叉与故障切换",
+      "phase": "P2",
+      "dependencies": [
+        "12"
+      ],
+      "goal": "从内部互拨扩展到可配置的来去电和多个目标。",
+      "stop_line": "先用自有模拟中继验证；真实付费外线只拨本人批准的号码。",
+      "references": [
+        "R05",
+        "R03",
+        "S01"
+      ],
+      "objectives": [
+        {
+          "id": "AC-13-01",
+          "title": "静态路由与号码改写",
+          "exercise": "配置内部/入站/出站规则、优先级、号码规范化与上下文。",
+          "acceptance": "同一输入得到确定目标；循环路由和越权外拨被拒绝；无命中有明确结果；日志可解释选中了哪条规则。",
+          "test_type": "表驱动/E2E"
+        },
+        {
+          "id": "AC-13-02",
+          "title": "SIP Trunk",
+          "exercise": "实现注册式和可信来源式中继、身份规则与保活。",
+          "acceptance": "模拟运营商可双向呼叫并双向有声；认证错误失败；外部可伪造的身份头不能直接取得内部权限。",
+          "test_type": "模拟中继/安全"
+        },
+        {
+          "id": "AC-13-03",
+          "title": "顺序尝试",
+          "exercise": "实现一个目标失败后按策略尝试下一目标及超时预算。",
+          "acceptance": "第一个目标不可达时第二个可接听；不同失败码是否允许重试有表；总超时不会被每次重试无限延长。",
+          "test_type": "故障 E2E"
+        },
+        {
+          "id": "AC-13-04",
+          "title": "并行振铃与双接听竞态",
+          "exercise": "并行尝试多个目标，选择赢家并清理其他尝试。",
+          "acceptance": "任意时刻最多一组被选媒体桥；已成功但未选中的 Dialog 仍正确 ACK 后 BYE；未成功尝试用恰当方式取消。",
+          "test_type": "确定性竞态"
+        },
+        {
+          "id": "AC-13-05",
+          "title": "可控线路验收",
+          "exercise": "全部模拟测试通过后，加入一个真实服务商测试配置与禁拨默认策略。",
+          "acceptance": "明确授权的入站/出站均验证；号码和账密不入仓库；外呼白名单、并发/速率/时长限制生效。无真实线路时该项保持未验收。",
+          "test_type": "实际互通"
+        }
+      ]
+    },
+    {
+      "number": "14",
+      "title": "媒体处理：播放、录音与转码",
+      "phase": "P3",
+      "dependencies": [
+        "13"
+      ],
+      "goal": "在透明中继之外增加明确的媒体处理模式。",
+      "stop_line": "优先音频；不自研 Opus 算法，不做视频转码。",
+      "references": [
+        "R04",
+        "R07",
+        "S08"
+      ],
+      "objectives": [
+        {
+          "id": "AC-14-01",
+          "title": "统一媒体输出所有者",
+          "exercise": "为每端建立 relay/playback/transcode/silence 的互斥输出模式及切换协议。",
+          "acceptance": "一次只存在一个最终输出所有者；重复切换 100 次无旧任务持续发声；序列与时间线不会因多个写入者冲突。",
+          "test_type": "状态/媒体"
+        },
+        {
+          "id": "AC-14-02",
+          "title": "编码与重采样",
+          "exercise": "增加 PCMA 与 Opus 适配、PCM 格式约定及所需重采样；使用成熟复杂编码器。",
+          "acceptance": "PCMU↔PCMA、PCMU↔Opus 分别有独立解码验证；采样率与播放速度正确；不支持组合明确失败。",
+          "test_type": "音频/互通"
+        },
+        {
+          "id": "AC-14-03",
+          "title": "播放与中断",
+          "exercise": "支持本地 WAV、测试音、等待音乐、停止及结束事件。",
+          "acceptance": "音频实际被远端听到；停止后不继续泄漏旧音频；文件缺失/格式不支持可恢复；文件路径有访问边界。",
+          "test_type": "E2E/故障"
+        },
+        {
+          "id": "AC-14-04",
+          "title": "录音生命周期",
+          "exercise": "支持开始/暂停/恢复/停止及挂断收尾，先混音与双声道分轨 WAV。",
+          "acceptance": "输出文件能由独立播放器打开；两端方向、时长和事件一致；磁盘满/权限失败有结果，不无界堆积内存。",
+          "test_type": "音频/故障"
+        },
+        {
+          "id": "AC-14-05",
+          "title": "抖动、背压与时钟",
+          "exercise": "在解码/混音路径设置有界缓冲、迟到包策略、播放时钟与发送节奏。",
+          "acceptance": "输入抖动/丢包不会使时延无限增长；转发模式不无故引入解码缓冲；压力下有明确丢帧/失败计数。",
+          "test_type": "媒体故障/负载"
+        }
+      ]
+    },
+    {
+      "number": "15",
+      "title": "DTMF、IVR 与语音信箱",
+      "phase": "P3",
+      "dependencies": [
+        "14"
+      ],
+      "goal": "用通用应用生命周期组合电话功能，而不是把菜单逻辑塞进协议处理器。",
+      "stop_line": "使用录制提示音，不接 ASR、TTS、LLM 或转写。",
+      "references": [
+        "R08",
+        "S12"
+      ],
+      "objectives": [
+        {
+          "id": "AC-15-01",
+          "title": "DTMF 收发与去重",
+          "exercise": "优先实现 RFC 4733 telephone-event，再增加明确支持的 SIP INFO 兼容方式。",
+          "acceptance": "动态 PT、持续按键、重复 end 包不会触发多次按键；0–9、*、# 序列与发送端一致；不会把 PT 固定为 101。",
+          "test_type": "协议/音频"
+        },
+        {
+          "id": "AC-15-02",
+          "title": "通话应用生命周期",
+          "exercise": "设计进入、输入、超时、播放结束、录音结束和退出事件。",
+          "acceptance": "应用退出后旧回调不能继续操纵通话；一次 call 可明确从 IVR 转入其他应用；异常必有退出原因。",
+          "test_type": "状态机"
+        },
+        {
+          "id": "AC-15-03",
+          "title": "IVR 菜单与收号",
+          "exercise": "实现欢迎语、按键分支、最大位数、结束符、超时和最大重试次数。",
+          "acceptance": "按 1/2 到不同分机；无输入/错误输入有可重复结果；连续按键不丢失、不无限重试；通话中按键打断策略可测。",
+          "test_type": "独立 E2E"
+        },
+        {
+          "id": "AC-15-04",
+          "title": "语音信箱",
+          "exercise": "无人接听后播放问候、录留言、确认保存并可回放。",
+          "acceptance": "留言有可解码文件与归属；空留言、过短、超长、磁盘失败和客户中途挂断均有定义；无转写依赖。",
+          "test_type": "音频/故障"
+        }
+      ]
+    },
+    {
+      "number": "16",
+      "title": "保持、盲转与咨询转接",
+      "phase": "P3",
+      "dependencies": [
+        "12",
+        "14",
+        "15"
+      ],
+      "goal": "让两方通话在可控条件下转换连接关系。",
+      "stop_line": "不把转接等同于直接修改被叫号码；失败必须恢复或明确结束。",
+      "references": [
+        "S13",
+        "S14",
+        "R03"
+      ],
+      "objectives": [
+        {
+          "id": "AC-16-01",
+          "title": "保持与恢复",
+          "exercise": "把 SIP hold/unhold 与媒体方向、等待音乐、原桥接状态连接。",
+          "acceptance": "保持方与被保持方听到正确内容；恢复后两向音频可通；连续保持恢复不遗留音乐。",
+          "test_type": "真实终端"
+        },
+        {
+          "id": "AC-16-02",
+          "title": "盲转",
+          "exercise": "实现受权限约束的 REFER 或内部盲转命令及通知结果。",
+          "acceptance": "A/B 通话转到 C 后 A/C 有声，B 按约定退出；C 拒绝时明确回退/失败而非无声悬空；进度通知一致。",
+          "test_type": "三端 E2E"
+        },
+        {
+          "id": "AC-16-03",
+          "title": "咨询转接",
+          "exercise": "实现先咨询、完成、取消咨询以及 Replaces 相关验证。",
+          "acceptance": "A 等待时 B/C 能咨询；完成后 A/C 通话；取消后 A/B 恢复；外部错误 Replaces 不能劫持其他通话。",
+          "test_type": "三端/安全"
+        },
+        {
+          "id": "AC-16-04",
+          "title": "转接竞态与媒体替换",
+          "exercise": "同时注入目标接听、原呼叫挂断、再次转接和重复命令。",
+          "acceptance": "最终连接唯一；旧媒体发送者停止；所有已建立 Dialog 都有明确归属和终止结果。",
+          "test_type": "确定性故障"
+        }
+      ]
+    },
+    {
+      "number": "17",
+      "title": "振铃组与基础排队分配",
+      "phase": "P3",
+      "dependencies": [
+        "13",
+        "15",
+        "16"
+      ],
+      "goal": "构建基础呼叫排队能力，不扩成完整商业联络中心。",
+      "stop_line": "只做基础坐席可用性、队列和规则分配；技能预测、WFM、商业报表不在本轮。",
+      "references": [
+        "R02",
+        "R08",
+        "R03"
+      ],
+      "objectives": [
+        {
+          "id": "AC-17-01",
+          "title": "队列与等待体验",
+          "exercise": "实现入队、出队、等待音乐、最大长度、最大等待与溢出目标。",
+          "acceptance": "满队列或超时到指定分支；客户挂断即移出；等待音乐在接通后停止；队列无永久幽灵成员。",
+          "test_type": "应用 E2E"
+        },
+        {
+          "id": "AC-17-02",
+          "title": "坐席与分配",
+          "exercise": "实现可用/忙碌/暂停等最小坐席状态与确定性分配规则。",
+          "acceptance": "2 个坐席、3 个来电时分配符合规则；一个坐席不能同时被两次互斥分配占用；失败可重新排队。",
+          "test_type": "并发"
+        },
+        {
+          "id": "AC-17-03",
+          "title": "顺序/同时振铃组合",
+          "exercise": "复用第 13 章拨号尝试，而不是再写一套 SIP 状态机。",
+          "acceptance": "同时有人接听只有一个赢家；未选中尝试正确结束；日志能追踪队列任务与真实呼叫腿。",
+          "test_type": "E2E"
+        },
+        {
+          "id": "AC-17-04",
+          "title": "饥饿与故障策略",
+          "exercise": "对坐席断线、反复拒接、队列服务异常设有界重试。",
+          "acceptance": "每个等待呼叫最终接通、溢出或结束；不会无限占用资源；恢复后新呼叫正常。",
+          "test_type": "故障"
+        }
+      ]
+    },
+    {
+      "number": "18",
+      "title": "音频会议与授权监督",
+      "phase": "P3",
+      "dependencies": [
+        "14",
+        "16"
+      ],
+      "goal": "实现多方音频混音与明确方向的监督媒体路由。",
+      "stop_line": "只做音频会议；监督功能仅限经授权的测试/业务场景，并强制权限与审计。",
+      "references": [
+        "R03",
+        "R04"
+      ],
+      "objectives": [
+        {
+          "id": "AC-18-01",
+          "title": "会议成员生命周期",
+          "exercise": "创建会议、加入、离开、静音、踢出和关闭。",
+          "acceptance": "3 人会议中任一成员退出不终止其他人的通话；最后成员退出后混音任务和端口释放。",
+          "test_type": "三端 E2E"
+        },
+        {
+          "id": "AC-18-02",
+          "title": "N-1 混音",
+          "exercise": "每个参与者收到其他人的声音，不把其自身直接回送。",
+          "acceptance": "三种独立音频信号逐路验证；自己声音不在自己的接收混音中；增益与溢出处理有离线测试。",
+          "test_type": "音频"
+        },
+        {
+          "id": "AC-18-03",
+          "title": "会议重连与录音",
+          "exercise": "定义断线清理、重复加入、混音录音与资源上限。",
+          "acceptance": "重复加入不生成两个隐形成员；达到人数上限有拒绝结果；会议录音可播放且成员退出后无残留。",
+          "test_type": "故障/音频"
+        },
+        {
+          "id": "AC-18-04",
+          "title": "监听、耳语、加入与接管",
+          "exercise": "用显式媒体路由分别实现 listen/whisper/barge/takeover，复用通话命令。",
+          "acceptance": "耳语只到指定坐席，客户端不得收到；未授权操作拒绝；全部操作和停止均有审计与回归证据。",
+          "test_type": "安全/三端媒体"
+        }
+      ]
+    },
+    {
+      "number": "19",
+      "title": "SIP 消息、订阅与电话状态通知",
+      "phase": "P3",
+      "dependencies": [
+        "12",
+        "15",
+        "18"
+      ],
+      "goal": "补全基础电话终端所需的消息与订阅能力。",
+      "stop_line": "限定 MESSAGE、dialog/BLF 与 MWI；不做聊天产品或全部 presence 扩展。",
+      "references": [
+        "S15",
+        "S16",
+        "S17",
+        "R03"
+      ],
+      "objectives": [
+        {
+          "id": "AC-19-01",
+          "title": "SIP MESSAGE",
+          "exercise": "支持受鉴权与大小限制的文本消息发送/接收。",
+          "acceptance": "两个测试终端消息一致；不支持的内容类型有明确结果；匿名或跨权限消息不能被任意转发。",
+          "test_type": "互通/安全"
+        },
+        {
+          "id": "AC-19-02",
+          "title": "SUBSCRIBE/NOTIFY 生命周期",
+          "exercise": "实现支持的事件包、续期、超时、取消订阅与终止通知。",
+          "acceptance": "订阅后收到对应通知；过期停止发送；重复请求不产生重复订阅；未经授权不可订阅他人敏感状态。",
+          "test_type": "虚拟时间/网络"
+        },
+        {
+          "id": "AC-19-03",
+          "title": "BLF/Dialog 状态",
+          "exercise": "基于会话事件产生振铃、通话中、空闲等状态通知。",
+          "acceptance": "真实支持终端或独立事件包测试端状态变化与真实会话一致；仅客户端 UI 变色不够。",
+          "test_type": "互通"
+        },
+        {
+          "id": "AC-19-04",
+          "title": "留言等待通知",
+          "exercise": "将语音信箱未读数量/状态与 MWI 通知连接，明确已读操作。",
+          "acceptance": "新增留言触发等待状态，读完/删除后恢复；通知与存储内容一致；断线重新订阅可获得当前状态。",
+          "test_type": "应用/协议"
+        }
+      ]
+    },
+    {
+      "number": "20",
+      "title": "可编程 HTTP、WebSocket 与 Webhook",
+      "phase": "P4",
+      "dependencies": [
+        "19"
+      ],
+      "goal": "让外部程序可靠地控制电话和取得事件，而不重写电话协议逻辑。",
+      "stop_line": "不做 AI 协议适配；通用音频输入输出只作为非 AI 媒体接口能力。",
+      "references": [
+        "R03",
+        "R05"
+      ],
+      "objectives": [
+        {
+          "id": "AC-20-01",
+          "title": "命令与权限模型",
+          "exercise": "定义 SessionId/LegId/CommandId/EventId、错误码、scope 与会话归属。",
+          "acceptance": "originate/answer/hangup/bridge/play/record 等复用同一内部命令；未授权来源不能跨会话控制；重复命令行为确定。",
+          "test_type": "API/安全"
+        },
+        {
+          "id": "AC-20-02",
+          "title": "异步状态语义",
+          "exercise": "分清 accepted、signaling established、media ready、finished。",
+          "acceptance": "外拨仅入队不能返回“对方已接通”；媒体失败可单独报告；命令响应与先到事件能够通过 ID 关联。",
+          "test_type": "契约/E2E"
+        },
+        {
+          "id": "AC-20-03",
+          "title": "动态 HTTP 路由与用户后端",
+          "exercise": "增加带超时的路由决策接口和可选外部用户查询，缓存与降级明确。",
+          "acceptance": "超时/无效 JSON/拒绝/服务不可达均有回退或失败；慢服务不占住媒体实时任务；转发目的和回调地址有边界。",
+          "test_type": "故障/安全"
+        },
+        {
+          "id": "AC-20-04",
+          "title": "事件交付、补读与背压",
+          "exercise": "实现有界事件缓冲、序号、断线补读或显式快照恢复。",
+          "acceptance": "慢消费者不会拖死通信核心；缺口可以检测；超出保留窗时明确要求快照，不能假装完整；幂等消费者示例有测试。",
+          "test_type": "故障/契约"
+        },
+        {
+          "id": "AC-20-05",
+          "title": "CDR Webhook 与媒体接口",
+          "exercise": "提供至少一次事件交付和幂等键；通用 PCM 接口采用文件/回环测试端验证。",
+          "acceptance": "重试后同一业务 CDR 不被重复记账；Webhook 永久失败可查询；PCM 两向实际有声、格式/节奏/关闭可测且无模型依赖。",
+          "test_type": "API/媒体/故障"
+        }
+      ]
+    },
+    {
+      "number": "21",
+      "title": "WebRTC 音频与浏览器电话",
+      "phase": "P4",
+      "dependencies": [
+        "10",
+        "11",
+        "14",
+        "20"
+      ],
+      "goal": "在浏览器与 SIP 电话之间完成安全、可达、真实双向的音频通话。",
+      "stop_line": "浏览器协议栈和密码基础库可复用；不额外自研 TURN 服务器，不接 AI。",
+      "references": [
+        "S21",
+        "S22",
+        "S23",
+        "S18",
+        "S19"
+      ],
+      "objectives": [
+        {
+          "id": "AC-21-01",
+          "title": "浏览器信令与 SDP",
+          "exercise": "用薄页面和成熟浏览器 SIP 库连接 WSS，完成权限申请和媒体协商。",
+          "acceptance": "可注册、呼入/呼出、挂断；拒绝麦克风权限有可理解结果；WS 注册成功不被标作音频通过。",
+          "test_type": "浏览器 E2E"
+        },
+        {
+          "id": "AC-21-02",
+          "title": "ICE/STUN/TURN 客户端流程",
+          "exercise": "实现或组合候选收集、连通检查、选择与 TURN 中继接入，记录具体复用边界。",
+          "acceptance": "直连和强制 relay 两种测试都通；TURN 授权失败有明确结果；不能只靠同一台机器的 host candidate。",
+          "test_type": "网络拓扑 E2E"
+        },
+        {
+          "id": "AC-21-03",
+          "title": "DTLS-SRTP 与媒体复用",
+          "exercise": "通过成熟安全实现处理 fingerprint、角色、密钥和当前支持的 rtcp-mux/BUNDLE。",
+          "acceptance": "错误 fingerprint/密钥连接被拒绝；两个方向均为正确加密媒体；音频轨和 RTCP 不混淆。",
+          "test_type": "安全/媒体"
+        },
+        {
+          "id": "AC-21-04",
+          "title": "浏览器到 SIP 互通",
+          "exercise": "完成至少两种浏览器引擎对应的真实媒体互通记录与 PCMU/Opus 路径。",
+          "acceptance": "每种已声明支持的组合都双向解码有声；重复重拨与页面关闭可释放资源；测试记录具体浏览器版本。",
+          "test_type": "真实互通"
+        },
+        {
+          "id": "AC-21-05",
+          "title": "网络变化与恢复",
+          "exercise": "定义 ICE restart、网络断开、重连与不支持场景。",
+          "acceptance": "支持的网络切换能恢复；不能恢复时及时终止而不永久“已接通”；拒绝重复媒体发送者。",
+          "test_type": "故障"
+        }
+      ]
+    },
+    {
+      "number": "22",
+      "title": "双端视频透传",
+      "phase": "P4",
+      "dependencies": [
+        "21"
+      ],
+      "goal": "覆盖参考项目中的基础非 AI 视频能力，但限定为两端可协商编码的转发。",
+      "stop_line": "不做视频解码重编码、完整 SFU、多人视频混屏或视频编辑。",
+      "references": [
+        "R07",
+        "S07",
+        "S21"
+      ],
+      "objectives": [
+        {
+          "id": "AC-22-01",
+          "title": "视频协商与拒绝",
+          "exercise": "支持两端共同视频能力匹配，至少完成一个共同编码的全链路。",
+          "acceptance": "共同编码时建立视频；不相容时按策略拒绝视频并保留音频，或拒绝整通；禁止宣称协商成功却黑屏。",
+          "test_type": "协商/E2E"
+        },
+        {
+          "id": "AC-22-02",
+          "title": "视频 RTP 与轨道映射",
+          "exercise": "处理两侧 PT、SSRC、MID 与媒体轨映射。",
+          "acceptance": "测试端真正解码显示对方画面；音频与视频不串轨；两个方向分别有帧/包证据。",
+          "test_type": "浏览器/媒体"
+        },
+        {
+          "id": "AC-22-03",
+          "title": "RTCP 反馈与重协商",
+          "exercise": "支持该模式所需的关键帧请求/反馈映射及视频启停。",
+          "acceptance": "故障注入后关键帧请求到达正确端；关闭/重开视频不破坏音频；不支持反馈明确记录。",
+          "test_type": "媒体故障"
+        },
+        {
+          "id": "AC-22-04",
+          "title": "边界与容量",
+          "exercise": "测试音频+视频持续运行、对端离开和视频数据洪泛。",
+          "acceptance": "视频负载不会无限占用队列；超限受控；挂断后全部视频任务退出；发布能力矩阵不写“任意视频格式”。",
+          "test_type": "负载/生命周期"
+        }
+      ]
+    },
+    {
+      "number": "23",
+      "title": "持久化、管理 API 与最小控制台",
+      "phase": "P5",
+      "dependencies": [
+        "22"
+      ],
+      "goal": "将已可独立运行的通信核心变成可管理的电话系统。",
+      "stop_line": "不把实时媒体状态放进数据库热路径，不复制商业联络中心 UI。",
+      "references": [
+        "R01",
+        "R05",
+        "R09"
+      ],
+      "objectives": [
+        {
+          "id": "AC-23-01",
+          "title": "配置与数据库真源",
+          "exercise": "先 SQLite，建立用户、分机、线路、路由、应用配置与迁移；按需增加 PostgreSQL。",
+          "acceptance": "重启后配置完整；不存在数据库/配置文件同时写导致冲突的双真源；坏配置原子回滚。",
+          "test_type": "存储/升级"
+        },
+        {
+          "id": "AC-23-02",
+          "title": "CDR 与录音元数据",
+          "exercise": "关联业务会话、通话腿、尝试、接听时间、结束原因和录音制品。",
+          "acceptance": "一通带多次尝试/转接的电话可追踪；attempt 与最终业务通话统计不重复；文件与元数据缺失可发现。",
+          "test_type": "存储/一致性"
+        },
+        {
+          "id": "AC-23-03",
+          "title": "权限与管理范围",
+          "exercise": "建立管理员/操作员/只读角色；多域隔离作为本路线图补充要求，而非假定参考项目具备完整租户隔离。",
+          "acceptance": "同号不同域互不覆盖；API、录音下载、CDR、WebSocket 事件均做服务端授权；隐藏按钮不能代替授权。",
+          "test_type": "安全矩阵"
+        },
+        {
+          "id": "AC-23-04",
+          "title": "最小 Web 控制台",
+          "exercise": "只增加用户、分机、线路、路由、应用设置、活动电话、CDR 和录音操作页面。",
+          "acceptance": "从空配置通过界面完成两分机和路由，随后真实互拨；后台页面失败不影响已建立的媒体。",
+          "test_type": "产品 E2E"
+        },
+        {
+          "id": "AC-23-05",
+          "title": "扩展机制",
+          "exercise": "稳定后再加入编译期 CallApp/Addon 扩展及版本化接口。",
+          "acceptance": "一个非 AI 示例应用无需修改 SIP 核心即可加载并运行；关闭扩展不会使基本通话不可用。",
+          "test_type": "模块边界"
+        }
+      ]
+    },
+    {
+      "number": "24",
+      "title": "诊断、SipFlow 类记录与归档",
+      "phase": "P5",
+      "dependencies": [
+        "23"
+      ],
+      "goal": "让一通电话的信令、媒体、业务事件和制品能够关联查询。",
+      "stop_line": "监控基础从第 00 章就开始；本章做完整产品化，不包含转写或内容分析。",
+      "references": [
+        "R10",
+        "R01",
+        "R04"
+      ],
+      "objectives": [
+        {
+          "id": "AC-24-01",
+          "title": "通话时间线与抓包",
+          "exercise": "以稳定 ID 关联两侧 SIP、媒体统计、转接和终止事件，提供限时启用抓包。",
+          "acceptance": "能回答谁先挂断、哪一腿失败、何时开始有媒体；导出能由独立工具读；默认不无限记录全部音频。",
+          "test_type": "诊断演练"
+        },
+        {
+          "id": "AC-24-02",
+          "title": "指标与追踪",
+          "exercise": "暴露活动会话/事务/任务/端口、呼叫结果、RTP 收发丢包、队列深度、CDR积压等。",
+          "acceptance": "模拟单向无声/线路失败时有对应信号；指标标签不按 Call-ID 无界增长；导出器故障不阻塞媒体。",
+          "test_type": "故障/可观测"
+        },
+        {
+          "id": "AC-24-03",
+          "title": "本地和对象存储归档",
+          "exercise": "录音/诊断制品先本地，再接 S3 兼容后端；上传有重试与状态。",
+          "acceptance": "对象存储断开后本地受配额约束；恢复后可补传并按制品 ID 去重；不得把上传成功日志当作对象存在。",
+          "test_type": "存储故障"
+        },
+        {
+          "id": "AC-24-04",
+          "title": "保留与访问控制",
+          "exercise": "配置保留期、删除任务、加密/脱敏边界、下载授权与审计。",
+          "acceptance": "过期制品按策略删除；无权用户无法通过猜路径下载；排障包不带密钥、Authorization 或真实未脱敏号码。",
+          "test_type": "安全/时间"
+        }
+      ]
+    },
+    {
+      "number": "25",
+      "title": "有限多节点与所有者路由",
+      "phase": "P5",
+      "dependencies": [
+        "23",
+        "24"
+      ],
+      "goal": "提供明确边界的多节点运行，而不夸大为通话无损高可用。",
+      "stop_line": "本轮不要求进行中 SIP/媒体会话在进程崩溃后无缝迁移。",
+      "references": [
+        "R11",
+        "R05"
+      ],
+      "objectives": [
+        {
+          "id": "AC-25-01",
+          "title": "节点所有权模型",
+          "exercise": "给注册、活动通话和媒体规定 owner node，区分配置与实时状态。",
+          "acceptance": "两节点查询能定位实际拥有者；远程请求不会创建第二个同 ID 会话；共享数据库不被当作状态复制完成。",
+          "test_type": "双节点"
+        },
+        {
+          "id": "AC-25-02",
+          "title": "跨节点查询与命令",
+          "exercise": "从非 owner 节点转发授权命令或返回明确重定向。",
+          "acceptance": "从 B 挂断 A 上的测试通话只执行一次；错误/未知 owner 可定位；转发保留身份且不能绕过权限。",
+          "test_type": "分布式 E2E"
+        },
+        {
+          "id": "AC-25-03",
+          "title": "状态同步与过期",
+          "exercise": "复制必要的注册定位/会话摘要/业务数据，并设置事件版本和过期策略。",
+          "acceptance": "乱序、重复、网络分区后不会用旧状态复活结束会话；节点恢复能够重建目录而非僵尸通话。",
+          "test_type": "故障"
+        },
+        {
+          "id": "AC-25-04",
+          "title": "故障与新呼叫恢复",
+          "exercise": "在声明的备用路由/重新注册拓扑中停止 owner 节点，观察其他节点。",
+          "acceptance": "其他节点上的既有通话继续；故障节点原通话允许终止且被正确标记；预定义条件下新呼叫能经健康节点建立。恢复窗口在测试前固定。",
+          "test_type": "故障演练"
+        }
+      ]
+    },
+    {
+      "number": "26",
+      "title": "安全、发布、容量与长期运行验收",
+      "phase": "P5",
+      "dependencies": [
+        "25"
+      ],
+      "goal": "给出有证据、可复现、边界清楚的 YakYak 1.0。",
+      "stop_line": "不以星标、代码量、参考项目宣传并发数或一次本机测试替代验收。",
+      "references": [
+        "R01",
+        "T01"
+      ],
+      "objectives": [
+        {
+          "id": "AC-26-01",
+          "title": "安全复查与证书运维",
+          "exercise": "复核鉴权、外拨限制、限速、回调/播放 URL 访问边界、凭据保管；可选 ACME 完成自动续签闭环。",
+          "acceptance": "匿名外呼、越权录音/监督、凭据重放、恶意目标地址、过期证书等回归通过；续签失败有告警，不能关闭验证绕过。",
+          "test_type": "安全/故障"
+        },
+        {
+          "id": "AC-26-02",
+          "title": "部署、升级与恢复",
+          "exercise": "提供 release 构建、受限运行账号、容器/服务启动、版本迁移及备份恢复说明。",
+          "acceptance": "全新 Linux 环境能安装；错误配置不半启动；配置/数据库/录音可按说明恢复；进行中通话的升级排空规则明确。",
+          "test_type": "交付演练"
+        },
+        {
+          "id": "AC-26-03",
+          "title": "容量基线",
+          "exercise": "固定参考测试环境，先完成 100 路双端 PCMU 中继、10 CPS 建呼的短压测，再做 100 路稳态 24 小时。",
+          "acceptance": "记录版本、硬件、20ms包间隔、双向媒体、呼叫腿/通话区分、录音/转码开关、错误率和延迟；达到预先约定预算才通过。该数字是目标不是实测结论。",
+          "test_type": "容量/浸泡"
+        },
+        {
+          "id": "AC-26-04",
+          "title": "分模式与过载",
+          "exercise": "分别测试转发、转码、录音、会议、WebRTC、视频，不用一组数据覆盖全部。",
+          "acceptance": "过载先限流/拒绝新呼叫而非无界队列；压力解除后恢复；资源计数无持续泄漏；CPU/RSS趋势与媒体质量一并报告。",
+          "test_type": "负载/故障"
+        },
+        {
+          "id": "AC-26-05",
+          "title": "最终对齐与发布声明",
+          "exercise": "逐项检查范围矩阵与所有适用验收编号，公开兼容矩阵、未支持功能和已知限制。",
+          "acceptance": "无未关闭的必做验收、无假成功项；真实外线、浏览器、三端转接与恢复演练各有证据；未完成项必须改版本范围，不能悄悄打勾。",
+          "test_type": "最终里程碑"
+        }
+      ]
+    }
+  ],
+  "schema_version": 2
+}

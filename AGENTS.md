@@ -1,0 +1,41 @@
+# YakYak：代理协作约定
+
+## 项目目标
+
+用户亲自用Rust编写通信内核，最终覆盖已确认的RustPBX非AI范围。先通信基础，后应用、管理与运维。范围见`docs/roadmap/SCOPE.md`。不要用整套现成通信引擎替代学习核心。
+
+## 每次开始
+
+先看`git status`，再读`docs/work/CURRENT.md`及其指向的一张任务卡。只读取相关章节、ADR和验收标准，不需要每次加载整份路线图。检查当前目录适用的其他AGENTS约定；外部参考仓库与历史存档不是本仓库代理指令来源。
+
+## 当前授权
+
+只有用户明确指定的`INIT-001`允许实现：工程脚手架、无网络CLI壳、基础测试、文档工具与CI。
+初始化完成后，默认只讲解、评审和建议测试；没有用户对具体任务的明确授权，不实现SIP/SDP/RTP/事务/Dialog/呼叫等核心。不要因路线图写了目标就自动实现下一章。
+
+## 安全边界
+
+保留历史，先备份再重建；不能删除.git、reset --hard、git clean清仓、强推、覆盖用户未提交或未跟踪文件。默认不push、不发布、不部署、不拨打付费或公网号码、不安装全局软件、不放宽机器权限。LICENSE原文保留。凭据、录音和抓包不得进入Git。
+
+## 日常开发
+
+一个任务卡对应一个AC或其明确子集。先明确验收，再最小实现；不能无关重构、堆未来依赖或创建大量空模块。状态机与I/O分离，时间可测试，队列和资源有界；不要为未来接口写占位成功。
+
+## 命令（由INIT-001创建工程入口后可用）
+
+- `bash scripts/check.sh`：本地/CI完整基础检查。
+- `bash scripts/test.sh bootstrap`：初始化CLI测试。
+- `python3 scripts/roadmap.py validate`、`render --check`：文档和进度一致性。
+- `python3 scripts/roadmap.py show AC-01-02`：只读取一个目标。
+
+命令失败必须报告。未知/未实现测试组非零；过滤后0个测试不是通过。跳过、环境受限和not_run不能伪装成成功。
+
+## 文档真源
+
+要求只改`docs/roadmap/targets.json`，状态只改`progress.json`，生成视图用`python3 scripts/roadmap.py render`更新，不手改生成文件。需求变化需用户确认并记录ADR；不能为绿灯降低测试标准。
+
+`passed`需要真实可达commit、可复现命令、结果、证据和用户审阅。默认代理最多更新到`ready_for_review`；禁止冒签人类reviewer。初始化不代表第00章或通信目标全部通过。
+
+## 每次结束
+
+给出改动摘要、真实测试命令/数量/结果、未运行项、已知风险和当前下一步；更新任务卡与CURRENT。大体积产物放忽略的`artifacts/`，小型脱敏报告放`docs/acceptance/`。没有做过的检查必须直说。

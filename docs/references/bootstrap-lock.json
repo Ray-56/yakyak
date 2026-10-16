@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "status": "pending_execution",
+  "original_branch": null,
+  "baseline_commit": null,
+  "legacy_tag": null,
+  "legacy_tag_commit": null,
+  "backup_bundle_sha256": null,
+  "backup_restore_verified": false,
+  "rewrite_branch": null,
+  "rewrite_worktree": null,
+  "rustc_version": null,
+  "cargo_version": null,
+  "toolchain_channel": null,
+  "edition": "2024",
+  "python_version": null,
+  "linux_validation": "not_run",
+  "macos_validation": "not_run",
+  "original_worktree_modified_by_bootstrap": false,
+  "notes": "这些是执行时填写的真实值，不是本交接包已经执行的结果。备份含敏感信息时仅保存在本地，公开报告不记录私人绝对路径。"
+}
