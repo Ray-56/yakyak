@@ -2,10 +2,36 @@
   "reference_repository": "https://github.com/restsend/rustpbx",
   "branch_inspected": "main",
   "inspected_on": "2026-10-16",
-  "commit_sha": null,
-  "commit_status": "must_be_verified_and_filled_in_chapter_00",
+  "commit_sha": "0b1414bb3460a42abce8596f8f07d9b6d2889975",
+  "commit_status": "verified_readable_git_object",
   "scope_version": "1.0",
-  "notes": "编写本交接包时仍未获得可验证的完整 SHA。由 Codex 在初始化现场解析、获取对应对象并记录；禁止猜测。范围冻结为 docs/roadmap/SCOPE.md，不随 main 自动扩张。",
-  "resolved_at": null,
-  "verification_command": null
+  "notes": "现场取得并验证 commit 对象，读取 Cargo.toml、README.md、src/lib.rs、src/bin/rustpbx.rs；未运行上游代码。范围仍冻结为 docs/roadmap/SCOPE.md，不随 main 自动扩张。参考 clone 为 depth 1，仅用于固定文件快照，不称为完整上游历史备份。",
+  "resolved_at": "2026-10-16T08:12:18.674080+00:00",
+  "verification_command": "git clone --bare --depth 1 --single-branch --branch main https://github.com/restsend/rustpbx.git <private-reference-dir>/rustpbx.git; git --git-dir=<private-reference-dir>/rustpbx.git rev-parse refs/heads/main^{commit}; git --git-dir=<private-reference-dir>/rustpbx.git cat-file -t 0b1414bb3460a42abce8596f8f07d9b6d2889975; git --git-dir=<private-reference-dir>/rustpbx.git show 0b1414bb3460a42abce8596f8f07d9b6d2889975:Cargo.toml",
+  "verified_files": [
+    {
+      "path": "Cargo.toml",
+      "sha256": "d62ced537e2ce1be3daab9c7c26af48d87fc83b8e63794653c4227c4c00e6efe",
+      "bytes": 7944,
+      "git_blob": "9d47755335879b3c0d13afddf4a805389c601eab"
+    },
+    {
+      "path": "README.md",
+      "sha256": "c72069d11e3dd1127ae0ed946ce882a48075242cd21f608e9ac76e108168bd92",
+      "bytes": 6664,
+      "git_blob": "1da2375e0f823ccd26e67a5d4c77a7a09a278b78"
+    },
+    {
+      "path": "src/lib.rs",
+      "sha256": "9864164d3b829a27b5499b8558b68a7102e64bc5623a0b84f884dc2e4a7cb6f9",
+      "bytes": 1104,
+      "git_blob": "4e6485428eafb5866dec67872fced8ec7706903e"
+    },
+    {
+      "path": "src/bin/rustpbx.rs",
+      "sha256": "bfae4ef66ba574cab2a153ab622422c419e34b00f9047bd7b3def20b36d5b5f2",
+      "bytes": 106,
+      "git_blob": "9de6ab45a7a5974745062c196167b82254c35ff7"
+    }
+  ]
 }

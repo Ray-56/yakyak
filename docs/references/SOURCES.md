@@ -34,3 +34,9 @@
 未在用户本地执行任何 Git 命令、备份、删除、提交或推送。
 未运行 Rust 构建或 SIP/媒体测试。交接包内 Python 文档工具的检查结果另见包根 VALIDATION.md。
 所有目录规划、初始化编号、门槛和工作流都是本次给 YakYak 设计的工程约定，不是上游项目要求。
+
+## INIT-001 现场核验（2026-10-16）
+
+上文描述交接包生成时的边界；现场已取得 [RustPBX 固定 commit](https://github.com/restsend/rustpbx/commit/0b1414bb3460a42abce8596f8f07d9b6d2889975)，并读出其 Cargo.toml、README.md、src/lib.rs、src/bin/rustpbx.rs。版本与文件哈希记录在 `reference-lock.json`；仅为可读源码快照，未构建或运行上游服务，也不扩大 SCOPE。
+
+CI 使用经 Git 对象与 [checkout v7.0.1 官方 release](https://github.com/actions/checkout/releases/tag/v7.0.1) 双重核验的 commit `3d3c42e5aac5ba805825da76410c181273ba90b1`。`ubuntu-24.04` 与 `macos-15` 已对照 [GitHub 官方 runner 列表](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)核实。标签可用与 YAML 存在不代表远端工作流已经运行；实际状态见初始化报告。

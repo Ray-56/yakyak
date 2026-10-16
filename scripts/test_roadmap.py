@@ -101,6 +101,16 @@ class RoadmapTests(unittest.TestCase):
         record["evidence"] = ["../private.md"]
         self.assertTrue(any("report must exist beneath" in e for e in self.errors()))
 
+    def test_external_chapter_symlink_rejected(self) -> None:
+        record = self.report()
+        report = self.root / record["evidence"][0]
+        with tempfile.TemporaryDirectory() as outside:
+            (Path(outside) / report.name).write_bytes(report.read_bytes())
+            report.unlink()
+            report.parent.rmdir()
+            report.parent.symlink_to(outside, target_is_directory=True)
+            self.assertTrue(any("report must exist beneath" in e for e in self.errors()))
+
     def test_wrong_chapter_report_rejected(self) -> None:
         record = self.report()
         record["evidence"] = ["docs/acceptance/ch01/AC-00-01.md"]

@@ -15,6 +15,15 @@ Talk the Yak, Connect the Pack!
 
 ## 当前运行方式
 
-这是交接模板，迁入时由Codex按真实结果更新。初始化完成后仅有`--help`、`--version`和明确的未实现提示，不启动网络服务。工程检查入口为`bash scripts/check.sh`。依赖环境见[环境说明](docs/development/ENVIRONMENT.md)。
+当前是 `0.0.0`、edition 2024、仅标准库的单一二进制，固定 Rust `1.96.0`。仅支持 `--help`、`--version`；无参数会提示“通信服务尚未实现”并退出。
+
+```bash
+bash scripts/doctor.sh
+bash scripts/check.sh
+bash scripts/test.sh bootstrap
+cargo run --locked -- --help
+```
+
+检查结果与未完成条件见[初始化报告](docs/handoff/BOOTSTRAP-REPORT.md)，依赖环境见[环境说明](docs/development/ENVIRONMENT.md)。
 
 不要使用旧版本README中的数据库、STUN/TURN或PBX启动说明来运行新骨架。旧实现通过[历史索引](docs/archive/legacy-index.md)中现场填写的tag恢复。功能完成只以测试和验收报告为准，不以文件或模块存在为准。

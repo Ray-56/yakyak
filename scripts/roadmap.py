@@ -59,7 +59,9 @@ def _report(root: Path, ac_id: str, value: Any) -> Path | None:
         return None
     allowed = root / "docs" / "acceptance" / f"ch{ac_id[3:5]}"
     resolved = (root / relative).resolve()
-    if not resolved.is_relative_to(allowed.resolve()) or resolved.suffix != ".md":
+    if (not resolved.is_relative_to(root.resolve())
+            or not resolved.is_relative_to(allowed.resolve())
+            or resolved.suffix != ".md"):
         return None
     if not resolved.is_file() or resolved.name.upper() == "README.MD":
         return None
