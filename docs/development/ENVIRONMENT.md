@@ -23,3 +23,9 @@ Mac日常编辑与快速检查；Linux承担协议网络、资源和后续故障
 ## 工具不足的处理
 
 完成文档和可运行检查，将受限目标标blocked并写解除条件。不得执行未知远端安装脚本、修改防火墙、提高全局权限或改用户默认Rust配置来绕过环境问题。
+
+## INIT-001 现场记录
+
+固定工具链为 Rust/Cargo 1.96.0、edition 2024；本机 macOS 27.0.1 arm64，Python 3.14.6。macOS check.sh 已在报告中的固定 commit 执行通过。CI 计划使用 ubuntu-24.04 和 macos-15；两种远端 runner 均未运行，Linux 本地容器探测缺少 Rust/Python，未自动安装。
+
+本地脚本显式设置 `RUSTUP_AUTO_INSTALL=0`，缺失工具链会失败；doctor 的 optional AVAILABLE 只表示程序存在，不能证明实验室就绪。SIPp/tshark 缺失，tcpdump 存在但抓包权限未测。详见[初始化报告](../handoff/BOOTSTRAP-REPORT.md)。
