@@ -1,9 +1,9 @@
 # 当前工作
 
-阶段：第 00 章；INIT-001 与 AC-00-01 均已人工验收通过。
-当前任务：[AC-00-02](tasks/AC-00-02.md)；本轮仅准备任务卡与工作入口，实现及验收尚未开始，状态仍为 not_started，以 progress.json 为准。[INIT-001](tasks/INIT-001.md) 与 [AC-00-01](tasks/AC-00-01.md) 保持 passed。
+阶段：第 00 章；INIT-001、AC-00-01 与 AC-00-02 均已人工验收通过。
+当前任务：[AC-00-02](tasks/AC-00-02.md) 已按用户明确确认登记 passed；固定提交的全新检出、双平台 CI 与人工确认记录见[验收报告](../acceptance/ch00/AC-00-02.md)，以 progress.json 为准。用户已另行授权提交验收文档、推送与创建 PR，Git 交付进行中。[INIT-001](tasks/INIT-001.md) 与 [AC-00-01](tasks/AC-00-01.md) 保持 passed。
 
-工作分支：`test/ch00-ac00-02`，基于 `bb036b758ee06febbe76266ff73d10a4d9ff43c5`。当前授权仅为创建任务卡、更新 CURRENT；不修改代码，不暂存、提交或推送。后续代码由用户实现，Codex 默认讲解、设计用例和评审。
+工作分支：`test/ch00-ac00-02`，工程基线为 `bb036b758ee06febbe76266ff73d10a4d9ff43c5`，被测实现提交为 `9ff5c3fb2dbefa076061cba0a93748f495e66792`。代码由用户亲自实现、提交与推送；本轮 Codex 按用户后续授权处理五份验收文档的提交、分支推送与 PR，并核对最终 head CI；不修改代码，不合并或开始其他 AC。
 
 2026-10-18（Asia/Shanghai），用户在本会话明确确认 SCOPE v1.0 的功能范围、排除项及自研/复用边界。两个历史 tag 已分别在独立本地 clone 中检出并验证干净，参考 commit 沿用初始化时的真实对象与文件证据。用户授权的 Wireshark 4.0.7 → 4.6.9 更新已完成，旧版保留在仓库外私有备份中。
 
@@ -17,7 +17,7 @@
 
 2026-10-19，用户在步骤三人工验收说明后明确回复“通过”。已将 AC-00-01 记为 passed，审阅者为“用户（本会话明确确认）”，日期为 2026-10-19；复验提交保持 C，原始证据与历史失败记录保留。
 
-初始化任务 [INIT-001](tasks/INIT-001.md) 已登记 passed。用户先要求补齐记录后自行审阅，随后在收到文档提交 `5cacd60f0c94292dcb4532528cf1f3441cccc805` 及 14 项对照表后回复“没问题”；审阅者为“用户（本会话明确确认）”，日期为 2026-10-19。INIT-11 后续环境证据仍来自主线 `63e8420b37b2cc30348d33d5244a805de60ae3af` 的[双平台 CI](https://github.com/Ray-56/yakyak/actions/runs/39194390065)，各有 21 个 Python、6 个 CLI 测试及格式/Clippy/release 通过。原始 `25157c6…` 在初始化交付时的 Linux/远端 CI not_run 保留，不冒称旧提交已验证。125 项路线图中仍仅通过 1 项，其余 124 项保持 not_started；INIT-001 不计入该 AC 总数。
+初始化任务 [INIT-001](tasks/INIT-001.md) 已登记 passed。用户先要求补齐记录后自行审阅，随后在收到文档提交 `5cacd60f0c94292dcb4532528cf1f3441cccc805` 及 14 项对照表后回复“没问题”；审阅者为“用户（本会话明确确认）”，日期为 2026-10-19。INIT-11 后续环境证据仍来自主线 `63e8420b37b2cc30348d33d5244a805de60ae3af` 的[双平台 CI](https://github.com/Ray-56/yakyak/actions/runs/39194390065)，各有 21 个 Python、6 个 CLI 测试及格式/Clippy/release 通过。原始 `25157c6…` 在初始化交付时的 Linux/远端 CI not_run 保留，不冒称旧提交已验证。当时 125 项路线图中通过 1 项，其余 124 项为 not_started；INIT-001 不计入该 AC 总数。
 
 ## Git 收尾记录（2026-10-19）
 
@@ -33,23 +33,45 @@
 
 用户随后明确授权 Git 交付，已推送本分支并创建 [PR #15](https://github.com/Ray-56/yakyak/pull/15)。本次补录后的最终 head 须等待 Ubuntu/macOS 全部 CI 成功，再普通 merge 并核对 main CI、本地与远端 main 一致、上述原始提交可达；保留历史分支、tag 和 worktree。实际 head、检查与合并状态以 PR 页面为准，最终执行记录归档至忽略的 `artifacts/init-001/20261019-git-closeout-wwflioo8/`。
 
-2026-10-19 后续核对：PR #15 已于当日 14:41:10（Asia/Shanghai）普通 merge 合入，合并提交为 `bb036b758ee06febbe76266ff73d10a4d9ff43c5`；[main CI 39211342299](https://github.com/Ray-56/yakyak/actions/runs/39211342299) 的 Ubuntu/macOS 均成功。任务准备开始前，本地 main 与实际远端 main 一致、工作区干净；当前已在上述提交上的 `test/ch00-ac00-02` 分支。此前等待合入的安排已完成，原验收提交和历史记录保留。
+2026-10-19 后续核对：PR #15 已于当日 14:41:10（Asia/Shanghai）普通 merge 合入，合并提交为 `bb036b758ee06febbe76266ff73d10a4d9ff43c5`；[main CI 39211342299](https://github.com/Ray-56/yakyak/actions/runs/39211342299) 的 Ubuntu/macOS 均成功。任务准备开始前，本地 main 与实际远端 main 一致、工作区干净；当时已在上述提交上的 `test/ch00-ac00-02` 分支。此前等待合入的安排已完成，原验收提交和历史记录保留。
 
 ## AC-00-02 任务准备（2026-10-19）
 
-用户明确要求执行“创建任务卡、更新 CURRENT”这一步，并要求不提交代码。已准备 [AC-00-02 任务卡](tasks/AC-00-02.md)，列出原验收、授权边界、已有 CI 与后续测试计划；本轮只修改这两份工作文档，`progress.json` 保持 not_started，没有产生实现提交或验收报告。
+任务准备阶段，用户明确要求执行“创建任务卡、更新 CURRENT”这一步，并要求不提交代码。当时仅准备 [AC-00-02 任务卡](tasks/AC-00-02.md)，列出原验收、授权边界、已有 CI 与后续测试计划；只修改两份工作文档，`progress.json` 保持 not_started，没有产生实现提交或验收报告。用户随后自行以 `8e11a87` 提交任务文档。
 
-现有 main CI 各通过 21 个 Python、6 个 CLI 集成测试与格式/Clippy/release 构建；Rust 单元测试目标为 0 项。任务卡将补充有意义的 Rust 单元测试列为后续缺口，既有 CI 仅作为基线，不作为未来代码或本 AC 已通过的证明。三份 ADR 状态保持 Proposed。
+当时的 main CI 各通过 21 个 Python、6 个 CLI 集成测试与格式/Clippy/release 构建；Rust 单元测试目标为 0 项。任务卡将补充有意义的 Rust 单元测试列为后续缺口，旧 CI 仅作为基线。三份 ADR 状态保持 Proposed。
 
-本轮文档检查：`python3 scripts/roadmap.py validate --git` 退出 0（27 章、125 项目标及已有提交引用结构有效）；`python3 scripts/roadmap.py render --check` 退出 0（30 份生成文件一致）；`git diff --check` 退出 0。上述检查不代表功能验收通过；本轮未执行测试用例。
+任务准备阶段的文档检查：`python3 scripts/roadmap.py validate --git` 退出 0（27 章、125 项目标及已有提交引用结构有效）；`python3 scripts/roadmap.py render --check` 退出 0（30 份生成文件一致）；`git diff --check` 退出 0。当时没有执行测试用例。
+
+## AC-00-02 实现与待审阅登记（2026-10-19）
+
+用户亲自提取 CLI 参数判定并增加两项 Rust 单元测试，修复开发中的输出、退出码、换行及尾表达式问题后，本地完整检查通过；用户自行以 `9ff5c3fb2dbefa076061cba0a93748f495e66792` 提交并推送。本报告使用固定提交的最终证据，不将未提交草稿的失败或较早工程基线的成功混记为该提交结果。
+
+固定提交的本地独立全新 clone 检查前后均 clean；doctor、完整检查与测试清单均退出 0。随后核对 [push CI 39232969429](https://github.com/Ray-56/yakyak/actions/runs/39232969429)：Ubuntu 24.04.5 x86_64 与 macOS 15.7.9 arm64 均全新检出同一完整 SHA，各通过 21 个 Python、2 个 Rust 单元、6 个 CLI 集成测试，以及格式、Clippy、release 构建。实际远端分支与本地被测 SHA 一致；当前没有 PR，未合入 main。
+
+已整理[验收报告](../acceptance/ch00/AC-00-02.md)，记录原文、环境、命令、实际数量、限制和原始日志 SHA-256；本地复验与 CI 日志保存在忽略的 `artifacts/ch00/9ff5c3fb2dbefa076061cba0a93748f495e66792/`。当时仅将 AC-00-02 登记 ready_for_review，人工审阅字段留空；用户此前表示运行成功、自行实现或推送均未被视为整项人工验收。当时 125 项中 1 项 passed、1 项 ready_for_review、123 项 not_started，其他 AC 与三份 ADR 不变。
+
+登记后的检查：`python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`python3 -m unittest discover -s scripts -p 'test_*.py' -v`、`git diff --check` 均退出 0；27 章、125 项目标及提交/报告引用有效，30 份生成文件一致，21 个 Python 回归全部通过。原实现固定提交的 Rust 与 release 结果沿用上述完整复验与新 CI，本轮未重复运行；本次新增验收文档尚未提交。
+
+## AC-00-02 人工验收（2026-10-19）
+
+用户在收到验收报告、技术复验结果与明确人工确认说明后回复“通过”。据此将 AC-00-02 登记 passed，人工审阅者为“用户（本会话明确确认）”，确认日期为 2026-10-19（Asia/Shanghai）；被测提交保持 `9ff5c3fb2dbefa076061cba0a93748f495e66792`，原始证据、哈希和 CI 链接保留。
+
+人工验收登记时，125 项中 2 项 passed、123 项 not_started，其他 AC 与三份 Proposed ADR 未改变。当时验收文档尚未提交、没有 PR，未合入 main；该次人工确认本身不包含 Git 交付或开始下一 AC 的授权。
+
+人工确认登记后的检查：`python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`python3 -m unittest discover -s scripts -p 'test_*.py' -v`、`git diff --check` 均退出 0；27 章、125 项目标及提交/报告引用有效，30 份生成文件一致，21 个 Python 回归全部通过。本轮未重跑 Rust 测试、release 构建或远端 CI，被测提交和既有完整证据保持不变。
+
+## AC-00-02 Git 交付（2026-10-19）
+
+在收到“提交这五份验收记录，再创建 PR”的下一步说明后，用户回复“这些你可以帮我处理”，另行授权 Codex 暂存、提交验收文档，推送当前分支并创建 PR。本轮保留 `9ff5c3fb2dbefa076061cba0a93748f495e66792` 与原始证据，核对交付提交的 Ubuntu/macOS CI；合并不在本次范围内。Git 操作及最终核对记录保留在忽略的 artifacts 目录。
 
 ## 后续安排
 
-1. 用户查看 AC-00-02 任务卡，设计并实现现有 CLI 的最小 Rust 单元测试；Codex 按授权讲解或评审，本轮不进入代码修改。
-2. 后续固定实现提交，在全新检出的同一 SHA 上核对原四条 Cargo 命令、非空测试及 Linux CI，再形成独立验收报告并交人工确认；本轮未执行。
+1. 完成已授权的 AC-00-02 验收文档提交、分支推送与 PR，核对最终 head CI 并保留被测提交与已有证据。
+2. PR 创建并检查完成后等待用户安排合并或新任务；不因 AC-00-02 通过自动合并或开始下一项。
 3. 另行审阅三个 ADR 草案与证据流程；本次初始化验收没有将 ADR 改为 Accepted。
 4. 用户另行指定后，补齐 AC-00-03 受控发包、抓包权限、音频设备和合法样例；已有工具版本记录可复用。逐项完成第 00 章验收后，再由用户明确安排 AC-01-01。
 
-本轮仅准备 AC-00-02 工作文档，未运行 Rust/Python 测试、格式/Clippy/release 构建、新 CI 或协议/音频实验，未改变 AC 或 ADR 状态。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
+本轮处理 AC-00-02 已授权的文档提交、推送与 PR；源码与其他 AC、ADR 状态不变。原实现验收仍引用固定提交的证据，新交付 head 的检查单独核对；网络与音频实验未运行。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
 
 同步说明：远端 53 个旧实现提交通过双亲合并保留，活跃树采用初始化结果。原 README 未提交修改已保存到仓库外私有备份，详情见初始化报告“后续授权：直接同步 main”一节。
