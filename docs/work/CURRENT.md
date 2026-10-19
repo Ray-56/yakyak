@@ -1,9 +1,9 @@
 # 当前工作
 
 阶段：第 00 章；INIT-001、AC-00-01 与 AC-00-02 均已人工验收通过。
-当前任务：[AC-00-02](tasks/AC-00-02.md) 已按用户明确确认登记 passed；固定提交的全新检出、双平台 CI 与人工确认记录见[验收报告](../acceptance/ch00/AC-00-02.md)，以 progress.json 为准。验收材料已提交、推送并创建 [PR #16](https://github.com/Ray-56/yakyak/pull/16)，尚未合入 main。[INIT-001](tasks/INIT-001.md) 与 [AC-00-01](tasks/AC-00-01.md) 保持 passed。
+当前任务：[AC-00-02](tasks/AC-00-02.md) 已登记 passed，[PR #16](https://github.com/Ray-56/yakyak/pull/16) 已由用户合入，主线 CI 成功；本轮单独交付四份合并收尾文档。固定提交与人工确认记录见[验收报告](../acceptance/ch00/AC-00-02.md)，以 progress.json 为准。[INIT-001](tasks/INIT-001.md) 与 [AC-00-01](tasks/AC-00-01.md) 保持 passed，其他任务尚未开始。
 
-工作分支：`test/ch00-ac00-02`，工程基线为 `bb036b758ee06febbe76266ff73d10a4d9ff43c5`，被测实现提交为 `9ff5c3fb2dbefa076061cba0a93748f495e66792`。代码由用户亲自实现、提交与推送；本轮 Codex 按用户后续授权处理五份验收文档的提交、分支推送与 PR，并核对最终 head CI；不修改代码，不合并或开始其他 AC。
+当前分支：`docs/ch00-ac00-02-closeout`，从已同步的 main 合并提交 `78686a8ae1520e61f5ff16241409823495bbd066` 建立；原任务分支与历史提交保留，被测实现仍为 `9ff5c3fb2dbefa076061cba0a93748f495e66792`。用户明确要求本轮收尾属于 AC-00-02 并授权单独处理：只提交这四份文档、推送分支并创建 PR、核对 CI，不合并或开始其他 AC。
 
 2026-10-18（Asia/Shanghai），用户在本会话明确确认 SCOPE v1.0 的功能范围、排除项及自研/复用边界。两个历史 tag 已分别在独立本地 clone 中检出并验证干净，参考 commit 沿用初始化时的真实对象与文件证据。用户授权的 Wireshark 4.0.7 → 4.6.9 更新已完成，旧版保留在仓库外私有备份中。
 
@@ -67,15 +67,27 @@
 
 已将五份验收材料保存为 `323fd88d907536df71e42f66fc06606a56cef739` 并推送，创建 [PR #16](https://github.com/Ray-56/yakyak/pull/16)。该材料提交前 `bash scripts/check.sh` 退出 0：21 个 Python、2 个 Rust 单元、6 个 CLI 集成测试及格式/Clippy/release 构建通过；`validate --git` 与 diff 空白检查也通过。初次日志重定向使用了不存在的目录，命令退出 1 且检查未启动；随后在正确目录重新运行并成功，没有将路径错误计为测试失败或通过。
 
-本次补录提交保留上述材料提交和被测实现提交；最终 PR head 的 push/PR 双平台检查以 [PR Checks](https://github.com/Ray-56/yakyak/pull/16/checks) 为准，实际 SHA、状态与原始日志归档至忽略的 `artifacts/ch00/9ff5c3fb2dbefa076061cba0a93748f495e66792/git-delivery-58ed1pbl/`。PR 保持打开，未执行合并、分支删除或下一 AC。
+补录后的最终 PR head 为 `03600b3e94770a29a57ef8a90443ebc28209aa5c`，push/PR 双平台四项检查全部成功，材料提交和被测实现提交保留。实际 SHA、状态与原始日志归档至忽略的 `artifacts/ch00/9ff5c3fb2dbefa076061cba0a93748f495e66792/git-delivery-58ed1pbl/`。该轮交付结束时 PR 保持打开，Codex 未执行合并、分支删除或下一 AC。
+
+## AC-00-02 合并收尾（2026-10-19）
+
+用户随后自行合并 PR #16，实际合并时间为 2026-10-19 18:18:09（Asia/Shanghai），合并提交为 `78686a8ae1520e61f5ff16241409823495bbd066`。[主线 CI 39236480386](https://github.com/Ray-56/yakyak/actions/runs/39236480386) 的 Ubuntu/macOS 均成功：各 21 个 Python、2 个 Rust 单元、6 个 CLI 集成测试，以及格式、Clippy、release 构建通过。
+
+收尾开始时工作区干净。已 fetch main 并使用 `git merge --ff-only origin/main` 将本地 main 同步到上述实际远端 SHA；被测实现 `9ff5c3f…`、验收材料 `323fd88…` 和 PR head `03600b3…` 均保持祖先可达，未删除任何分支、tag 或 worktree。Git 同步与主线 CI 日志保存在忽略的 `artifacts/ch00/9ff5c3fb2dbefa076061cba0a93748f495e66792/merge-closeout-j7b36ffj/`。补录时四份收尾文档暂留本地，随后用户授权将其在独立 AC-00-02 分支提交并创建 PR。
+
+合并核对阶段的文档检查：`python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 均退出 0；27 章、125 项目标与提交/报告引用有效，30 份生成文件一致，无空白错误。该阶段未重跑本地测试，主线测试数量与结果依据上述 CI 原始日志。
+
+用户指出这四份文档全部属于 AC-00-02，随后回复“好的，帮我处理一下”，授权单独建立 `docs/ch00-ac00-02-closeout`、提交、推送和创建 PR。只处理验收报告、progress.json 的 note、CURRENT 与 AC-00-02 任务卡；不混入 AC-00-03。收尾分支的 PR 与 CI 结果以 GitHub 对应分支记录为准，原始交付记录保存在忽略的 artifacts 中。
+
+独立收尾分支的提交前完整检查 `bash scripts/check.sh` 退出 0：21 个 Python、2 个 Rust 单元、6 个 CLI 集成测试及格式/Clippy/release 构建通过；`validate --git` 与 `git diff --check` 也退出 0。提交前仅上述四份文档存在改动，所有 AC 状态、被测实现与原始证据不变；新提交的 CI 单独核对。原始输出与交付记录保存在忽略的 `artifacts/ch00/9ff5c3fb2dbefa076061cba0a93748f495e66792/docs-closeout-__kh_hjv/`。
 
 ## 后续安排
 
-1. 以 PR #16 的最终 head 核对 push/PR 双平台 CI，保留材料提交、被测提交及已有证据。
-2. 等待用户安排 PR #16 合并或新任务；不因 AC-00-02 通过自动合并或开始下一项。
+1. 在 AC-00-02 独立收尾分支完成四份文档的提交、推送与 PR，核对 CI，保留材料提交、被测提交及已有证据。
+2. 收尾 PR 等待用户安排合并；新任务另行指定、另建任务卡和分支，不将本轮文档混入下一 AC。
 3. 另行审阅三个 ADR 草案与证据流程；本次初始化验收没有将 ADR 改为 Accepted。
 4. 用户另行指定后，补齐 AC-00-03 受控发包、抓包权限、音频设备和合法样例；已有工具版本记录可复用。逐项完成第 00 章验收后，再由用户明确安排 AC-01-01。
 
-本轮处理 AC-00-02 已授权的文档提交、推送与 PR；源码与其他 AC、ADR 状态不变。原实现验收仍引用固定提交的证据，新交付 head 的检查单独核对；网络与音频实验未运行。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
+本轮单独交付 AC-00-02 合并收尾文档，源码、全部 AC 验收状态和 ADR 状态不变。原实现验收仍引用固定提交证据；本轮文档检查与新 CI 单独记录，网络与音频实验未运行。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
 
 同步说明：远端 53 个旧实现提交通过双亲合并保留，活跃树采用初始化结果。原 README 未提交修改已保存到仓库外私有备份，详情见初始化报告“后续授权：直接同步 main”一节。
