@@ -1,7 +1,9 @@
 # 当前工作
 
 阶段：第 00 章；INIT-001 与 AC-00-01 均已人工验收通过。
-当前任务：[INIT-001](tasks/INIT-001.md) 已登记 passed，Git 交付由 [PR #15](https://github.com/Ray-56/yakyak/pull/15) 跟踪，合入并同步主线后等待用户安排下一任务；[AC-00-01](tasks/AC-00-01.md) 保持 passed，以 progress.json 为准。
+当前任务：[AC-00-02](tasks/AC-00-02.md)；本轮仅准备任务卡与工作入口，实现及验收尚未开始，状态仍为 not_started，以 progress.json 为准。[INIT-001](tasks/INIT-001.md) 与 [AC-00-01](tasks/AC-00-01.md) 保持 passed。
+
+工作分支：`test/ch00-ac00-02`，基于 `bb036b758ee06febbe76266ff73d10a4d9ff43c5`。当前授权仅为创建任务卡、更新 CURRENT；不修改代码，不暂存、提交或推送。后续代码由用户实现，Codex 默认讲解、设计用例和评审。
 
 2026-10-18（Asia/Shanghai），用户在本会话明确确认 SCOPE v1.0 的功能范围、排除项及自研/复用边界。两个历史 tag 已分别在独立本地 clone 中检出并验证干净，参考 commit 沿用初始化时的真实对象与文件证据。用户授权的 Wireshark 4.0.7 → 4.6.9 更新已完成，旧版保留在仓库外私有备份中。
 
@@ -31,13 +33,23 @@
 
 用户随后明确授权 Git 交付，已推送本分支并创建 [PR #15](https://github.com/Ray-56/yakyak/pull/15)。本次补录后的最终 head 须等待 Ubuntu/macOS 全部 CI 成功，再普通 merge 并核对 main CI、本地与远端 main 一致、上述原始提交可达；保留历史分支、tag 和 worktree。实际 head、检查与合并状态以 PR 页面为准，最终执行记录归档至忽略的 `artifacts/init-001/20261019-git-closeout-wwflioo8/`。
 
+2026-10-19 后续核对：PR #15 已于当日 14:41:10（Asia/Shanghai）普通 merge 合入，合并提交为 `bb036b758ee06febbe76266ff73d10a4d9ff43c5`；[main CI 39211342299](https://github.com/Ray-56/yakyak/actions/runs/39211342299) 的 Ubuntu/macOS 均成功。任务准备开始前，本地 main 与实际远端 main 一致、工作区干净；当前已在上述提交上的 `test/ch00-ac00-02` 分支。此前等待合入的安排已完成，原验收提交和历史记录保留。
+
+## AC-00-02 任务准备（2026-10-19）
+
+用户明确要求执行“创建任务卡、更新 CURRENT”这一步，并要求不提交代码。已准备 [AC-00-02 任务卡](tasks/AC-00-02.md)，列出原验收、授权边界、已有 CI 与后续测试计划；本轮只修改这两份工作文档，`progress.json` 保持 not_started，没有产生实现提交或验收报告。
+
+现有 main CI 各通过 21 个 Python、6 个 CLI 集成测试与格式/Clippy/release 构建；Rust 单元测试目标为 0 项。任务卡将补充有意义的 Rust 单元测试列为后续缺口，既有 CI 仅作为基线，不作为未来代码或本 AC 已通过的证明。三份 ADR 状态保持 Proposed。
+
+本轮文档检查：`python3 scripts/roadmap.py validate --git` 退出 0（27 章、125 项目标及已有提交引用结构有效）；`python3 scripts/roadmap.py render --check` 退出 0（30 份生成文件一致）；`git diff --check` 退出 0。上述检查不代表功能验收通过；本轮未执行测试用例。
+
 ## 后续安排
 
-1. 按 PR #15 完成最终 CI、普通 merge、main CI 与本地同步，保留被审阅提交哈希；交付后等待用户安排下一任务。
-2. 用户另行指定后，为 AC-00-02 单独安排任务卡与分支，核对全新检出、Linux/CI 验收条件；本轮尚未开始。已有工具版本记录可复用于 AC-00-03。
+1. 用户查看 AC-00-02 任务卡，设计并实现现有 CLI 的最小 Rust 单元测试；Codex 按授权讲解或评审，本轮不进入代码修改。
+2. 后续固定实现提交，在全新检出的同一 SHA 上核对原四条 Cargo 命令、非空测试及 Linux CI，再形成独立验收报告并交人工确认；本轮未执行。
 3. 另行审阅三个 ADR 草案与证据流程；本次初始化验收没有将 ADR 改为 Accepted。
-4. 补齐 AC-00-03 受控发包、抓包权限、音频设备和合法样例；逐项完成第 00 章验收后，再由用户明确安排 AC-01-01。
+4. 用户另行指定后，补齐 AC-00-03 受控发包、抓包权限、音频设备和合法样例；已有工具版本记录可复用。逐项完成第 00 章验收后，再由用户明确安排 AC-01-01。
 
-本轮按用户授权处理 INIT-001 文档分支的 Git 交付，补录 PR 与验收提交保留要求；只修改报告、INIT-001 任务卡与 CURRENT，未推进其他 AC 或修改 ADR 状态。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
+本轮仅准备 AC-00-02 工作文档，未运行 Rust/Python 测试、格式/Clippy/release 构建、新 CI 或协议/音频实验，未改变 AC 或 ADR 状态。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
 
 同步说明：远端 53 个旧实现提交通过双亲合并保留，活跃树采用初始化结果。原 README 未提交修改已保存到仓库外私有备份，详情见初始化报告“后续授权：直接同步 main”一节。
