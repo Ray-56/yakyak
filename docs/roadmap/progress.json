@@ -21,7 +21,7 @@
       ],
       "reviewer": "用户（本会话明确确认）",
       "reviewed_at": "2026-10-19",
-      "note": "2026-10-19 用户在收到AC-00-02验收报告和明确人工确认说明后回复“通过”，确认本AC验收通过。被测提交保持9ff5c3fb2dbefa076061cba0a93748f495e66792；本地全新检出及push CI 39232969429的Ubuntu/macOS均通过：各21个Python、2个Rust单元、6个CLI集成测试及格式/Clippy/release构建。原始证据保留；验收文档与Git交付尚未完成，未合入main，不改变其他AC或ADR状态。"
+      "note": "2026-10-19 用户在收到AC-00-02验收报告和明确人工确认说明后回复“通过”，确认本AC验收通过。被测提交保持9ff5c3fb2dbefa076061cba0a93748f495e66792；本地全新检出及push CI 39232969429的Ubuntu/macOS均通过：各21个Python、2个Rust单元、6个CLI集成测试及格式/Clippy/release构建。用户另行授权Git交付后，验收材料提交323fd88d907536df71e42f66fc06606a56cef739已推送，由PR #16跟踪；原始证据保留，未合入main，不改变其他AC或ADR状态。"
     },
     "AC-00-03": {
       "status": "not_started",

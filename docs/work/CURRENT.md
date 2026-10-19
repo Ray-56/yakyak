@@ -1,7 +1,7 @@
 # 当前工作
 
 阶段：第 00 章；INIT-001、AC-00-01 与 AC-00-02 均已人工验收通过。
-当前任务：[AC-00-02](tasks/AC-00-02.md) 已按用户明确确认登记 passed；固定提交的全新检出、双平台 CI 与人工确认记录见[验收报告](../acceptance/ch00/AC-00-02.md)，以 progress.json 为准。用户已另行授权提交验收文档、推送与创建 PR，Git 交付进行中。[INIT-001](tasks/INIT-001.md) 与 [AC-00-01](tasks/AC-00-01.md) 保持 passed。
+当前任务：[AC-00-02](tasks/AC-00-02.md) 已按用户明确确认登记 passed；固定提交的全新检出、双平台 CI 与人工确认记录见[验收报告](../acceptance/ch00/AC-00-02.md)，以 progress.json 为准。验收材料已提交、推送并创建 [PR #16](https://github.com/Ray-56/yakyak/pull/16)，尚未合入 main。[INIT-001](tasks/INIT-001.md) 与 [AC-00-01](tasks/AC-00-01.md) 保持 passed。
 
 工作分支：`test/ch00-ac00-02`，工程基线为 `bb036b758ee06febbe76266ff73d10a4d9ff43c5`，被测实现提交为 `9ff5c3fb2dbefa076061cba0a93748f495e66792`。代码由用户亲自实现、提交与推送；本轮 Codex 按用户后续授权处理五份验收文档的提交、分支推送与 PR，并核对最终 head CI；不修改代码，不合并或开始其他 AC。
 
@@ -47,7 +47,7 @@
 
 用户亲自提取 CLI 参数判定并增加两项 Rust 单元测试，修复开发中的输出、退出码、换行及尾表达式问题后，本地完整检查通过；用户自行以 `9ff5c3fb2dbefa076061cba0a93748f495e66792` 提交并推送。本报告使用固定提交的最终证据，不将未提交草稿的失败或较早工程基线的成功混记为该提交结果。
 
-固定提交的本地独立全新 clone 检查前后均 clean；doctor、完整检查与测试清单均退出 0。随后核对 [push CI 39232969429](https://github.com/Ray-56/yakyak/actions/runs/39232969429)：Ubuntu 24.04.5 x86_64 与 macOS 15.7.9 arm64 均全新检出同一完整 SHA，各通过 21 个 Python、2 个 Rust 单元、6 个 CLI 集成测试，以及格式、Clippy、release 构建。实际远端分支与本地被测 SHA 一致；当前没有 PR，未合入 main。
+固定提交的本地独立全新 clone 检查前后均 clean；doctor、完整检查与测试清单均退出 0。随后核对 [push CI 39232969429](https://github.com/Ray-56/yakyak/actions/runs/39232969429)：Ubuntu 24.04.5 x86_64 与 macOS 15.7.9 arm64 均全新检出同一完整 SHA，各通过 21 个 Python、2 个 Rust 单元、6 个 CLI 集成测试，以及格式、Clippy、release 构建。当时实际远端分支与本地被测 SHA 一致，没有 PR、未合入 main。
 
 已整理[验收报告](../acceptance/ch00/AC-00-02.md)，记录原文、环境、命令、实际数量、限制和原始日志 SHA-256；本地复验与 CI 日志保存在忽略的 `artifacts/ch00/9ff5c3fb2dbefa076061cba0a93748f495e66792/`。当时仅将 AC-00-02 登记 ready_for_review，人工审阅字段留空；用户此前表示运行成功、自行实现或推送均未被视为整项人工验收。当时 125 项中 1 项 passed、1 项 ready_for_review、123 项 not_started，其他 AC 与三份 ADR 不变。
 
@@ -65,10 +65,14 @@
 
 在收到“提交这五份验收记录，再创建 PR”的下一步说明后，用户回复“这些你可以帮我处理”，另行授权 Codex 暂存、提交验收文档，推送当前分支并创建 PR。本轮保留 `9ff5c3fb2dbefa076061cba0a93748f495e66792` 与原始证据，核对交付提交的 Ubuntu/macOS CI；合并不在本次范围内。Git 操作及最终核对记录保留在忽略的 artifacts 目录。
 
+已将五份验收材料保存为 `323fd88d907536df71e42f66fc06606a56cef739` 并推送，创建 [PR #16](https://github.com/Ray-56/yakyak/pull/16)。该材料提交前 `bash scripts/check.sh` 退出 0：21 个 Python、2 个 Rust 单元、6 个 CLI 集成测试及格式/Clippy/release 构建通过；`validate --git` 与 diff 空白检查也通过。初次日志重定向使用了不存在的目录，命令退出 1 且检查未启动；随后在正确目录重新运行并成功，没有将路径错误计为测试失败或通过。
+
+本次补录提交保留上述材料提交和被测实现提交；最终 PR head 的 push/PR 双平台检查以 [PR Checks](https://github.com/Ray-56/yakyak/pull/16/checks) 为准，实际 SHA、状态与原始日志归档至忽略的 `artifacts/ch00/9ff5c3fb2dbefa076061cba0a93748f495e66792/git-delivery-58ed1pbl/`。PR 保持打开，未执行合并、分支删除或下一 AC。
+
 ## 后续安排
 
-1. 完成已授权的 AC-00-02 验收文档提交、分支推送与 PR，核对最终 head CI 并保留被测提交与已有证据。
-2. PR 创建并检查完成后等待用户安排合并或新任务；不因 AC-00-02 通过自动合并或开始下一项。
+1. 以 PR #16 的最终 head 核对 push/PR 双平台 CI，保留材料提交、被测提交及已有证据。
+2. 等待用户安排 PR #16 合并或新任务；不因 AC-00-02 通过自动合并或开始下一项。
 3. 另行审阅三个 ADR 草案与证据流程；本次初始化验收没有将 ADR 改为 Accepted。
 4. 用户另行指定后，补齐 AC-00-03 受控发包、抓包权限、音频设备和合法样例；已有工具版本记录可复用。逐项完成第 00 章验收后，再由用户明确安排 AC-01-01。
 
