@@ -1,7 +1,7 @@
 # 当前工作
 
-阶段：第 00 章，AC-00-01 已人工验收通过。
-当前任务：[AC-00-01](tasks/AC-00-01.md)。状态：passed，以 progress.json 为准；等待用户安排下一项。
+阶段：第 00 章，AC-00-01 已人工验收通过，Git 收尾待完成。
+当前任务：[AC-00-01](tasks/AC-00-01.md)。状态：passed，以 progress.json 为准；先完成分支合入与主线同步，再安排下一项。
 
 2026-10-18（Asia/Shanghai），用户在本会话明确确认 SCOPE v1.0 的功能范围、排除项及自研/复用边界。两个历史 tag 已分别在独立本地 clone 中检出并验证干净，参考 commit 沿用初始化时的真实对象与文件证据。用户授权的 Wireshark 4.0.7 → 4.6.9 更新已完成，旧版保留在仓库外私有备份中。
 
@@ -15,15 +15,21 @@
 
 2026-10-19，用户在步骤三人工验收说明后明确回复“通过”。已将 AC-00-01 记为 passed，审阅者为“用户（本会话明确确认）”，日期为 2026-10-19；复验提交保持 C，原始证据与历史失败记录保留。
 
-初始化任务 [INIT-001](tasks/INIT-001.md) 保持 ready_for_review，INIT-11 部分完成。此前检查和本地提交见[初始化报告](../handoff/BOOTSTRAP-REPORT.md)；Linux 与远端 CI 在初始化交付时为 not_run，后续 main 推送的 CI 结果仍须另行核对。当前通过 1 项，其余 124 项保持 not_started。
+初始化任务 [INIT-001](tasks/INIT-001.md) 保持 ready_for_review，INIT-11 部分完成。此前检查和本地提交见[初始化报告](../handoff/BOOTSTRAP-REPORT.md)；初始化交付时 Linux 与远端 CI 为 not_run。2026-10-19 已核对[后续 main 的 CI](https://github.com/Ray-56/yakyak/actions/runs/38875493382)：提交 `cbe33dece07b21b259e393061c4c6d6e19d0e165` 的 ubuntu-24.04 与 macos-15 两项均成功；该结果不代表当前分支的新提交已在远端验证。当前通过 1 项，其余 124 项保持 not_started。
+
+## Git 收尾核对（2026-10-19）
+
+核对时本地 `docs/ch00-ac00-01-scope` 的验收登记提交为 `7d366eed0999c850ec2b864f853b2f2a7b19865b`；实际远端 `main` 和同名分支都仍为 `cbe33dece07b21b259e393061c4c6d6e19d0e165`，没有对应 PR，工作区干净、无 stash。上述本地验收登记提交已运行 `bash scripts/check.sh` 并退出 0：21 个 Python、6 个 CLI 测试及格式/Clippy/release 构建通过。该次核对之后新增的收尾说明单独保存。
+
+应保留原提交哈希，优先通过 PR 普通 merge 合入 main，随后核对远端 CI 与本地主线、被测 C 的可达性。`b24092bea144d04a42307a76a9b016a3da5c9447` 已被验收证据引用，不默认 squash/rebase。推送、创建 PR、合入和清理分支尚未执行，按 AGENTS 的默认不 push 约定等待明确授权；保留历史分支、tag 和 worktree。
 
 ## 下一步（尚未执行）
 
-1. 等待用户安排下一项；按顺序可先核对 AC-00-02 的 Linux/CI 验收条件。已有工具版本记录可复用于 AC-00-03。
-2. 另行审阅初始化变更、三个 ADR 草案与证据流程；本次范围确认没有将 ADR 改为 Accepted。
-3. 核对 main 推送后的实际 CI 结果，并在具备精确工具链的 Linux 环境对初始化报告的 tested_commit 运行 check.sh。
+1. 完成 AC-00-01 的 Git 收尾：推送当前分支、创建 PR、等待 Ubuntu/macOS CI，通过后保留提交哈希合入 main 并同步本地，再由用户安排下一项。
+2. 合入后为下一项单独安排分支和任务卡；按顺序可先核对 AC-00-02 的 Linux/CI 验收条件。已有工具版本记录可复用于 AC-00-03。
+3. 另行审阅初始化变更、三个 ADR 草案与证据流程；本次范围确认没有将 ADR 改为 Accepted。
 4. 补齐 AC-00-03 受控发包、抓包权限、音频设备和合法样例；逐项完成第 00 章验收后，再由用户明确安排 AC-01-01。
 
-本轮仅按用户明确确认登记人工验收，更新文档并运行文档检查，未重跑软件、协议或音频测试。未推进其他 AC、修改 ADR 状态或推送远端。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
+本轮核对 Git/PR/CI 状态并在本地验收登记提交上完整检查，补齐收尾顺序与已取得的 CI 证据。未推进其他 AC、修改 ADR 状态或写入远端。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
 
 同步说明：远端 53 个旧实现提交通过双亲合并保留，活跃树采用初始化结果。原 README 未提交修改已保存到仓库外私有备份，详情见初始化报告末节。
