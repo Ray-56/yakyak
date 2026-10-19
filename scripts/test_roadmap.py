@@ -27,6 +27,9 @@ class RoadmapTests(unittest.TestCase):
         # Tests are intentionally independent of future real progress.
         for record in self.progress["objectives"].values():
             record.update(status="not_started", implementation_commit=None, evidence=[], reviewer=None, reviewed_at=None, note="")
+        (base / "progress.json").write_text(
+            json.dumps(self.progress, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
 
     def report(self, ac_id: str = "AC-00-01") -> dict:
         # Synthetic temp test data, never written to the real progress file.
