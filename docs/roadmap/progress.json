@@ -4,13 +4,14 @@
   "objectives": {
     "AC-00-01": {
       "status": "ready_for_review",
-      "implementation_commit": "41857037d1fda8b7b406534f84aca843db8f68af",
+      "implementation_commit": "b24092bea144d04a42307a76a9b016a3da5c9447",
       "evidence": [
-        "docs/acceptance/ch00/AC-00-01.md"
+        "docs/acceptance/ch00/AC-00-01.md",
+        "docs/acceptance/ch00/AC-00-01-REVIEW.md"
       ],
       "reviewer": null,
       "reviewed_at": null,
-      "note": "2026-10-19 已按用户授权将完整证据保存为本地提交 41857037d1fda8b7b406534f84aca843db8f68af，登记待人工验收。范围确认、两个历史 tag 的独立检出及实际工具版本均有记录；SIPp -v 的退出 99 已如实保留。整个 AC 尚未经用户验收，审阅者与日期留空。"
+      "note": "2026-10-19 已在 b24092bea144d04a42307a76a9b016a3da5c9447 修复测试临时进度未写回的问题；原失败项红转绿，独立干净副本完整检查通过：21项Python、6项CLI、fmt/Clippy/release构建。原始证据仍在提交A，当前待用户审阅整个AC，人工字段留空。"
     },
     "AC-00-02": {
       "status": "not_started",
