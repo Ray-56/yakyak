@@ -296,6 +296,6 @@ INIT-001 已人工验收 **passed**。人工审阅者：用户（本会话明确
 
 用户随后明确要求“git交付处理一下吧”，已推送文档分支并创建 [PR #15](https://github.com/Ray-56/yakyak/pull/15)。本段补录后，以最终 PR head 的 Ubuntu/macOS 全部 CI 成功为普通 merge 条件，保留审阅材料 `5cacd60…` 与验收登记 `b817778…` 的原始 SHA；合入后核对 main CI、本地与远端 main 一致及上述提交可达。实际 head、CI 与合并提交以 PR 页面为准，最终执行记录归档至忽略的 `artifacts/init-001/20261019-git-closeout-wwflioo8/`；历史分支、tag 和 worktree 保留。
 
-本次仅补文档与证据索引。未重新运行旧工程、上游程序、手工负面注入、本地 Linux 检查、协议互通、抓包或音频测试；未触发新 CI、安装软件或放宽权限。三份 ADR、AC-00-02～05 和实验室需要后续分别审阅/验收，它们不因本次初始化记录补齐而通过，也不额外变成 INIT-01～14 中未规定的门槛。
+上述初始化记录补齐和人工验收登记阶段仅补文档与证据索引，未重新运行旧工程、上游程序、手工负面注入、本地 Linux 检查、协议互通、抓包或音频测试；该阶段未触发新 CI、安装软件或放宽权限。后续 Git 交付的 push/PR 按已有工作流自动触发 CI，实际结果由 PR #15 跟踪。三份 ADR、AC-00-02～05 和实验室需要后续分别审阅/验收，它们不因本次初始化记录补齐而通过，也不额外变成 INIT-01～14 中未规定的门槛。
 
-本轮文档检查：`python3 scripts/roadmap.py validate --git` 退出 0（27 章、125 目标）；`python3 scripts/roadmap.py render --check` 退出 0（30 个生成文件一致）；`git diff --check` 退出 0。这是文档补录校验，21 个 Python 与 6 个 CLI 的完整测试结果引用上述已核实的主线 CI，本轮没有重跑功能测试。
+记录补齐阶段的本地文档检查：`python3 scripts/roadmap.py validate --git` 退出 0（27 章、125 目标）；`python3 scripts/roadmap.py render --check` 退出 0（30 个生成文件一致）；`git diff --check` 退出 0。该阶段的 21 个 Python 与 6 个 CLI 完整测试结果引用上述已核实的主线 `63e8420…` CI，没有在本地重跑功能测试；Git 交付阶段最终 head 的完整检查另由 PR #15 的 CI 验证。
