@@ -1,5 +1,9 @@
 # INIT-001 初始化执行报告
 
+当前交付状态（2026-10-19）：**passed，用户已审阅通过 INIT-001**。后续主线的 Ubuntu/macOS 完整检查已核实，INIT-11 的双平台证据已补齐；最新 14 项对照表和人工结论见文末“2026-10-19 后续复核与人工验收”。人工审阅者：用户（本会话明确确认）；日期：2026-10-19（Asia/Shanghai）。
+
+以下原始报告及“后续授权”记录保留各自执行时点的事实，包括原始提交的 `partial` / `not_run` 和当时的进度统计；不能将后续提交的成功改写成原始提交已运行。
+
 日期：2026-10-16（Asia/Shanghai）。状态：**工程基础已交付，待用户审阅；INIT-11 部分完成**。
 
 本次止于初始化：无通信核心、无第 01 章实现。以下 `verified` 表示已经观察并记录的技术结果，不是用户签署的功能验收。Linux 与远端 CI 未运行，不能宣布所有 INIT 项或第 00 章通过。
@@ -194,3 +198,104 @@ CI 配置为 `ubuntu-24.04` 和 `macos-15`；标签已核对[官方 runner 列�
 源目录 README 的未提交修改已逐字节保存到仓库外私有目录 `$HOME/.local/share/yakyak-main-sync/20261016-164130/original-worktree-README.md`（目录 0700、文件 0600），之后从工作树撤下以便同步；没有创建包含疑似凭据的 stash 或代码提交。恢复时请人工审阅，勿把该文件直接加回 Git。
 
 同步采用普通 `git push origin HEAD:refs/heads/main`，原目录使用 `git merge --ff-only origin/main` 跟随。CI 由已有 push 触发配置自动运行；本次无需等待远端 CI 再推送，CI 结果需以 GitHub Actions 的实际记录为准。本节记录同步依据与操作方式，最终主线 SHA 以交付时的本地 / 远端一致性核对为准。
+
+## 2026-10-19 后续复核与人工验收
+
+用户此前明确要求“你来做1，做完 我来审阅”。记录补齐时仅准备初始化审阅材料，INIT-001 保持 `ready_for_review`，并保存于文档提交 `5cacd60f0c94292dcb4532528cf1f3441cccc805`。该材料交付后，用户明确回复“没问题”，据此登记 INIT-001 人工验收通过；以下 `verified` 仍表示技术证据核对结果，人工结论单独记录在本节末尾。
+
+### 复核基线与历史边界
+
+| 对象 | 精确提交 / 范围 |
+|---|---|
+| 原始初始化被测提交 | `25157c636873f839c133c923c5a500af66d8f4c9`；2026-10-16 的 macOS、正反向检查记录保持不变，Linux/远端 CI 仍为该时点的 `not_run` |
+| 本次后续复核基线 | `63e8420b37b2cc30348d33d5244a805de60ae3af`；[PR #14](https://github.com/Ray-56/yakyak/pull/14) 的普通 merge 提交，原始初始化提交、两个历史基点及修复提交 `b24092bea144d04a42307a76a9b016a3da5c9447` 均为其祖先 |
+| 本次文档分支 | `docs/init-001-review-evidence`，从上述主线提交建立；只补报告、任务卡与 CURRENT，实际文档提交 SHA 以交付消息和 Git 历史为准 |
+
+原始提交至复核基线的工程/检查路径差异仅为 `scripts/test_roadmap.py` 的 3 行临时 fixture 落盘修复。CLI、CLI 测试、生产脚本、Cargo 文件、工具链和 CI 工作流均未改变；原失败与复验见 [AC-00-01 技术审阅记录](../acceptance/ch00/AC-00-01-REVIEW.md)。`targets.json` 与 `reference-lock.json` 的 Git blob 与原始提交一致。
+
+`bootstrap-lock.json` 仍描述原始 `tested_commit`，其历史 `not_run` 不变。后续 CI 证据对应 `63e8420…`，不声称原始 `25157c6…` 在 Linux 跑过，也未在本轮重做历史手工负面注入。
+
+### INIT-11：后续双平台完整检查
+
+[GitHub Actions run 39194390065](https://github.com/Ray-56/yakyak/actions/runs/39194390065) 为 `push main`，结果 `success`。除了 run 的 `headSha`，两个 job 的 checkout 日志也均输出完整提交 `63e8420b37b2cc30348d33d5244a805de60ae3af`。
+
+| 环境 / 结果 | Ubuntu job | macOS job |
+|---|---|---|
+| 原始日志入口 | [117873878223](https://github.com/Ray-56/yakyak/actions/runs/39194390065/job/117873878223) | [117873877972](https://github.com/Ray-56/yakyak/actions/runs/39194390065/job/117873877972) |
+| 系统 / 架构 | Ubuntu 24.04.5 LTS / x86_64 | macOS 15.7.9 / arm64 |
+| runner image / 版本 | ubuntu-24.04 / 20261012.334.1 | macos-15-arm64 / 20260907.0337.1 |
+| Rust / Cargo | 1.96.0 / 1.96.0 | 1.96.0 / 1.96.0 |
+| rustfmt / Clippy | 1.9.0-stable / 0.1.96 | 1.9.0-stable / 0.1.96 |
+| Python | 3.12.3 | 3.14.7 |
+| `bash scripts/doctor.sh` | success（shell 退出 0） | success（shell 退出 0） |
+| `bash scripts/check.sh` | success（shell 退出 0） | success（shell 退出 0） |
+| Python 回归 | 21/21，通过 | 21/21，通过 |
+| CLI 集成测试 | 6/6，通过；0 ignored / 0 filtered | 6/6，通过；0 ignored / 0 filtered |
+| fmt / Clippy / release | 全部通过 | 全部通过 |
+
+两平台实际运行同一 `check.sh`：
+
+```bash
+python3 scripts/roadmap.py validate
+python3 scripts/roadmap.py render --check
+python3 -m unittest discover -s scripts -p 'test_*.py' -v
+cargo fmt --all -- --check
+cargo clippy --locked --all-targets -- -D warnings
+cargo test --locked --all-targets
+cargo build --locked --release
+```
+
+日志中有 27 章/125 目标、30 个生成文件一致、`Ran 21 tests` 后 `OK`、6 个 CLI 测试通过及 release 完成记录。fmt 成功无独立输出；脚本 `set -euo pipefail`、后续命令完成和步骤成功共同证明该检查通过。日志未逐条打印数字退出码，不额外声称有逐命令退出码日志。二进制 unit target 的 0 tests 不计入有效测试数量。
+
+本轮通过以下只读命令重新取得 run/job 记录，未触发或重跑 CI：
+
+```bash
+gh run view 39194390065 --repo Ray-56/yakyak --json databaseId,url,headSha,event,status,conclusion,jobs
+gh api repos/Ray-56/yakyak/actions/jobs/117873878223/logs
+gh api repos/Ray-56/yakyak/actions/jobs/117873877972/logs
+```
+
+两平台的 doctor 记录显示 SIPp/TShark 缺失，tcpdump 只确认存在；这不影响上述工程检查结果，也不证明实验室、抓包权限或音频就绪。本地 Linux 容器和原始初始化提交的未运行记录保持原状。
+
+### 历史证据与当前状态核对
+
+历史原始日志实际位于保留的初始化 worktree：`../yakyak-bootstrap-20261016-160959/artifacts/bootstrap/`，不是当前主工作树的 `artifacts/bootstrap/`。本轮读取其 `SHA256SUMS.json`，逐文件重算 SHA-256：44/44 文件存在且一致；上文公开列出的 8 个哈希也全部一致。`verification-summary.json` 的 28 条历史检查，其实际退出码全部等于预期退出码；其中预期非零的拒绝路径未当作失败吞掉或成功跳过。这里只核对存档，没有重新执行这 28 条命令。
+
+仓库外原 bundle 的 SHA-256 仍为 `e793cf6cd026fabd70ed69b5a5840fb882b3a7cfb7d58eadebf985bce58b7cdd`，恢复 clone 仍存在；本轮未重新 clone 或构建旧工程。LICENSE 与 logo 当前哈希均与上文一致。`cargo metadata --locked --offline --format-version 1 --no-deps` 退出 0，仍为单 package、空依赖。`git ls-files -- artifacts target` 无输出，`git check-ignore` 确认新证据和 target 被忽略。
+
+当前进度为 AC-00-01 经用户明确确认 `passed`、其余 124 项 `not_started`；三份 ADR 仍为 `Proposed`。本轮不修改 `targets.json`、`progress.json`、生成视图或 ADR。原目录 README 的后续私有备份与主线同步已有明确授权及上节记录，不能将 INIT-01/03 的“初始化期间未改动”扩展成“此后原目录/main 永不改变”。未读取含疑似凭据的 README 私有备份，凭据处理仍由用户完成。
+
+本轮原始核对材料位于忽略的 `artifacts/init-001/20261019-review-zdaregbc/`：`historical-evidence-audit.json`（44 文件与 28 条历史结果）、`repo-audit.json`（差异/哈希/状态）、`ci-39194390065.json` 及两个 `job-*.log`。证据清单 `evidence-manifest.json` 的 SHA-256 为 `10e37ca2ada8b4ca2d1475deced4d5592580456e8d1ed14c6f0b92736f94c43a`；原始日志不进入 Git。
+
+### INIT-01～14 人工审阅对照表
+
+标准完整原文仍以 [BOOTSTRAP.md 第 6 节](BOOTSTRAP.md#6-init验收与27章的功能验收分开)为准。表中历史日志名均相对于上述保留 worktree 的 `artifacts/bootstrap/`；本轮核对材料则相对于新的忽略目录。`verified` 不代表用户签署通过。
+
+| 编号 | 验收要点 | 技术核对结果与证据入口 | 审阅时的边界 |
+|---|---|---|---|
+| INIT-01 | 原目录、未提交文件受到保护 | verified（历史）：`source-preservation.json` 的 96 文件/模式、HEAD/index/status 前后记录；本轮哈希一致 | 后续 README 私有备份与同步另有授权，未读取其内容 |
+| INIT-02 | 备份和恢复可验证 | verified（历史）：`setup-checks.json`、bundle verify 与独立 clone 记录；本轮 bundle 哈希仍一致、恢复 clone 存在 | 未重新 clone；bundle 不保护未提交文件或当时未取得的实时远端对象 |
+| INIT-03 | 新 worktree 继承历史 | verified（历史及当前 ancestry）：`setup-checks.json`、保留 worktree、`repo-audit.json` | 初始化时未改 main；后续主线同步与 PR 合入有单独授权 |
+| INIT-04 | 旧实现退出，LICENSE 保留，CI 无部署 | verified：`migration.json`、上文文件处置表、当前 LICENSE/logo 哈希及 `.github/workflows/ci.yml` | 旧实现保留在 Git 历史，不再进入活跃构建 |
+| INIT-05 | 原要求不变，状态和视图有真源 | verified：`roadmap-audit/original-audit.json`、`roadmap-audit/fix-validation.json`；targets blob 未改，CI 中 30 个视图一致 | 已通过 1 项是后续用户确认，不改写初始化时 125 项未开始的历史 |
+| INIT-06 | 固定可读上游参考 | verified（历史）：`reference-audit/evidence.json` 与 [reference-lock.json](../references/reference-lock.json)；锁文件 blob 未改 | 证明固定 commit/4 文件可读，不证明上游可构建或运行 |
+| INIT-07 | 工具链固定、单 package、无运行时依赖 | verified：历史 metadata/tree、当前离线 metadata、两平台 doctor；Cargo/工具链文件未改 | 本轮未安装或更改本机全局工具链 |
+| INIT-08 | 仅无网络 CLI 壳 | verified：`src/main.rs`、`tests/bootstrap.rs` 对原始提交未改；双平台各 6 项真实进程测试 | 无通信核心，不把源码/行为检查表述为抓包验证 |
+| INIT-09 | 真实二进制测试覆盖合同路径 | verified：历史测试清单和 `bootstrap-group.json`；后续 CI 双平台各 6/6 | unit target 的 0 tests 未计数，无忽略或过滤项 |
+| INIT-10 | 三入口可用且失败不被吞掉 | verified：28 条历史正反向检查均符合预期，后续 CI doctor/check 成功 | 本轮未重做手工负面注入；原预期非零记录保留 |
+| INIT-11 | 声明环境的完整检查有真实记录 | verified（后续基线）：[run 39194390065](https://github.com/Ray-56/yakyak/actions/runs/39194390065) 双平台成功，checkout SHA 已核对 | 原始 `25157c6…` 的 Linux/远端 CI `not_run` 不变；解除的是后续工程基线的环境证据缺口 |
+| INIT-12 | 文档校验拒绝漂移、坏 ID 和无证据通过 | verified：历史负面记录及路径越界红绿证据；后续 CI 双平台各 21/21 Python 通过 | 临时 fixture 修复见 `b24092b…`，未放宽生产校验或原断言 |
+| INIT-13 | 原始证据不进 Git，报告脱敏，审阅不冒签 | verified：历史忽略/隐私记录，本轮 artifacts/target 未跟踪、当前 1 passed/124 not_started | AC-00-01 的人工确认不用于代签 INIT-001；不在报告公开私人内容 |
+| INIT-14 | 完整报告、可审阅提交、明确停止边界 | reviewed：本报告、任务卡、CURRENT；原始文档提交 D 为 `69f5af26ff07bb013e673cd3f0625633f87f0428`，本次审阅材料提交为 `5cacd60f0c94292dcb4532528cf1f3441cccc805` | 用户本会话明确确认 INIT-001；没有自动进入下一 AC 或通信实现 |
+
+### 本次交付与人工结论
+
+INIT-001 已人工验收 **passed**。人工审阅者：用户（本会话明确确认）；人工审阅日期：2026-10-19（Asia/Shanghai）。用户在收到 14 项审阅表、证据说明和本地提交信息后回复“没问题”；确认对象为审阅材料提交 `5cacd60f0c94292dcb4532528cf1f3441cccc805` 及本表 INIT-01～14。工程复核基线保持 `63e8420b37b2cc30348d33d5244a805de60ae3af`，原始初始化被测提交仍为 `25157c636873f839c133c923c5a500af66d8f4c9`。
+
+本次登记仅确认初始化验收结论，不改写历史执行结果。三个 ADR 仍 Proposed，125 项路线图状态不变（仅 AC-00-01 passed，其余 124 项 not_started）；AC-00-02 尚未开始。
+
+用户随后明确要求“git交付处理一下吧”，已推送文档分支并创建 [PR #15](https://github.com/Ray-56/yakyak/pull/15)。本段补录后，以最终 PR head 的 Ubuntu/macOS 全部 CI 成功为普通 merge 条件，保留审阅材料 `5cacd60…` 与验收登记 `b817778…` 的原始 SHA；合入后核对 main CI、本地与远端 main 一致及上述提交可达。实际 head、CI 与合并提交以 PR 页面为准，最终执行记录归档至忽略的 `artifacts/init-001/20261019-git-closeout-wwflioo8/`；历史分支、tag 和 worktree 保留。
+
+上述初始化记录补齐和人工验收登记阶段仅补文档与证据索引，未重新运行旧工程、上游程序、手工负面注入、本地 Linux 检查、协议互通、抓包或音频测试；该阶段未触发新 CI、安装软件或放宽权限。后续 Git 交付的 push/PR 按已有工作流自动触发 CI，实际结果由 PR #15 跟踪。三份 ADR、AC-00-02～05 和实验室需要后续分别审阅/验收，它们不因本次初始化记录补齐而通过，也不额外变成 INIT-01～14 中未规定的门槛。
+
+记录补齐阶段的本地文档检查：`python3 scripts/roadmap.py validate --git` 退出 0（27 章、125 目标）；`python3 scripts/roadmap.py render --check` 退出 0（30 个生成文件一致）；`git diff --check` 退出 0。该阶段的 21 个 Python 与 6 个 CLI 完整测试结果引用上述已核实的主线 `63e8420…` CI，没有在本地重跑功能测试；Git 交付阶段最终 head 的完整检查另由 PR #15 的 CI 验证。

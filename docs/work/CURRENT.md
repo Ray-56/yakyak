@@ -1,7 +1,7 @@
 # 当前工作
 
-阶段：第 00 章，AC-00-01 已人工验收通过，Git 交付由 [PR #14](https://github.com/Ray-56/yakyak/pull/14) 跟踪。
-当前任务：[AC-00-01](tasks/AC-00-01.md)。状态：passed，以 progress.json 为准；PR 合入并同步主线后，等待用户安排下一项。
+阶段：第 00 章；INIT-001 与 AC-00-01 均已人工验收通过。
+当前任务：[INIT-001](tasks/INIT-001.md) 已登记 passed，Git 交付由 [PR #15](https://github.com/Ray-56/yakyak/pull/15) 跟踪，合入并同步主线后等待用户安排下一任务；[AC-00-01](tasks/AC-00-01.md) 保持 passed，以 progress.json 为准。
 
 2026-10-18（Asia/Shanghai），用户在本会话明确确认 SCOPE v1.0 的功能范围、排除项及自研/复用边界。两个历史 tag 已分别在独立本地 clone 中检出并验证干净，参考 commit 沿用初始化时的真实对象与文件证据。用户授权的 Wireshark 4.0.7 → 4.6.9 更新已完成，旧版保留在仓库外私有备份中。
 
@@ -15,7 +15,7 @@
 
 2026-10-19，用户在步骤三人工验收说明后明确回复“通过”。已将 AC-00-01 记为 passed，审阅者为“用户（本会话明确确认）”，日期为 2026-10-19；复验提交保持 C，原始证据与历史失败记录保留。
 
-初始化任务 [INIT-001](tasks/INIT-001.md) 保持 ready_for_review，INIT-11 部分完成。此前检查和本地提交见[初始化报告](../handoff/BOOTSTRAP-REPORT.md)；初始化交付时 Linux 与远端 CI 为 not_run。2026-10-19 已核对[后续 main 的 CI](https://github.com/Ray-56/yakyak/actions/runs/38875493382)：提交 `cbe33dece07b21b259e393061c4c6d6e19d0e165` 的 ubuntu-24.04 与 macos-15 两项均成功；本次分支的独立 CI 记录见下文。当前通过 1 项，其余 124 项保持 not_started。
+初始化任务 [INIT-001](tasks/INIT-001.md) 已登记 passed。用户先要求补齐记录后自行审阅，随后在收到文档提交 `5cacd60f0c94292dcb4532528cf1f3441cccc805` 及 14 项对照表后回复“没问题”；审阅者为“用户（本会话明确确认）”，日期为 2026-10-19。INIT-11 后续环境证据仍来自主线 `63e8420b37b2cc30348d33d5244a805de60ae3af` 的[双平台 CI](https://github.com/Ray-56/yakyak/actions/runs/39194390065)，各有 21 个 Python、6 个 CLI 测试及格式/Clippy/release 通过。原始 `25157c6…` 在初始化交付时的 Linux/远端 CI not_run 保留，不冒称旧提交已验证。125 项路线图中仍仅通过 1 项，其余 124 项保持 not_started；INIT-001 不计入该 AC 总数。
 
 ## Git 收尾记录（2026-10-19）
 
@@ -23,15 +23,21 @@
 
 用户随后回复“ok”，明确授权推送、创建 PR、等待 Ubuntu/macOS CI 后普通 merge 合入并同步本地 main。已推送 `a5d5179e80a3148a4d549e27699ddf8df699b8c3` 并创建 [PR #14](https://github.com/Ray-56/yakyak/pull/14)；该提交的 [push CI](https://github.com/Ray-56/yakyak/actions/runs/39194109377) 与 [PR CI](https://github.com/Ray-56/yakyak/actions/runs/39194121363) 均在 ubuntu-24.04、macos-15 成功。该 SHA 的本地完整检查也已退出 0（21 个 Python、6 个 CLI 及格式/Clippy/release）。
 
-本段补录后，合入前仍须等待最终 PR head 的全部 CI 成功；实际 head、检查和合入提交以 PR 页面为准。使用普通 merge 保留验收引用的 C `b24092bea144d04a42307a76a9b016a3da5c9447` 及原始证据提交，合入后核对主线 CI、本地与远端 main 一致和 C 可达；保留历史分支、tag 和 worktree。最终执行结果保存在忽略的 `artifacts/ac00-01/20261019-git-closeout-vzi79j6w/`。
+最终分支提交 `0491442a50ed414cce42f928f027c0ed64074747` 的 push/PR 四项检查全部成功后，PR #14 已用普通 merge 合入，合并提交为 `63e8420b37b2cc30348d33d5244a805de60ae3af`；[主线 CI](https://github.com/Ray-56/yakyak/actions/runs/39194390065) 两平台也成功。本地 main 已 fast-forward 同步，交付时与实际远端 main 一致、工作区干净，验收引用的 C `b24092bea144d04a42307a76a9b016a3da5c9447` 保持祖先可达；历史分支、tag 和 worktree 均保留。最终执行结果保存在忽略的 `artifacts/ac00-01/20261019-git-closeout-vzi79j6w/final-closeout.json`。
+
+## INIT-001 记录补齐（2026-10-19）
+
+基于上述主线建立 `docs/init-001-review-evidence`，按用户授权补齐初始化记录与审阅材料。历史日志位于保留的 `../yakyak-bootstrap-20261016-160959/artifacts/bootstrap/`，已核对 44/44 文件哈希及 28 条原始检查结果；新复核记录位于忽略的 `artifacts/init-001/20261019-review-zdaregbc/`。审阅材料保存于 `5cacd60…`，用户确认后在 `b817778…` 单独登记人工验收结果；报告将历史执行与后续复核分开，三个 ADR 仍 Proposed。
+
+用户随后明确授权 Git 交付，已推送本分支并创建 [PR #15](https://github.com/Ray-56/yakyak/pull/15)。本次补录后的最终 head 须等待 Ubuntu/macOS 全部 CI 成功，再普通 merge 并核对 main CI、本地与远端 main 一致、上述原始提交可达；保留历史分支、tag 和 worktree。实际 head、检查与合并状态以 PR 页面为准，最终执行记录归档至忽略的 `artifacts/init-001/20261019-git-closeout-wwflioo8/`。
 
 ## 后续安排
 
-1. 按 PR #14 的交付流程完成合入、主线 CI 与本地同步；完成后等待用户指定下一项，不自动开始 AC-00-02。
-2. 合入后为下一项单独安排分支和任务卡；按顺序可先核对 AC-00-02 的 Linux/CI 验收条件。已有工具版本记录可复用于 AC-00-03。
-3. 另行审阅初始化变更、三个 ADR 草案与证据流程；本次范围确认没有将 ADR 改为 Accepted。
+1. 按 PR #15 完成最终 CI、普通 merge、main CI 与本地同步，保留被审阅提交哈希；交付后等待用户安排下一任务。
+2. 用户另行指定后，为 AC-00-02 单独安排任务卡与分支，核对全新检出、Linux/CI 验收条件；本轮尚未开始。已有工具版本记录可复用于 AC-00-03。
+3. 另行审阅三个 ADR 草案与证据流程；本次初始化验收没有将 ADR 改为 Accepted。
 4. 补齐 AC-00-03 受控发包、抓包权限、音频设备和合法样例；逐项完成第 00 章验收后，再由用户明确安排 AC-01-01。
 
-本轮按用户授权推送并创建 PR，补齐双平台 CI 证据与交付顺序。未推进其他 AC 或修改 ADR 状态。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
+本轮按用户授权处理 INIT-001 文档分支的 Git 交付，补录 PR 与验收提交保留要求；只修改报告、INIT-001 任务卡与 CURRENT，未推进其他 AC 或修改 ADR 状态。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
 
-同步说明：远端 53 个旧实现提交通过双亲合并保留，活跃树采用初始化结果。原 README 未提交修改已保存到仓库外私有备份，详情见初始化报告末节。
+同步说明：远端 53 个旧实现提交通过双亲合并保留，活跃树采用初始化结果。原 README 未提交修改已保存到仓库外私有备份，详情见初始化报告“后续授权：直接同步 main”一节。
