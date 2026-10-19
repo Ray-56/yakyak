@@ -2,6 +2,7 @@
 /artifacts/
 /.local/
 /.worktrees/
+/.vscode/
 *.rs.bk
 .DS_Store
 .env
