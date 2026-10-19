@@ -1,7 +1,7 @@
 # 当前工作
 
 阶段：第 00 章；INIT-001 与 AC-00-01 均已人工验收通过。
-当前任务：[INIT-001](tasks/INIT-001.md) 已登记 passed，等待用户安排后续 Git 交付或下一任务；[AC-00-01](tasks/AC-00-01.md) 保持 passed，以 progress.json 为准。
+当前任务：[INIT-001](tasks/INIT-001.md) 已登记 passed，Git 交付由 [PR #15](https://github.com/Ray-56/yakyak/pull/15) 跟踪，合入并同步主线后等待用户安排下一任务；[AC-00-01](tasks/AC-00-01.md) 保持 passed，以 progress.json 为准。
 
 2026-10-18（Asia/Shanghai），用户在本会话明确确认 SCOPE v1.0 的功能范围、排除项及自研/复用边界。两个历史 tag 已分别在独立本地 clone 中检出并验证干净，参考 commit 沿用初始化时的真实对象与文件证据。用户授权的 Wireshark 4.0.7 → 4.6.9 更新已完成，旧版保留在仓库外私有备份中。
 
@@ -27,15 +27,17 @@
 
 ## INIT-001 记录补齐（2026-10-19）
 
-基于上述主线建立 `docs/init-001-review-evidence`，按用户授权补齐初始化记录与审阅材料。历史日志位于保留的 `../yakyak-bootstrap-20261016-160959/artifacts/bootstrap/`，已核对 44/44 文件哈希及 28 条原始检查结果；新复核记录位于忽略的 `artifacts/init-001/20261019-review-zdaregbc/`。审阅材料保存于 `5cacd60…`，用户确认后单独登记人工验收结果；报告将历史执行与后续复核分开，三个 ADR 仍 Proposed。当前分支尚未推送或合入 main。
+基于上述主线建立 `docs/init-001-review-evidence`，按用户授权补齐初始化记录与审阅材料。历史日志位于保留的 `../yakyak-bootstrap-20261016-160959/artifacts/bootstrap/`，已核对 44/44 文件哈希及 28 条原始检查结果；新复核记录位于忽略的 `artifacts/init-001/20261019-review-zdaregbc/`。审阅材料保存于 `5cacd60…`，用户确认后在 `b817778…` 单独登记人工验收结果；报告将历史执行与后续复核分开，三个 ADR 仍 Proposed。
+
+用户随后明确授权 Git 交付，已推送本分支并创建 [PR #15](https://github.com/Ray-56/yakyak/pull/15)。本次补录后的最终 head 须等待 Ubuntu/macOS 全部 CI 成功，再普通 merge 并核对 main CI、本地与远端 main 一致、上述原始提交可达；保留历史分支、tag 和 worktree。实际 head、检查与合并状态以 PR 页面为准，最终执行记录归档至忽略的 `artifacts/init-001/20261019-git-closeout-wwflioo8/`。
 
 ## 后续安排
 
-1. INIT-001 人工验收已完成；按用户后续安排处理当前文档分支的推送、PR 与合入，保留被审阅提交哈希。
+1. 按 PR #15 完成最终 CI、普通 merge、main CI 与本地同步，保留被审阅提交哈希；交付后等待用户安排下一任务。
 2. 用户另行指定后，为 AC-00-02 单独安排任务卡与分支，核对全新检出、Linux/CI 验收条件；本轮尚未开始。已有工具版本记录可复用于 AC-00-03。
 3. 另行审阅三个 ADR 草案与证据流程；本次初始化验收没有将 ADR 改为 Accepted。
 4. 补齐 AC-00-03 受控发包、抓包权限、音频设备和合法样例；逐项完成第 00 章验收后，再由用户明确安排 AC-01-01。
 
-本轮按用户明确回复登记 INIT-001 的人工验收、审阅者和日期；只修改报告、INIT-001 任务卡与 CURRENT，未推进其他 AC 或修改 ADR 状态。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
+本轮按用户授权处理 INIT-001 文档分支的 Git 交付，补录 PR 与验收提交保留要求；只修改报告、INIT-001 任务卡与 CURRENT，未推进其他 AC 或修改 ADR 状态。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
 
 同步说明：远端 53 个旧实现提交通过双亲合并保留，活跃树采用初始化结果。原 README 未提交修改已保存到仓库外私有备份，详情见初始化报告“后续授权：直接同步 main”一节。
