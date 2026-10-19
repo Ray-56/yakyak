@@ -3,14 +3,14 @@
   "project": "YakYak",
   "objectives": {
     "AC-00-01": {
-      "status": "in_progress",
-      "implementation_commit": null,
+      "status": "ready_for_review",
+      "implementation_commit": "41857037d1fda8b7b406534f84aca843db8f68af",
       "evidence": [
         "docs/acceptance/ch00/AC-00-01.md"
       ],
       "reviewer": null,
       "reviewed_at": null,
-      "note": "2026-10-18 用户确认 SCOPE v1.0 范围，两个历史 tag 已独立检出；SIPp 3.8.0、Linphone 6.2.3、Wireshark/TShark 4.6.9 的实际版本已核实并记录。待本次文档的可达提交及整个 AC 的人工验收；SIPp -v 返回 99 已按官方正常无呼叫退出约定记录。"
+      "note": "2026-10-19 已按用户授权将完整证据保存为本地提交 41857037d1fda8b7b406534f84aca843db8f68af，登记待人工验收。范围确认、两个历史 tag 的独立检出及实际工具版本均有记录；SIPp -v 的退出 99 已如实保留。整个 AC 尚未经用户验收，审阅者与日期留空。"
     },
     "AC-00-02": {
       "status": "not_started",
