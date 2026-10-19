@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "recorded_on": "2026-10-18",
+  "timezone": "Asia/Shanghai",
+  "platform": {
+    "os": "macOS",
+    "version": "27.0.1",
+    "architecture": "arm64"
+  },
+  "tools": {
+    "sipp": {
+      "version": "3.8.0",
+      "version_output": "SIPp v3.8.0-TLS-PCAP.",
+      "executable": "/opt/homebrew/bin/sipp",
+      "installation": "Homebrew formula sipp 3.8.0",
+      "version_command": ["/opt/homebrew/bin/sipp", "-v"],
+      "version_exit_code": 99,
+      "exit_code_note": "版本已打印；99 表示正常退出且没有处理呼叫，不是呼叫测试通过。",
+      "exit_code_reference": "https://github.com/SIPp/sipp/blob/v3.8.0/src/sipp.cpp#L1761-L1793",
+      "status": "version_verified"
+    },
+    "linphone": {
+      "version": "6.2.3",
+      "build": "6.2.3",
+      "version_output": "linphone 6.2.3",
+      "application": "/Applications/Linphone.app",
+      "bundle_id": "com.belledonnecommunications.linphone",
+      "installation": "Homebrew cask linphone 6.2.3",
+      "version_command": ["/Applications/Linphone.app/Contents/MacOS/linphone", "--version"],
+      "version_exit_code": 0,
+      "architectures": ["x86_64", "arm64"],
+      "signature": "verified",
+      "gatekeeper": "accepted_notarized_developer_id",
+      "status": "version_verified"
+    },
+    "wireshark": {
+      "version": "4.6.9",
+      "build": "v4.6.9-0-g2d548b197c75",
+      "application_build": "4.6.9",
+      "application": "/Applications/Wireshark.app",
+      "version_command": ["/Applications/Wireshark.app/Contents/MacOS/Wireshark", "--version"],
+      "version_exit_code": 0,
+      "signature": "verified",
+      "gatekeeper": "accepted_notarized_developer_id",
+      "status": "version_verified"
+    },
+    "tshark": {
+      "version": "4.6.9",
+      "build": "v4.6.9-0-g2d548b197c75",
+      "executable": "/Applications/Wireshark.app/Contents/MacOS/tshark",
+      "on_current_path": false,
+      "version_command": ["/Applications/Wireshark.app/Contents/MacOS/tshark", "--version"],
+      "version_exit_code": 0,
+      "status": "version_verified"
+    }
+  },
+  "evidence": "docs/acceptance/ch00/AC-00-01.md",
+  "not_run": ["GUI verification", "SIP signaling scenarios", "packet capture and permissions", "audio", "interoperability"]
+}

@@ -1,7 +1,8 @@
 # 参考版本与环境锁
 
-- `reference-lock.json`：RustPBX 的真实参考 commit。当前为空，不代表已冻结源码。
+- `reference-lock.json`：RustPBX 的真实参考 commit；已记录 `0b1414bb3460a42abce8596f8f07d9b6d2889975` 及四个文件的读取证据，未构建或运行上游服务。
 - `bootstrap-lock.json`：初始化现场的旧代码基点、备份、分支、工具链和执行环境。
+- `test-tools-lock.json`：本机实际核实的 SIPp、Linphone、Wireshark/TShark 版本、路径和版本命令退出码；实验室发包、抓包与音频结果另行验收。
 - 官方资料与本次查阅范围见 `SOURCES.md`；原路线图引用见 `../roadmap/SOURCES.md`。
 
 解析远端分支只得到一个候选 SHA；还须取得该提交并读取对应文件后，才记录为已验证。
