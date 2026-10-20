@@ -1,7 +1,7 @@
 # 当前工作
 
 阶段：第 00 章；INIT-001、AC-00-01、AC-00-02 与 AC-00-03 均已人工验收通过。
-当前任务：[AC-00-03](tasks/AC-00-03.md) passed；用户于 2026-10-20 在收到[完整报告](../acceptance/ch00/AC-00-03.md)与整项确认说明后回复“没问题”。被测配置 C `0d972857cc02e51d21d9c02c48dfd6dc40d4d535` 及原始证据不变，本地设备沿用第 5 步用户确认；其他 AC 与 ADR 状态不变。用户随后授权提交，人工确认登记随本次本地提交保存；尚未推送，下一任务待用户安排。AC-00-02 的独立收尾 [PR #17](https://github.com/Ray-56/yakyak/pull/17) 已合入。
+当前任务：[AC-00-03](tasks/AC-00-03.md) passed；用户于 2026-10-20 确认整项验收，被测配置 C `0d972857cc02e51d21d9c02c48dfd6dc40d4d535` 及原始证据不变，见[完整报告](../acceptance/ch00/AC-00-03.md)。当前分支已按用户授权推送并创建 [PR #18](https://github.com/Ray-56/yakyak/pull/18)，尚未合并；最终 head 和 CI 以 PR 页面为准。本轮只完成远端交付，不自动合并或开始下一 AC。其他 AC 与 ADR 状态不变，AC-00-02 的收尾 PR #17 已合入。
 
 当前分支：`test/ch00-ac00-03`，从 main 的 `0bb5d017a791e2834a12efe85b7ed3d33890799f` 建立。2026-10-20（Asia/Shanghai），初始仅授权本地分支/任务卡准备与讲解；第 6 步新增授权见下文，历史阶段的未执行记录保留。历史分支和原验收提交保留。
 
@@ -189,12 +189,24 @@
 
 提交前 `python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 均退出 0：27 章/125 项及提交/报告引用有效，30 个生成视图一致，无空白错误。此次只提交文档，未重复 Python/Rust 测试、release 构建、网络/音频实验或远端 CI；沿用上轮 21 个 Python 回归及固定 C 的完整复验结果。
 
+## AC-00-03 推送与创建 PR（2026-10-20）
+
+用户在“推送当前分支并创建 PR”的下一步说明后回复“帮我完成1”，授权推送与创建 PR。开始时工作区干净，实际远端 main 为准备基线 `0bb5d017a791e2834a12efe85b7ed3d33890799f`，远端尚无该分支或对应 PR。已推送人工验收提交 `62be8689926ed2f689d8213d433be51a9916e385` 并创建 [PR #18](https://github.com/Ray-56/yakyak/pull/18)，目标 main；本轮不合并、删除分支或开始下一 AC。
+
+交付前在上述 head 执行 `bash scripts/check.sh` 退出 0：21 个 Python、2 个 Rust 单元、6 个 CLI 测试及格式/Clippy/release 构建全部通过；`python3 scripts/roadmap.py validate --git` 与 `git diff --check main...HEAD` 也退出 0。未重跑信令、音频或变更被测 C。范围仅六份脱敏文档/状态文件，原始产物与 LICENSE 未进入变更。
+
+PR 创建后补录本节、任务卡、报告与 progress note，并单独提交推送；最终 head 的 push/PR 双平台 CI 由 GitHub 触发，实际状态以 PR Checks 为准。本轮不将历史 C 的检查外推为新 head 的远端结果。首次 `gh pr view --repo ...` 遗漏显式 PR 编号，查询退出 1；加上 18 后查询成功，没有影响已创建 PR。
+
+原始本地检查、PR 描述及交付核对记录在忽略的 `artifacts/ch00/0d972857cc02e51d21d9c02c48dfd6dc40d4d535/pr-delivery-t4tt2qih/`。
+
+交付补录的 `python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 均退出 0，27 章/125 项与真实引用有效，30 个生成视图一致。该补录仅改四份文档/进度 note，没有改状态或生成视图；未重复本地完整检查或协议实验，最终 head 的远端检查单独核对。
+
 ## 后续安排
 
 执行前冻结记录（2026-10-20，历史）：用户回复“6 应该你可以帮我处理了”。当时按任务卡冻结现有 UAC/UAS 命令、工具版本与内置 XML 哈希，计划新 clone 运行 doctor/完整基础检查及一次相同端口的有界 lo0 抓包实验，最长 60 秒、低于 10 MiB，原始产物保留 7 天且不自动删除。仅操作本轮子进程，不安装软件或放宽权限，不开麦或录音；此前设备用户确认单独引用。当时尚未复验，状态仍 in_progress，先创建本地固定提交 C 再补录结果；现已完成，实际结果见上节，不 push/PR/merge。
 
 1. 第 6 步已完成本地固定提交、干净复验与完整报告。原始产物保留 7 天，至 2026-10-27 由用户决定，不自动删除。
-2. AC-00-03 已获用户整项确认并登记 passed；人工验收登记随本次本地提交保存，远端交付另行安排，本轮不推送或创建 PR。
+2. AC-00-03 已获用户整项确认并登记 passed；分支已推送、PR #18 已创建。下一步核对最终 head 的双平台 CI，通过后再另行安排合并；本轮不合并。
 3. 另行审阅三个 ADR 草案与证据流程；本次初始化验收没有将 ADR 改为 Accepted。
 4. 后续 AC 需用户明确安排，不因本项 passed 自动开始下一项；逐项完成第 00 章后再安排 AC-01-01。
 
