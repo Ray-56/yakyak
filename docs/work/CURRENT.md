@@ -1,9 +1,9 @@
 # 当前工作
 
-阶段：第 00 章；INIT-001、AC-00-01 与 AC-00-02 均已人工验收通过。
-当前任务：[AC-00-02](tasks/AC-00-02.md) 已登记 passed，[PR #16](https://github.com/Ray-56/yakyak/pull/16) 已由用户合入，主线 CI 成功；本轮单独交付四份合并收尾文档。固定提交与人工确认记录见[验收报告](../acceptance/ch00/AC-00-02.md)，以 progress.json 为准。[INIT-001](tasks/INIT-001.md) 与 [AC-00-01](tasks/AC-00-01.md) 保持 passed，其他任务尚未开始。
+阶段：第 00 章；INIT-001、AC-00-01、AC-00-02 与 AC-00-03 均已人工验收通过。
+当前任务：[AC-00-03](tasks/AC-00-03.md) passed；用户于 2026-10-20 在收到[完整报告](../acceptance/ch00/AC-00-03.md)与整项确认说明后回复“没问题”。被测配置 C `0d972857cc02e51d21d9c02c48dfd6dc40d4d535` 及原始证据不变，本地设备沿用第 5 步用户确认；其他 AC 与 ADR 状态不变。用户随后授权提交，人工确认登记随本次本地提交保存；尚未推送，下一任务待用户安排。AC-00-02 的独立收尾 [PR #17](https://github.com/Ray-56/yakyak/pull/17) 已合入。
 
-当前分支：`docs/ch00-ac00-02-closeout`，从已同步的 main 合并提交 `78686a8ae1520e61f5ff16241409823495bbd066` 建立；原任务分支与历史提交保留，被测实现仍为 `9ff5c3fb2dbefa076061cba0a93748f495e66792`。用户明确要求本轮收尾属于 AC-00-02 并授权单独处理：只提交这四份文档、推送分支并创建 PR、核对 CI，不合并或开始其他 AC。
+当前分支：`test/ch00-ac00-03`，从 main 的 `0bb5d017a791e2834a12efe85b7ed3d33890799f` 建立。2026-10-20（Asia/Shanghai），初始仅授权本地分支/任务卡准备与讲解；第 6 步新增授权见下文，历史阶段的未执行记录保留。历史分支和原验收提交保留。
 
 2026-10-18（Asia/Shanghai），用户在本会话明确确认 SCOPE v1.0 的功能范围、排除项及自研/复用边界。两个历史 tag 已分别在独立本地 clone 中检出并验证干净，参考 commit 沿用初始化时的真实对象与文件证据。用户授权的 Wireshark 4.0.7 → 4.6.9 更新已完成，旧版保留在仓库外私有备份中。
 
@@ -81,13 +81,123 @@
 
 独立收尾分支的提交前完整检查 `bash scripts/check.sh` 退出 0：21 个 Python、2 个 Rust 单元、6 个 CLI 集成测试及格式/Clippy/release 构建通过；`validate --git` 与 `git diff --check` 也退出 0。提交前仅上述四份文档存在改动，所有 AC 状态、被测实现与原始证据不变；新提交的 CI 单独核对。原始输出与交付记录保存在忽略的 `artifacts/ch00/9ff5c3fb2dbefa076061cba0a93748f495e66792/docs-closeout-__kh_hjv/`。
 
+## AC-00-03 任务准备（2026-10-20）
+
+开始时本地 main 为 `0bb5d017a791e2834a12efe85b7ed3d33890799f`，与本轮 `git ls-remote` 查询的实际远端 main 一致，工作区干净。此前只读核查已确认 AC-00-02 独立收尾 PR #17 合入，以及 [main CI 39239117830](https://github.com/Ray-56/yakyak/actions/runs/39239117830) 双平台成功；该历史 CI 不能证明 AC-00-03 实验通过，本轮未重查 CI。
+
+按用户请求完成第 1 项：建立 `test/ch00-ac00-03` 分支，创建 [AC-00-03 任务卡](tasks/AC-00-03.md)，记录原验收、已有工具材料、待定拓扑、操作顺序、可观察结果及证据计划，并将 CURRENT 指向该卡。只修改两份工作文档；progress.json 保持 not_started，未创建验收报告或实验产物。
+
+工具版本沿用已有记录，GUI、真实 SIP 场景、抓包权限与音频仍未验证。用户下一步先检查工具可用性；受控端点、端口、抓包接口及场景授权/配额/保留期须在实际实验前具体确定，本轮没有执行网络或音频操作。首次按文件名查找新任务卡时无匹配、退出 1；随后通过任务目录清单确认卡尚未存在，不属于测试失败或通过。
+
+本轮文档检查：`python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check` 与 `git diff --check` 均退出 0，27 章、125 项目标结构与提交引用有效，30 份生成文件一致；另用一次性 Python 断言检查两份工作文档的 20 个本地文件链接、行尾空白和文件末尾换行，退出 0。这些是文档检查，未执行 Python/Rust 测试用例、完整基础检查或新 CI，不代表 AC-00-03 实验通过。
+
+## AC-00-03 工具启动反馈（2026-10-20）
+
+用户在收到 SIPp 版本与帮助命令、Linphone 启动、Wireshark 窗口与接口列表的三项手动检查说明后回复“都没有问题”。仅据此补录用户确认工具启动检查无问题；用户未附原始输出，本轮未新增实际版本、退出码或代理独立复验结果，历史工具锁记录保持原样。该反馈不包含实际抓包权限、SIP 收发、音频验证或整个 AC 的人工验收。
+
+任务卡补入本机候选方案：SIPp 发送进程与独立 SIPp 接收进程经 loopback 通信，端口占用、具体地址/端口/协议、抓包接口与范围、场景授权及证据配额/保留期仍待确定。只补录两份工作文档，progress.json 保持 not_started；Codex 未运行 GUI、发包、抓包或音频操作，未提交或推送。
+
+补录后 `python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 均退出 0（27 章/125 项结构有效、30 份生成文件一致）；两份文档的 20 个本地文件链接与空白检查也通过。没有运行 Rust/Python 测试用例或实验。
+
+## AC-00-03 第 3 步方案说明（2026-10-20）
+
+用户询问第 3 步如何操作，任务卡已加入本机方案草案：两个独立 SIPp 进程经 UDP `127.0.0.1:15060` → `127.0.0.1:15061` 通信，在 `lo0` 仅按这两个端口捕获；一次正常建立与结束。附加控制口拟用 `127.0.0.1:18888/18889`，后续执行须显式限制 SIP 与控制 socket 的本机绑定，已对照 SIPp v3.8.0 官方源码核对参数。本次不启用媒体播放或 RTP echo。抓包建议上限为 60 秒/10 MiB，原始产物建议保留 7 天，仍待场景授权与具体确认，不自动删除产物。
+
+本轮仅只读核对：`ifconfig lo0` 退出 0，确认 UP/LOOPBACK 与 `127.0.0.1`；`lsof -nP -iUDP:15060 -iUDP:15061` 退出 1 且无输出/错误，对 UDP 18888/18889 的查询也相同，表示当前用户可见范围内没有匹配 socket，启动前须复查。`command -v dumpcap` 退出 1（不在 PATH），随后确认 app 内 `tshark`、`dumpcap` 文件存在，未改环境或权限。未运行发包、抓包、音频或协议测试，progress.json 保持 not_started。
+
+方案补录后，`python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 均退出 0；27 章/125 项结构与引用有效，30 份生成文件一致，两份工作文档的 20 个本地文件链接及空白检查通过。未执行 Rust/Python 测试用例或完整基础检查。
+
+## AC-00-03 回环接口显示核对（2026-10-20）
+
+用户报告 Wireshark 中未看到 `lo0`。只读执行 app 内 `dumpcap -D` 退出 0，明确列出第 17 项 `lo0 (Loopback)`；`ifconfig lo0` 退出 0。由此仅确认系统接口与 helper 枚举正常，尚未确认 GUI 显示原因或实际抓包权限。只读读取 Wireshark 窗口的工具报 ScreenCaptureKit `-3811`，未建立窗口绑定或取得当前界面；没有调整权限、安装组件或开始抓包。下一步核对接口名称、类型筛选与隐藏项，progress.json 保持 not_started。
+
+已按 Wireshark v4.6.9 官方文档核对 Manage Interfaces → Local Interfaces 的 Show 控制接口显隐，具体用户操作路径见任务卡；没有远程修改配置。补录检查 `validate --git`、`render --check`、`git diff --check` 均退出 0（27 章/125 项、30 份生成文件），两份工作文档的 20 个本地链接与空白检查通过；未执行测试用例或实际捕获。
+
+## AC-00-03 BPF 权限错误（2026-10-20）
+
+用户确认 `lo0` 已能找到，随后反馈填写 filter 后报错；询问原文后取得的是设备 `ap1` 的 `/dev/bpf0: Permission denied`。该原文指向打开抓包设备时的权限拒绝，没有过滤器语法错误的证据；报错接口也不是拟用的 `lo0`。本轮只查看 dumpcap 帮助与本机权限，未执行过滤器编译或捕获。
+
+只读核对显示 `/dev/bpf0` 为 root:wheel、`crw-------`，当前用户无读写访问且不在 `access_bpf` 组；标准 ChmodBPF LaunchDaemon 和支持目录未发现。已定位 app 自带的官方 `Install ChmodBPF.pkg`，`pkgutil --check-signature` 退出 0，签名主体 Wireshark Foundation、Apple 公证可信。官方 macOS 安装说明要求实际抓包使用 ChmodBPF；安装会改变机器 BPF 权限，需用户决定后手动操作。本轮没有打开安装器、修改权限、发包或抓包。
+
+后续用户截图显示已选中 `Loopback: lo0`，欢迎页明确提示缺少抓包权限，底部为 `Unable to check capture filter`；当前不应归因为过滤器语法错误。已告知安装包在本机，可由用户点击官方 `installing ChmodBPF` 链接打开并手动确认安装，Codex 未执行安装。该轮文档检查 `validate --git`、`render --check`、`git diff --check` 均退出 0，27 章/125 项、30 份生成文件一致；两份文档的 20 个本地链接与空白检查通过，未执行测试用例或捕获。
+
+## AC-00-03 ChmodBPF 只读复核（2026-10-20）
+
+用户处理后反馈“现在看起来可以了”。只读复核确认标准 ChmodBPF LaunchDaemon 与支持目录已存在；`/dev/bpf0` 为 root:access_bpf、`crw-rw----`，当前工具会话读写访问检查为 True。`launchctl print system/org.wireshark.ChmodBPF` 退出 0、last exit code 为 0，权限脚本执行完成后 exited/not running 属正常结束。权限准备已有实证，实际 `lo0` 捕获尚未运行；Codex 未安装、修改权限、发包或抓包，未将本次反馈登记为场景授权或 AC 人工验收。
+
+补录后 `validate --git`、`render --check`、`git diff --check` 均退出 0（27 章/125 项结构与引用有效、30 份生成文件一致），两份工作文档的 20 个本地链接与空白检查通过；没有运行 Rust/Python 测试用例或实际捕获。
+
+## AC-00-03 第 4 步手动教学（2026-10-20）
+
+用户表示未用过 SIPp，请求讲解如何完成第 4 步。任务卡已加入用户手动指南：新建独立原始记录目录，终端 A 启动内置 uas，Wireshark 限定 lo0/端口与自动停止，终端 B 启动一次内置 uac，两端自动退出后核对实际统计并保存 pcapng 与消息日志。SIP/控制 socket 都显式绑定回环，单次/单并发，主叫 20 秒超时、被叫等待上限 300 秒；图形抓包按 60 seconds/10 megabytes 设置（约 9.54 MiB，低于计划 10 MiB，停止阈值可能多最后一包）。仅准备讲解，不代用户执行场景或捕获，不将教学请求或期望结果记为通过。
+
+本轮仅执行 `sipp -h` 选项核对（退出 99，为帮助命令正常无呼叫退出）及只读端口查询：四个候选 UDP 端口无匹配 socket，lsof 退出 1 且无输出/错误。命令、内置场景与 GUI 参数已对照官方版本资料。首次手动试跑记录不等于固定提交的正式验收；当前指导文档未提交，正式验收仍需固定场景/命令/版本并干净复现。progress.json 保持 not_started，未发包、抓包、录音、提交或推送。
+
+教学补录检查：`python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 均退出 0，27 章/125 项结构与引用有效、30 份生成文件一致。两份工作文档的 20 个本地链接与空白检查通过；指南的 3 个 bash 代码块均用 `bash -n` 静态解析成功，没有执行块内命令。这些不是 SIPp 场景或实际捕获结果；Rust/Python 测试用例未运行。
+
+## AC-00-03 第 4 步实际结果核对（2026-10-20）
+
+用户完成手动操作并提供 `/Users/ray/Downloads/sip-loopback.pcapng`，反馈“都成功了”。只读 capinfos/TShark 核对确认文件 3140 字节、唯一接口 lo0、原计划过滤器与两个本机端口，6 个 SIP 包属于同一 Call-ID，顺序 INVITE/180/200/ACK/BYE/200。两端退出码文件均为 0，6 条实际 UDP 载荷均与两端消息日志逐字节对应，必要头及 Content-Length 检查通过。本次独立手动信令与抓包结果已确认，不能替代后续音频检查或整个 AC 的人工验收。
+
+保留 Downloads 原文件，在忽略的 `artifacts/ch00/ac00-03/manual-ZTgdQjAj/` 归档同字节副本、真实 INVITE 样例、capinfos 输出与 `verification.json`（14/14 离线核对通过）。原始抓包 SHA-256 为 `9d9473eb780f74b0d7ae57af11cd6632c4c08249bc496de2c3d3a52459115ec2`。未提供最终 Statistics 屏幕；首末包跨度约 1.002462 秒不证明整个捕获窗口或自动停止设置，限制已在摘要与任务卡中说明。
+
+首次临时摘要脚本因时间字段为 ISO 字符串而退出 1，修正离线解析后退出 0，原始抓包未改。只将 AC-00-03 状态从 not_started 更新为 in_progress，待审阅提交、报告与人工审阅字段保持空值，随后用 render 更新生成视图。当前为用户手动试跑证据，尚未固定配置提交或干净复现；未修改核心代码、重跑网络、提交或推送。
+
+登记后 `python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 均退出 0，27 章/125 项结构与引用有效，30 份生成文件一致；实际仅 PROGRESS 生成视图变化。另核对只有 AC-00-03 的源状态与 note 改变，当前 2 项 passed、1 项 in_progress、122 项 not_started；两份工作文档 20 个本地链接和空白检查通过，原始抓包/样例/摘要均被 Git 忽略。本轮没有运行 Rust/Python 回归、release 构建、新 CI 或重跑网络场景。
+
+## AC-00-03 第 5 步音频检查说明（2026-10-20）
+
+用户请求第 5 步操作，并确认 Linphone 已进入联系人/通话主界面。只读 Info.plist 核实版本为 6.2.3，系统音频清单识别默认输入 MacBook Pro Microphone、默认输出 MacBook Pro Speakers；只证明设备被系统识别，未采集或试听。安装包 qml 目录两次文本查找未匹配、退出 1，后改读官方 6.2.3 源码，未读取用户账号配置。
+
+任务卡已加入准确界面路径及手动检查：Application options → Settings → Calls → Devices，选择麦克风/输出设备，用户手动授权麦克风并说话观察 Linphone 实时电平；该版无独立测试音/录制回放按钮，输出另用 macOS 提醒音确认。离开设备页停止本地采集。该操作不需公网号码或保存录音；系统提示音不能证明 Linphone 通话内播放或端到端互通。当前尚未收到实际输入/听音结果，progress.json 保持 in_progress，Codex 未操作 GUI、启用麦克风、录音或呼叫。
+
+首次文档补丁因上下文不匹配被拒绝且未写入，纠正后成功。补录后的 `validate --git`、`render --check`、`git diff --check` 均退出 0（27 章/125 项、30 份生成文件），两份文档 20 个本地链接及空白检查通过。本轮未运行 Rust/Python 测试用例、网络场景或音频实验。
+
+## AC-00-03 第 5 步用户确认（2026-10-20）
+
+用户在收到手动设备检查步骤后回复“都没有问题正常工作”并提供截图。截图直接确认 Linphone Devices 页选择 Default Playback/Default Capture，并有绿色麦克风电平；动态电平随说话变化及系统提醒音听见依据用户手动确认，不冒称静态截图或 Codex 独立听音已证明。只读系统音频清单再次确认复核时默认输入 MacBook Pro Microphone、默认输出 MacBook Pro Speakers，命令退出 0；截图本身只显示默认设备别名。
+
+用户确认与截图文字观察保存在忽略的 `artifacts/ch00/ac00-03/manual-ZTgdQjAj/audio-device-check.json`，SHA-256 为 `8214b01767b046f82f57d937ffd8e35e1c7d57b13dfb3eb2b2ebb28139d160f9`；未保存原始截图、摄像头硬件 ID 或录音，未操作麦克风/摄像头或通话。更新任务卡、progress note 与 LAB-001 的过时描述，in_progress 和空的人工审阅/提交/报告字段保持不变，未将本地设备正常视为通话音频互通或整体 AC 通过。
+
+补录后 `validate --git`、`render --check`、`git diff --check` 均退出 0（27 章/125 项结构与引用有效，30 份生成文件一致），三份工作文档 22 个本地链接与空白检查通过，音频检查文字记录被 Git 忽略。本轮未运行 Rust/Python 回归、网络场景或实际音频采集/播放。
+
+## AC-00-03 第 6 步实际完成（2026-10-20）
+
+固定配置本地提交 C 为 `0d972857cc02e51d21d9c02c48dfd6dc40d4d535`，仅包含本 AC 文档/进度，原始产物未入 Git。以 `git clone --no-local --no-checkout` 创建独立 clone 并 detach 检出 C，前后均 clean。doctor 与完整 check 均退出 0：21 个 Python、2 个 Rust 单元、6 个 CLI 测试全部通过，格式/Clippy/release 构建通过。原始日志位于忽略的 `artifacts/ch00/0d972857cc02e51d21d9c02c48dfd6dc40d4d535/fresh-checkout-bwna4wgq/`。
+
+从 C 任务卡提取既有参数，执行一次同端口的本机 SIPp/lo0 复验：15:33:39.572569–15:33:45.867780 +08:00，编排单调耗时 6.295164 秒。UAC/UAS 各累计成功 1、失败 0，dumpcap 及两端均退出 0，所有子进程结束，四个 UDP 端口可同时重新绑定。抓包 3140 字节、6 个 SIP 包，INVITE/180/200/ACK/BYE/200；双端 12 条发送/接收记录与六个载荷逐字节对应，真实 INVITE 已提取。图形界面、设备反馈沿用用户操作，不冒称本次重测音频。
+
+独立离线核对最终退出 0、19/19 项本样例断言通过；首次离线脚本曾因错误要求 SIPp stderr 为空退出 1，实际为正常 localhost 解析提示，保留失败脚本/摘要后修正，只重跑离线核对，未重跑实验或改动原始证据。完整报告区分用户首次实验、本次干净复验及用户设备确认，并保留历史失败与未运行项。
+
+本次抓包 SHA-256：`355bd9d8b080e437d4e5a97a833c36133b17c03851a8d99be4f9176e43115e74`；真实 INVITE 为 `cb84303c03cb47b86ca69b3139dd77b26107701cd9b96cf27020c3eb6f94d05f`。人工审阅字段保持空，仅登记 ready_for_review；当前 125 项中 2 passed、1 ready_for_review、122 not_started。Rust/测试/工程脚本/依赖与目标要求未改，其他 AC 与 ADR 不变；未推送、创建 PR、合并或开始后续核心任务。
+
+登记材料检查：`python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`python3 -m unittest discover -s scripts -p 'test_*.py' -v`、`git diff --check` 均退出 0；27 章/125 项与真实提交/报告引用有效，30 个生成视图一致，21 个 Python 回归通过。本轮仅 PROGRESS 生成视图改变。报告关键原始哈希逐一匹配，73 个原始证据文件均被 Git 忽略，新 clone 仍 clean；完整清单在复验目录 manifest.json。两位代理分别只读审查验收覆盖与离线样例，未发现待修正的协议实验问题。登记文档阶段未重复 Rust/release、信令、音频或新 CI。
+
+最终一次性文档核对曾退出 1：报告的命令路径占位符未加引号，无法通过 bash 语法检查；已补正引用方式，再核对语法、文件链接与原始哈希。该检查只解析文档，不执行占位命令或重跑实验。
+
+## AC-00-03 人工验收（2026-10-20）
+
+用户在收到本地材料提交 `0535b7aaa36e7c25237258f1a7fe5ed68e72467d`、完整报告、待人工验收结果及明确整项确认说明后回复“没问题”。据此将 AC-00-03 登记 passed，审阅者为“用户（本会话明确确认）”，日期为 2026-10-20；被测配置保持 `0d972857cc02e51d21d9c02c48dfd6dc40d4d535`，原始证据、哈希和未测媒体范围保留。LAB-001 的本项实验室准备缺口记为 resolved，其他问题、AC 与 ADR 状态不变。
+
+当前 125 项中 3 passed、122 not_started。此次仅补录人工验收记录，尚未提交或推送，不创建 PR、合并或自动开始下一 AC；未重跑网络/抓包、音频、Rust/release 或新远端 CI。
+
+人工验收登记后的检查：`python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`python3 -m unittest discover -s scripts -p 'test_*.py' -v`、`git diff --check` 均退出 0；27 章/125 项及真实提交/报告引用有效，30 个生成视图一致，21 个 Python 回归全部通过。生成视图仅 PROGRESS 改变；原始配置、证据与其他 AC 未改，不冒称本轮重跑完整工程或协议实验。
+
+## AC-00-03 人工验收登记提交（2026-10-20）
+
+用户回复“没啥问题，就提交吧”，授权本地提交六份人工验收登记。仅更新验收报告、progress.json、生成的 PROGRESS、CURRENT、任务卡及 LAB-001 记录；原始产物不入 Git，被测 C 与全部证据引用不变。本次不推送、创建 PR、合并或开始下一 AC，历史提交与分支保留。
+
+提交前 `python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 均退出 0：27 章/125 项及提交/报告引用有效，30 个生成视图一致，无空白错误。此次只提交文档，未重复 Python/Rust 测试、release 构建、网络/音频实验或远端 CI；沿用上轮 21 个 Python 回归及固定 C 的完整复验结果。
+
 ## 后续安排
 
-1. 在 AC-00-02 独立收尾分支完成四份文档的提交、推送与 PR，核对 CI，保留材料提交、被测提交及已有证据。
-2. 收尾 PR 等待用户安排合并；新任务另行指定、另建任务卡和分支，不将本轮文档混入下一 AC。
-3. 另行审阅三个 ADR 草案与证据流程；本次初始化验收没有将 ADR 改为 Accepted。
-4. 用户另行指定后，补齐 AC-00-03 受控发包、抓包权限、音频设备和合法样例；已有工具版本记录可复用。逐项完成第 00 章验收后，再由用户明确安排 AC-01-01。
+执行前冻结记录（2026-10-20，历史）：用户回复“6 应该你可以帮我处理了”。当时按任务卡冻结现有 UAC/UAS 命令、工具版本与内置 XML 哈希，计划新 clone 运行 doctor/完整基础检查及一次相同端口的有界 lo0 抓包实验，最长 60 秒、低于 10 MiB，原始产物保留 7 天且不自动删除。仅操作本轮子进程，不安装软件或放宽权限，不开麦或录音；此前设备用户确认单独引用。当时尚未复验，状态仍 in_progress，先创建本地固定提交 C 再补录结果；现已完成，实际结果见上节，不 push/PR/merge。
 
-本轮单独交付 AC-00-02 合并收尾文档，源码、全部 AC 验收状态和 ADR 状态不变。原实现验收仍引用固定提交证据；本轮文档检查与新 CI 单独记录，网络与音频实验未运行。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
+1. 第 6 步已完成本地固定提交、干净复验与完整报告。原始产物保留 7 天，至 2026-10-27 由用户决定，不自动删除。
+2. AC-00-03 已获用户整项确认并登记 passed；人工验收登记随本次本地提交保存，远端交付另行安排，本轮不推送或创建 PR。
+3. 另行审阅三个 ADR 草案与证据流程；本次初始化验收没有将 ADR 改为 Accepted。
+4. 后续 AC 需用户明确安排，不因本项 passed 自动开始下一项；逐项完成第 00 章后再安排 AC-01-01。
+
+当前 AC-00-03 为 passed；干净信令复验成功，本地设备及整项验收获用户确认；通话内媒体未测，源码、其他 AC 与 ADR 状态不变。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
 
 同步说明：远端 53 个旧实现提交通过双亲合并保留，活跃树采用初始化结果。原 README 未提交修改已保存到仓库外私有备份，详情见初始化报告“后续授权：直接同步 main”一节。
