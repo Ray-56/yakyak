@@ -1,7 +1,7 @@
 # 当前工作
 
 阶段：第 00 章；INIT-001、AC-00-01、AC-00-02 与 AC-00-03 均已人工验收通过。
-当前任务：[AC-00-04](tasks/AC-00-04.md) in_progress。用户已确认完整 ADR-0002 设计；随后对“固定本地设计提交 → 干净复核 → 补验收报告”回复“好的”，授权本轮本地提交与复核。准备固定 C 并在独立干净检出上验证；尚未登记 ready_for_review 或 passed，不实现通信内核。
+当前任务：[AC-00-04](tasks/AC-00-04.md) ready_for_review。用户已确认 ADR-0002 设计，并授权本地提交、干净复核和报告登记。固定设计 C `aab3180fb645ed46972d683e7c1654d46e5b7e47` 在全新 clone 前后 clean，文档检查与 21 项 Python 回归通过；完整结果见[验收报告](../acceptance/ch00/AC-00-04.md)。本轮不登记 passed，等待用户审阅整项报告，不实现通信内核。
 
 当前分支：`docs/ch00-ac00-04`，现已切换到用户原项目目录。准备基线为 main `8861c04fbd6dfd00805feb18f73bf0e1208ed180`（收尾 PR #19 的合并提交）。设计文档最初在旁边独立工作树整理，已按用户要求转回当前目录；原独立工作树保留为 detached HEAD，原始文档和证据未删除。本轮只做本地设计与证据提交，不推送或创建 PR，历史分支和提交保留。
 
@@ -251,15 +251,25 @@ PR 创建后补录本节、任务卡、报告与 progress note，并单独提交
 
 只暂存本项改动；用户既有 AGENTS.md、AC-00-03 任务卡与 CURRENT 的“实现授权约定补充”留在原工作区，不纳入本 AC 提交。CURRENT 的任务记录按内容选择暂存，用户补充与备份保留。不实现通信内核，不运行网络、抓包、音频或远端 CI，不推送、创建 PR 或合并。复核材料齐全后最多 ready_for_review，等待用户审阅整项报告。
 
+## AC-00-04 固定提交复核与待审阅登记（2026-10-20）
+
+已创建本地设计提交 C `aab3180fb645ed46972d683e7c1654d46e5b7e47`，只含本项六份文档；用户三份既有改动继续保留，未纳入 C。使用 `git clone --no-local --no-checkout` 新建独立副本，再明确检出完整 C，检查前后 status 均空。
+
+C 上 `python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`python3 -m unittest discover -s scripts -p 'test_*.py' -v`、`git diff --check`、`git show --format= --check <C>` 均退出 0：27 章/125 项有效、30 个生成视图一致，21 项 Python 测试通过、0 失败。独立代理只读设计评审六项关注点未发现原 AC 的实质遗漏；不是人工整项验收。
+
+首轮证据汇总数量正则过度转义，汇总退出 1；修正后仅重跑汇总退出 0，五项检查和原始输出不变。原始环境、命令、前后状态、技术评审、错误回执和哈希位于忽略的 `artifacts/ch00/aab3180fb645ed46972d683e7c1654d46e5b7e47/design-review-i3dxcz0h/`，详细结果见报告。没有运行 Rust/CLI 测试、构建、远端 CI、网络/抓包/音频或八类协议测试场景。
+
+验收报告、进度、生成视图、任务卡和 CURRENT 在后续本地 D 单独登记，不改变 C 或 ADR 内容。登记检查日志放原始证据目录的 `registration/`；implementation_commit 指向 C、evidence 指向报告、状态为 ready_for_review，reviewer/reviewed_at 保持空值。登记前原工作区的 `validate --git`、`render --check`、21 项 Python 回归和 `git diff --check` 另行全部退出 0；登记这一轮与 C 的干净结果区分，不冒称原工作区无用户改动或 D 已运行完整工程检查。补齐说明后复查文档/差异检查再提交 D。用户原有 AGENTS.md、AC-00-03 任务卡与 CURRENT 授权补充不纳入 D，本轮不 push/PR/merge 或开始 AC-00-05。
+
 ## 后续安排
 
 执行前冻结记录（2026-10-20，历史）：用户回复“6 应该你可以帮我处理了”。当时按任务卡冻结现有 UAC/UAS 命令、工具版本与内置 XML 哈希，计划新 clone 运行 doctor/完整基础检查及一次相同端口的有界 lo0 抓包实验，最长 60 秒、低于 10 MiB，原始产物保留 7 天且不自动删除。仅操作本轮子进程，不安装软件或放宽权限，不开麦或录音；此前设备用户确认单独引用。当时尚未复验，状态仍 in_progress，先创建本地固定提交 C 再补录结果；现已完成，实际结果见上节，不 push/PR/merge。
 
 1. 第 6 步已完成本地固定提交、干净复验与完整报告。原始产物保留 7 天，至 2026-10-27 由用户决定，不自动删除。
-2. AC-00-03 的 PR #18 与收尾 PR #19 均已合入，AC-00-04 从对应 main 基线在独立工作树整理设计材料。本轮文档检查已通过；下一步安排固定设计提交 C、干净复核及正式验收报告，再登记 ready_for_review。
+2. AC-00-03 的 PR #18 与收尾 PR #19 均已合入；AC-00-04 的固定 C、干净复核和报告已完成，当前 ready_for_review，下一步用户审阅整项报告。
 3. ADR-0002 已获本次用户设计确认，记为 Accepted；ADR-0001、ADR-0003 仍 Proposed，另行审阅。AC-00-04 未登记 passed，不自动开始 AC-00-05。
 4. 后续 AC 需用户明确安排，不因本项 passed 自动开始下一项；逐项完成第 00 章后再安排 AC-01-01。
 
-当前 AC-00-04 为 in_progress，仅设计文档落地。AC-00-03 保持 passed，原始信令与设备确认沿用原报告，通话内媒体仍未测。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
+当前 AC-00-04 为 ready_for_review，设计材料与文档复核已完成，通信内核未实现。AC-00-03 保持 passed，原始信令与设备确认沿用原报告，通话内媒体仍未测。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
 
 同步说明：远端 53 个旧实现提交通过双亲合并保留，活跃树采用初始化结果。原 README 未提交修改已保存到仓库外私有备份，详情见初始化报告“后续授权：直接同步 main”一节。
