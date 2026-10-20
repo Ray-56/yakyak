@@ -24,14 +24,14 @@
       "note": "2026-10-19 用户在收到AC-00-02验收报告和明确人工确认说明后回复“通过”，确认本AC验收通过。被测提交保持9ff5c3fb2dbefa076061cba0a93748f495e66792；本地全新检出及push CI 39232969429的Ubuntu/macOS均通过：各21个Python、2个Rust单元、6个CLI集成测试及格式/Clippy/release构建。验收材料323fd88d907536df71e42f66fc06606a56cef739与最终PR head 03600b3e94770a29a57ef8a90443ebc28209aa5c保留；用户已合并PR #16，合并提交78686a8ae1520e61f5ff16241409823495bbd066的主线CI 39236480386双平台成功，本地main已同步。原始证据保留，其他AC与ADR状态不变。"
     },
     "AC-00-03": {
-      "status": "ready_for_review",
+      "status": "passed",
       "implementation_commit": "0d972857cc02e51d21d9c02c48dfd6dc40d4d535",
       "evidence": [
         "docs/acceptance/ch00/AC-00-03.md"
       ],
-      "reviewer": null,
-      "reviewed_at": null,
-      "note": "2026-10-20 第6步按用户授权完成：配置C 0d972857cc02e51d21d9c02c48dfd6dc40d4d535在独立全新clone前后clean，doctor/check退出0，21个Python、2个Rust单元、6个CLI及格式/Clippy/release通过。同参数单次loopback复验，UAC/UAS各成功1失败0，dumpcap及两端退出0，6个SIP包与双端日志逐字节对应，19/19离线样本断言通过，真实INVITE/抓包/命令/版本/拓扑与哈希齐全。6.295164秒后子进程全结束，四端口可重绑。首轮离线脚本因误要求stderr为空退出1，修正后仅重跑离线检查，历史证据保留。Linphone本地设备沿用用户当日确认，未重测音频或通话媒体；未push/PR/merge。待用户整项审阅，其他AC与ADR不变。"
+      "reviewer": "用户（本会话明确确认）",
+      "reviewed_at": "2026-10-20",
+      "note": "2026-10-20 用户在收到AC-00-03完整报告、待人工验收状态与明确整项确认说明后回复“没问题”，确认本AC验收通过。2026-10-20 第6步按用户授权完成：配置C 0d972857cc02e51d21d9c02c48dfd6dc40d4d535在独立全新clone前后clean，doctor/check退出0，21个Python、2个Rust单元、6个CLI及格式/Clippy/release通过。同参数单次loopback复验，UAC/UAS各成功1失败0，dumpcap及两端退出0，6个SIP包与双端日志逐字节对应，19/19离线样本断言通过，真实INVITE/抓包/命令/版本/拓扑与哈希齐全。6.295164秒后子进程全结束，四端口可重绑。首轮离线脚本因误要求stderr为空退出1，修正后仅重跑离线检查，历史证据保留。Linphone本地设备沿用用户当日确认，未重测音频或通话媒体；未push/PR/merge。被测C、原始证据及未运行范围保留，其他AC与ADR不变。"
     },
     "AC-00-04": {
       "status": "not_started",
