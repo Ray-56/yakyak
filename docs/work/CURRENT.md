@@ -1,9 +1,9 @@
 # 当前工作
 
-阶段：第 00 章；INIT-001、AC-00-01、AC-00-02 与 AC-00-03 均已人工验收通过。
-当前任务：[AC-00-04](tasks/AC-00-04.md) ready_for_review。用户已确认 ADR-0002 设计，并授权本地提交、干净复核和报告登记。固定设计 C `aab3180fb645ed46972d683e7c1654d46e5b7e47` 在全新 clone 前后 clean，文档检查与 21 项 Python 回归通过；完整结果见[验收报告](../acceptance/ch00/AC-00-04.md)。本轮不登记 passed，等待用户审阅整项报告，不实现通信内核。
+阶段：第 00 章；INIT-001、AC-00-01、AC-00-02、AC-00-03 与 AC-00-04 均已人工验收通过。
+当前任务：[AC-00-04](tasks/AC-00-04.md) passed。2026-10-20，用户收到完整报告与整项确认说明后回复“通过”，已登记人工验收。固定设计 C `aab3180fb645ed46972d683e7c1654d46e5b7e47` 和原始证据不变，报告与初次登记在 D `00a829f34202cb6b8f6d2870fb07d8b2437c20c3`；完整结果见[验收报告](../acceptance/ch00/AC-00-04.md)。本轮只保存人工验收结果，不实现通信内核或开始下一 AC。
 
-当前分支：`docs/ch00-ac00-04`，现已切换到用户原项目目录。准备基线为 main `8861c04fbd6dfd00805feb18f73bf0e1208ed180`（收尾 PR #19 的合并提交）。设计文档最初在旁边独立工作树整理，已按用户要求转回当前目录；原独立工作树保留为 detached HEAD，原始文档和证据未删除。本轮只做本地设计与证据提交，不推送或创建 PR，历史分支和提交保留。
+当前分支：`docs/ch00-ac00-04`，现已切换到用户原项目目录。准备基线为 main `8861c04fbd6dfd00805feb18f73bf0e1208ed180`（收尾 PR #19 的合并提交）。设计文档最初在旁边独立工作树整理，已按用户要求转回当前目录；原独立工作树保留为 detached HEAD，原始文档和证据未删除。本轮只做本地人工验收登记，不推送或创建 PR，历史分支和提交保留。
 
 AC-00-03 的 passed、配置 C `0d972857cc02e51d21d9c02c48dfd6dc40d4d535` 及原始证据不变，完整交付历史见下文与[报告](../acceptance/ch00/AC-00-03.md)。下文各轮“本轮未开始下一 AC”等描述属于对应日期和阶段的历史边界。
 
@@ -261,15 +261,21 @@ C 上 `python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py 
 
 验收报告、进度、生成视图、任务卡和 CURRENT 在后续本地 D 单独登记，不改变 C 或 ADR 内容。登记检查日志放原始证据目录的 `registration/`；implementation_commit 指向 C、evidence 指向报告、状态为 ready_for_review，reviewer/reviewed_at 保持空值。登记前原工作区的 `validate --git`、`render --check`、21 项 Python 回归和 `git diff --check` 另行全部退出 0；登记这一轮与 C 的干净结果区分，不冒称原工作区无用户改动或 D 已运行完整工程检查。补齐说明后复查文档/差异检查再提交 D。用户原有 AGENTS.md、AC-00-03 任务卡与 CURRENT 授权补充不纳入 D，本轮不 push/PR/merge 或开始 AC-00-05。
 
+## AC-00-04 整项人工验收确认（2026-10-20）
+
+用户收到固定 C、报告提交 D、完整报告链接、复核结果及明确整项确认提示后回复“通过”。本次据此登记 passed，reviewer 为“用户（本会话明确确认）”，reviewed_at 为 2026-10-20。此前只确认 ADR 内容的记录与本次整项确认分开保留。
+
+仅修改报告、progress.json、生成的 PROGRESS、任务卡与 CURRENT，保存本地人工验收登记；C、原始证据、历史失败记录和未测限制不变。用户既有 AGENTS.md、AC-00-03 任务卡与 CURRENT 补充继续保留，不混入登记提交。`python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 均退出 0，27 章/125 项及引用有效、30 个生成视图一致。本轮测试执行 0 项，没有重复 Python/Rust/CLI、构建、CI 或协议/音频实验；首轮补丁上下文失败与修正见任务卡。登记检查、授权回执与备份位于忽略的 `artifacts/ch00/aab3180fb645ed46972d683e7c1654d46e5b7e47/human-acceptance-gd2xhlyc/`。不 push/PR/merge 或开始 AC-00-05。
+
 ## 后续安排
 
 执行前冻结记录（2026-10-20，历史）：用户回复“6 应该你可以帮我处理了”。当时按任务卡冻结现有 UAC/UAS 命令、工具版本与内置 XML 哈希，计划新 clone 运行 doctor/完整基础检查及一次相同端口的有界 lo0 抓包实验，最长 60 秒、低于 10 MiB，原始产物保留 7 天且不自动删除。仅操作本轮子进程，不安装软件或放宽权限，不开麦或录音；此前设备用户确认单独引用。当时尚未复验，状态仍 in_progress，先创建本地固定提交 C 再补录结果；现已完成，实际结果见上节，不 push/PR/merge。
 
 1. 第 6 步已完成本地固定提交、干净复验与完整报告。原始产物保留 7 天，至 2026-10-27 由用户决定，不自动删除。
-2. AC-00-03 的 PR #18 与收尾 PR #19 均已合入；AC-00-04 的固定 C、干净复核和报告已完成，当前 ready_for_review，下一步用户审阅整项报告。
-3. ADR-0002 已获本次用户设计确认，记为 Accepted；ADR-0001、ADR-0003 仍 Proposed，另行审阅。AC-00-04 未登记 passed，不自动开始 AC-00-05。
+2. AC-00-04 的固定 C、干净复核、报告和人工验收已完成，当前 passed。推送、PR 或下一项任务等待用户明确安排。
+3. ADR-0002 保持 Accepted；ADR-0001、ADR-0003 仍 Proposed，另行审阅。本次确认只覆盖 AC-00-04，不自动开始 AC-00-05。
 4. 后续 AC 需用户明确安排，不因本项 passed 自动开始下一项；逐项完成第 00 章后再安排 AC-01-01。
 
-当前 AC-00-04 为 ready_for_review，设计材料与文档复核已完成，通信内核未实现。AC-00-03 保持 passed，原始信令与设备确认沿用原报告，通话内媒体仍未测。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
+当前 AC-00-04 为 passed，设计评审与人工验收已完成，通信内核未实现。AC-00-03 保持 passed，原始信令与设备确认沿用原报告，通话内媒体仍未测。问题与解除条件见 [KNOWN_ISSUES.md](KNOWN_ISSUES.md)。
 
 同步说明：远端 53 个旧实现提交通过双亲合并保留，活跃树采用初始化结果。原 README 未提交修改已保存到仓库外私有备份，详情见初始化报告“后续授权：直接同步 main”一节。

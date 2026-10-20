@@ -34,14 +34,14 @@
       "note": "2026-10-20 用户在收到AC-00-03完整报告、待人工验收状态与明确整项确认说明后回复“没问题”，确认本AC验收通过。2026-10-20 第6步按用户授权完成：配置C 0d972857cc02e51d21d9c02c48dfd6dc40d4d535在独立全新clone前后clean，doctor/check退出0，21个Python、2个Rust单元、6个CLI及格式/Clippy/release通过。同参数单次loopback复验，UAC/UAS各成功1失败0，dumpcap及两端退出0，6个SIP包与双端日志逐字节对应，19/19离线样本断言通过，真实INVITE/抓包/命令/版本/拓扑与哈希齐全。6.295164秒后子进程全结束，四端口可重绑。首轮离线脚本因误要求stderr为空退出1，修正后仅重跑离线检查，历史证据保留。Linphone本地设备沿用用户当日确认，未重测音频或通话媒体；未push/PR/merge。被测C、原始证据及未运行范围保留，其他AC与ADR不变。随后另行授权推送并创建PR #18；用户于2026-10-20 15:56:16（Asia/Shanghai）合并，实际PR head为62be8689926ed2f689d8213d433be51a9916e385，merge commit为b32cad4cb4b6352d8f6b8bf884eb9bb124da6862。main CI 39389863121双平台各21Python、2Rust单元、6CLI及格式/Clippy/release通过，本地main已FF同步，C与验收提交保持可达。交付补录f5f17c576a59713d181089b61b7a4ad56040444b晚于合并，仅保留原分支，未入main；四份收尾文档先在独立本地docs/ch00-ac00-03-closeout整理，随后用户授权独立提交/推送/建PR。本轮一次提交交付，最终SHA/PR/CI回执见忽略的closeout-delivery-0d_x7ou0目录，不自动合并或开始下一AC。"
     },
     "AC-00-04": {
-      "status": "ready_for_review",
+      "status": "passed",
       "implementation_commit": "aab3180fb645ed46972d683e7c1654d46e5b7e47",
       "evidence": [
         "docs/acceptance/ch00/AC-00-04.md"
       ],
-      "reviewer": null,
-      "reviewed_at": null,
-      "note": "2026-10-20 用户已确认完整ADR-0002设计，ADR为Accepted；随后授权本地固定提交、干净复核和报告。设计C aab3180fb645ed46972d683e7c1654d46e5b7e47只含本项六份文档，新clone明确检出C且前后clean。validate --git、render --check、21项Python回归、工作区及提交空白检查全部退出0；独立代理六项设计评审未发现原AC实质遗漏。首轮证据汇总正则错误退出1，修正后只重跑汇总退出0，检查及原始输出未改。正式报告与登记单独本地D，当前ready_for_review，reviewer/reviewed_at为空，等待整项人工验收。未运行Rust/CLI、构建、CI或八类协议场景，不实现通信内核，不push/PR/merge，不纳入用户既有改动；其他AC及ADR不变。"
+      "reviewer": "用户（本会话明确确认）",
+      "reviewed_at": "2026-10-20",
+      "note": "2026-10-20 用户收到固定C、登记D、完整验收报告、复核结果与明确整项确认提示后回复“通过”，确认AC-00-04整项验收通过。审阅者为用户（本会话明确确认），日期2026-10-20。被测设计C保持aab3180fb645ed46972d683e7c1654d46e5b7e47，报告初次登记D为00a829f34202cb6b8f6d2870fb07d8b2437c20c3；C在新clone前后clean，文档校验、30生成视图、21项Python与两类差异检查均通过，独立代理六项设计评审未发现遗漏。登记阶段另21项Python通过。历史汇总正则失败及修正记录保留，原始证据与未测范围不变。ADR-0002保持Accepted，其他AC/ADR不变；本次只保存人工验收登记，不重复测试、构建或协议实验，不实现内核、不push/PR/merge或开始AC-00-05，用户既有改动不纳入提交。"
     },
     "AC-00-05": {
       "status": "not_started",
