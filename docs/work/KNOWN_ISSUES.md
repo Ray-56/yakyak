@@ -6,7 +6,7 @@
 |---|---|---|---|
 | ENV-001 | resolved | 独立 worktree 已初始化；原目录 96 文件字节/模式、index、HEAD、状态一致 | 见报告 INIT-01～04 |
 | REF-001 | resolved | RustPBX 固定 commit 已取得并读出文件 | 见 reference-lock.json；不等于上游运行验证 |
-| LAB-001 | pending | 2026-10-18 已核实 SIPp 3.8.0、Linphone 6.2.3、Wireshark/TShark 4.6.9；两款 app 的签名与 macOS 信任检查通过。工具版本已记录，图形界面、抓包权限、音频设备、合法 SIP 样例及对应抓包仍未验证 | 完成 AC-00-03 受控实验与证据；当前版本见 test-tools-lock.json |
+| LAB-001 | pending | 2026-10-20 工具版本与签名记录保留；用户手动完成 SIPp 本机收发/lo0 抓包，6 个 SIP 包与双端日志匹配、退出码均为 0。Linphone 本地设备检查获用户确认正常，截图可见默认设备与绿色电平；动态电平及实际听音依据用户确认，通话内媒体未测 | 固定场景/命令/版本、干净复现及完整验收材料与人工审阅仍待完成；见 AC-00-03 任务卡，当前版本见 test-tools-lock.json |
 | CI-001 | resolved | AC-00-01 提交 `a5d5179e80a3148a4d549e27699ddf8df699b8c3` 的 [push CI 39194109377](https://github.com/Ray-56/yakyak/actions/runs/39194109377) 与 [PR CI 39194121363](https://github.com/Ray-56/yakyak/actions/runs/39194121363) 均在 ubuntu-24.04、macos-15 成功 | 已取得当前分支独立双平台证据；补录后最终 head 检查与合入信息见 [PR #14](https://github.com/Ray-56/yakyak/pull/14)，合入前须核对该 head 的全部 CI，合入后另核对 main CI |
 | REVIEW-001 | pending | 用户于 2026-10-18 确认 SCOPE v1.0 功能范围、排除项及自研/复用边界；三份 ADR 与验收制度仍待人工确认 | 用户另行审阅 ADR 与验收制度；整个 AC 的验收单独记录 |
 | LOCAL-001 | pending | 原目录 README 修改含疑似凭据；main 同步前已转存仓库外私有备份，未进入 Git | 用户撤销/轮换并自行处理本地内容；报告不保存值 |
