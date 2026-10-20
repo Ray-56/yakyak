@@ -24,12 +24,14 @@
       "note": "2026-10-19 用户在收到AC-00-02验收报告和明确人工确认说明后回复“通过”，确认本AC验收通过。被测提交保持9ff5c3fb2dbefa076061cba0a93748f495e66792；本地全新检出及push CI 39232969429的Ubuntu/macOS均通过：各21个Python、2个Rust单元、6个CLI集成测试及格式/Clippy/release构建。验收材料323fd88d907536df71e42f66fc06606a56cef739与最终PR head 03600b3e94770a29a57ef8a90443ebc28209aa5c保留；用户已合并PR #16，合并提交78686a8ae1520e61f5ff16241409823495bbd066的主线CI 39236480386双平台成功，本地main已同步。原始证据保留，其他AC与ADR状态不变。"
     },
     "AC-00-03": {
-      "status": "in_progress",
-      "implementation_commit": null,
-      "evidence": [],
+      "status": "ready_for_review",
+      "implementation_commit": "0d972857cc02e51d21d9c02c48dfd6dc40d4d535",
+      "evidence": [
+        "docs/acceptance/ch00/AC-00-03.md"
+      ],
       "reviewer": null,
       "reviewed_at": null,
-      "note": "2026-10-20 用户完成首次手动 SIPp 本机收发与 lo0 抓包并反馈成功。离线核对6个SIP包，同一Call-ID，INVITE/180/200/ACK/BYE/200顺序正确，两端退出码均为0，抓包载荷与两端日志逐字节对应。原始抓包3140字节，SHA-256为9d9473eb780f74b0d7ae57af11cd6632c4c08249bc496de2c3d3a52459115ec2，副本与INVITE样例保存在忽略的artifacts/ch00/ac00-03/manual-ZTgdQjAj/。随后用户确认Linphone本地设备检查正常并提供截图，默认输入/输出与绿色电平可见；动态电平变化和提示音可听见依据用户手动确认，记录见同目录audio-device-check.json。通话内音频未测，固定配置提交、干净复现、完整报告及整项人工验收仍待完成，状态保持in_progress。"
+      "note": "2026-10-20 第6步按用户授权完成：配置C 0d972857cc02e51d21d9c02c48dfd6dc40d4d535在独立全新clone前后clean，doctor/check退出0，21个Python、2个Rust单元、6个CLI及格式/Clippy/release通过。同参数单次loopback复验，UAC/UAS各成功1失败0，dumpcap及两端退出0，6个SIP包与双端日志逐字节对应，19/19离线样本断言通过，真实INVITE/抓包/命令/版本/拓扑与哈希齐全。6.295164秒后子进程全结束，四端口可重绑。首轮离线脚本因误要求stderr为空退出1，修正后仅重跑离线检查，历史证据保留。Linphone本地设备沿用用户当日确认，未重测音频或通话媒体；未push/PR/merge。待用户整项审阅，其他AC与ADR不变。"
     },
     "AC-00-04": {
       "status": "not_started",
