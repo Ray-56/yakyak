@@ -11,6 +11,7 @@ Talk the Yak, Connect the Pack!
 - 文档地图：[docs/README.md](docs/README.md)
 - 27章路线图：[docs/roadmap/INDEX.md](docs/roadmap/INDEX.md)
 - 当前进度：[docs/roadmap/PROGRESS.md](docs/roadmap/PROGRESS.md)
+- 当前不支持的功能：[docs/UNSUPPORTED.md](docs/UNSUPPORTED.md)
 - 本次初始化：[docs/handoff/BOOTSTRAP.md](docs/handoff/BOOTSTRAP.md)
 
 ## 当前运行方式
