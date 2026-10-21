@@ -1,9 +1,51 @@
 # 当前工作
 
-阶段：第 00 章；INIT-001、AC-00-01、AC-00-02、AC-00-03 与 AC-00-04 均已人工验收通过。
-当前任务：[AC-00-04](tasks/AC-00-04.md) passed，[PR #20](https://github.com/Ray-56/yakyak/pull/20) 已合入 main，主线双平台 CI 成功。固定设计 C `aab3180fb645ed46972d683e7c1654d46e5b7e47`、初次报告 D `00a829f34202cb6b8f6d2870fb07d8b2437c20c3` 和人工登记 `41728e2ea1798a61c47739c0753586e03b3cebd8` 保留；完整结果见[验收报告](../acceptance/ch00/AC-00-04.md)。本轮按用户“帮我操作一下”的授权完成 Git 与工作区收尾；AC-00-05 尚未开始。
+阶段：第 00 章五项目标 AC-00-01～05 均已人工验收通过；INIT-001 也已单独通过。通信核心尚未实现，后续 AC 未开始。
+当前任务：[AC-00-05](tasks/AC-00-05.md) passed。2026-10-21，用户收到[正式验收报告](../acceptance/ch00/AC-00-05.md)、报告提交 D 和整项审阅提示后回复“通过”，已登记人工整项验收。reviewer 为“用户（本会话明确确认）”，reviewed_at 为 2026-10-21。
 
-本轮工作分支：`docs/implementation-authorization`，工作目录为用户原项目目录；三份既有授权约定改动已原样保存为 `eb567abd2b56cff41980840dce50c917d888e9f1`，与 AC-00-04 的 PR #20 分开交付。旧 AC-00-04 工作树已完整归档后移除；主仓库 Git 历史和初始化工作树保留。该独立文档 PR 在双平台 CI 通过后普通 merge，最终同步回 main；实际最终 SHA、PR、CI 与 clean 核对见下文收尾回执目录。
+本轮 Git 收尾授权（2026-10-21）：用户要求“把05剩余的事情处理一下”，据此交付本分支、创建 PR、等待最终 head 的 Ubuntu/macOS CI，全部成功后普通 merge，核对主线 CI 并同步本地 main。执行前实际 origin/main 为准备基线，远端无本分支或 PR，工作区 clean；独立代理只读审阅完整文档差异，无实质问题。后续 AC 不因本轮交付自动开始。
+
+交付分支：`docs/ch00-ac00-05`，工作目录为用户原项目目录；准备基线 `8720de6c2ad8b62f6ad491497984a25bc2d42385`。固定 C 为 `275b2eedd4a33b0fec28bc278e9d01a56e9f657d`，第 4 项补录为 `a65a545ee4cbc0c49d7ba670c4068c0af0dcc937`，报告 D 为 `e65d84bfccb08e83511c583f23ba3d8c422ddc6c`，人工登记为 `b195be459a1b1917fa5a9f26445b849447b7f93c`。先保存本轮交付说明，再一次推送并创建 PR；最终 head、PR、CI、普通合并、本地/远端 main 和 clean 核对以收尾回执为准，不在本提交内自引用或预写远端成功。
+
+交付预检已在全新本地 clone 明确检出人工登记提交 `b195be459a1b1917fa5a9f26445b849447b7f93c`：doctor、完整 `bash scripts/check.sh` 均退出 0，前后 clean；21 项 Python、2 项 Rust 单元、6 项 CLI 测试及 fmt/Clippy/release 构建通过。此为后续 Git 交付预检，与原始文档 C 的复验范围分开，不证明协议/音频功能。最终交付 head 和合并后 main 的实际双平台 CI 另行核对。
+
+本轮 2 份工作记录已备份，预检、PR 正文、远端操作、CI 和最终收尾回执归档于忽略的 `artifacts/ch00/275b2eedd4a33b0fec28bc278e9d01a56e9f657d/git-closeout-cd97wp2r/`；最终状态读取其中 `final-closeout.json`，不为补 PR 编号反复追加已交付分支。保留历史分支、tag、已有工作树、C/D/人工登记与原始证据；不部署、发布、删除历史或实现下一 AC。
+
+交付记录的 validate --git、render --check、git diff --check 均退出 0，27 章/125 项有效、30 个生成视图一致；未为两份记录重复完整预检，最终 head 与 main 的完整检查以各自实际 CI 为准。
+
+此前人工登记（历史）只更新本项的报告、状态、生成视图和工作记录；被测 C、原始证据与未运行限制不变，ADR-0001/0003 仍 Proposed，REVIEW-001 和 LOCAL-001 保留 pending。6 份记录已备份并核对，授权、检查与最终提交回执在忽略的 `artifacts/ch00/275b2eedd4a33b0fec28bc278e9d01a56e9f657d/human-acceptance-gkgsoy0i/`。当时未执行远端交付，现按本轮 Git 收尾授权处理；仍不开始下一 AC。
+
+本轮人工登记的 validate --git、render --check、git diff --check 及范围/链接核对均退出 0，27 章/125 项有效、30 个生成视图一致、43 个本地链接存在；仅本项状态与人工审阅改变，汇总为 5 passed、120 not_started。独立代理只读核对无实质问题；测试执行 0 项，未重跑 Python/Rust/CLI、构建、CI 或协议/音频实验。结果保存为本地人工登记提交，最终 SHA 与 clean 回执另存上述目录。
+
+第 5 项报告登记（历史）采用既有验收模板，逐项对应原目标、状态与历史初始记录、不支持表、问题清单、固定 C 的实际命令/数量/结果及限制。当时仅将本项改为 ready_for_review，整项审阅字段留空；本次已按上述明确确认另行登记 passed。备份与报告登记检查在忽略的 `artifacts/ch00/275b2eedd4a33b0fec28bc278e9d01a56e9f657d/report-registration-5mfccaco/`，不混入 C 的原始结果。
+
+第 5 项登记检查：validate --git、render --check、本轮 21 项 Python 回归、git diff --check 和范围核对全部退出 0，27 章/125 项有效、30 个生成视图一致，21 项通过且无失败/错误/跳过，43 个本地链接存在。独立代理只读评审未发现实质问题；仅 6 份登记文档变化，原始 C、清单和其他 AC 不变。检查来自未提交登记工作区，和 C 的干净结果分开，不冒称对 D 做过独立复验。完整记录保存为本地 D，最终 SHA 与 clean 回执另存上述目录；未运行 Rust/CLI、构建、CI 或协议/音频实验，未推送，待用户整项审阅。
+
+第 4 项实际结果：`git clone --no-local --no-checkout` 后检出完整 C；检查前后 clone 的 HEAD 均为 C、status 均空，执行完原工作区也仍 clean。macOS 27.0.1 arm64、Python 3.13.8、Git 2.50.1 上，validate --git、render --check、21 项 unittest、git diff --check 和固定 C 的 git show --check 全部退出 0。27 章/125 项有效、30 份生成视图一致，21 项通过、0 失败/错误/跳过。
+
+原始证据在忽略的 `artifacts/ch00/275b2eedd4a33b0fec28bc278e9d01a56e9f657d/documentation-review-5bh228z4/`；日志、环境、摘要和 32 份文件哈希齐全，独立代理逐项复核 32/32 一致。SHA256.json 自身哈希为 `4e6964c73f015b91d70f845b3aa43e6b06db45077c7ff0472a21969592f0c5c9`。Rust/CLI、构建、远端 CI 与协议/抓包/音频实验未运行；文档检查不证明通信功能。实际结果在 C 之后补录为本地记录提交，不改 C 或原始证据。
+
+第 4 项补录的 validate --git、render --check、差异与范围核对全部退出 0；仅本卡对应任务文档、CURRENT、progress.json、生成 PROGRESS 共 4 份记录变化，27 个本地链接存在。原始证据清单不变，独立 clone 仍为完整 C、clean；未重复运行回归或创建第 5 项报告。补录日志与独立复核摘要在上述证据目录 `registration/`。
+
+第 2 项已新增[不支持功能表](../UNSUPPORTED.md)，在根 README 和文档地图添加入口，依据已确认的 SCOPE v1.0 记录“范围内尚未实现”和“范围排除”，并列出对应章节、验证边界及更新方式。普通录音、PCM、DTMF 等保留在范围内；测试端准备不计为 YakYak 通信支持。
+
+第 3 项核对：初始提交 `f014ea61de4aea872742e266ce398a8b06d65f5f` 的 125 项全部 not_started，提交/证据/审阅字段为空；前四项固定提交均真实且为当前 HEAD 的祖先，进度、五份报告和既有人工确认一致。独立代理核对相应本地证据引用存在，AC-00-03 清单 73/73、AC-00-04 清单 42/42 文件均存在；未重算原始哈希或重跑历史实验。问题清单过期描述已修正，8 条记录保留 6 resolved、2 pending；待确认 ADR 和凭据处理的解除条件保留，详见任务卡与 [KNOWN_ISSUES](KNOWN_ISSUES.md)。
+
+第三项通过与整项人工验收分开记录：第 4 项完成时本项为 in_progress，第 5 项报告先登记 ready_for_review；本次收到用户整项确认后才记 passed。SCOPE、targets.json、AC-00-01～04 的通过状态和 ADR 状态不变，后续 AC 仍未开始。
+
+第 4 项执行前（历史）：本项 8 份准备文档已完整备份并核对，index 为空、无其他改动；备份位于忽略的 `artifacts/ch00/ac00-05/20261021-stage4-preparation-oo4e4di0/`。独立代理只读预审未发现必须修正的实质问题。当时先创建 C，再以完整 C 新建本地独立 clone，实际结果现已在 C 之后登记。
+
+第三项登记检查：`python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 及一次性链接/范围核对均退出 0，27 章/125 项有效、30 个生成视图一致，3 份工作文档的 34 个本地链接存在。测试执行 0 项，未运行回归、构建、CI、网络或音频实验。历史证据只做记录与元数据核对，不冒称重新测试；命令与一次无匹配搜索说明见任务卡。
+
+第二项检查：`python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 及一次性链接/范围检查均退出 0：27 章/125 项有效，30 个生成视图一致，4 份 Markdown 的 50 个本地链接目标存在，12 个尚未实现能力组和 5 个范围排除组均已记录。独立代理对照 SCOPE 未发现实质问题。测试执行 0 项，未运行回归、构建、CI、网络或音频实验；未提交工作区的检查不替代第 4 步固定提交复验，详情见任务卡。
+
+第一项登记（历史）的 render、validate --git、render --check、差异和范围检查均退出 0：27 章/125 项有效，30 个生成视图一致；仅本项进度改变，模板、ADR 与其他目标未变。测试执行 0 项，未运行回归、构建、CI 或协议实验；不是固定提交上的正式验收，详见任务卡。
+
+Git 准备阶段（历史）的 `python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 均退出 0：27 章/125 项与已有提交引用有效，30 个生成视图一致。测试执行 0 项；未运行 Python/Rust/CLI 回归、构建、远端 CI 或协议实验。检查与一次只读路径错误的说明见任务卡；这些结果不构成本项正式验收。
+
+上一任务：[AC-00-04](tasks/AC-00-04.md) passed，[PR #20](https://github.com/Ray-56/yakyak/pull/20) 已合入 main，主线双平台 CI 成功。固定设计 C `aab3180fb645ed46972d683e7c1654d46e5b7e47`、初次报告 D `00a829f34202cb6b8f6d2870fb07d8b2437c20c3` 和人工登记 `41728e2ea1798a61c47739c0753586e03b3cebd8` 保留；完整结果见[验收报告](../acceptance/ch00/AC-00-04.md)。上一轮按用户“帮我操作一下”的授权完成 Git 与工作区收尾，当时未开始 AC-00-05。
+
+上一轮收尾分支：`docs/implementation-authorization`，工作目录为用户原项目目录；三份既有授权约定改动已原样保存为 `eb567abd2b56cff41980840dce50c917d888e9f1`，与 AC-00-04 的 PR #20 分开交付。旧 AC-00-04 工作树已完整归档后移除；主仓库 Git 历史和初始化工作树保留。该独立文档 PR 在双平台 CI 通过后普通 merge，最终同步回 main；实际最终 SHA、PR、CI 与 clean 核对见下文收尾回执目录。
 
 AC-00-03 的 passed、配置 C `0d972857cc02e51d21d9c02c48dfd6dc40d4d535` 及原始证据不变，完整交付历史见下文与[报告](../acceptance/ch00/AC-00-03.md)。下文各轮“本轮未开始下一 AC”等描述属于对应日期和阶段的历史边界。
 

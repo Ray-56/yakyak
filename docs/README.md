@@ -5,6 +5,7 @@
 | 现在做什么 | [当前工作](work/CURRENT.md) |
 | 最终要做什么 | [范围](roadmap/SCOPE.md)、[章节索引](roadmap/INDEX.md) |
 | 已经完成什么 | [进度](roadmap/PROGRESS.md)、[验收报告](acceptance/README.md) |
+| 当前不支持什么 | [不支持功能表](UNSUPPORTED.md) |
 | 今天怎样开发 | [工作流](development/WORKFLOW.md) |
 | 怎样判断真的完成 | [测试规则](development/TESTING.md)、[验收契约](roadmap/TESTING_CONTRACT.md) |
 | 环境缺什么 | [实验环境](development/ENVIRONMENT.md) |
