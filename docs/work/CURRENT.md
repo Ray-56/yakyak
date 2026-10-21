@@ -1,9 +1,13 @@
 # 当前工作
 
 阶段：第 00 章；INIT-001、AC-00-01、AC-00-02、AC-00-03 与 AC-00-04 均已人工验收通过。
-当前任务：[AC-00-05](tasks/AC-00-05.md) in_progress。2026-10-21，按用户“好的，你来处理”的授权完成第 4 项：固定文档提交 C `275b2eedd4a33b0fec28bc278e9d01a56e9f657d`，独立干净副本上 5 项检查退出 0、21 项 Python 回归全部通过。第 1～4 项完成，第 5 项正式报告尚未开始，不提前登记整项待审阅或通过。
+当前任务：[AC-00-05](tasks/AC-00-05.md) ready_for_review。2026-10-21，按用户“那你先处理一下”的要求完成第 5 项[正式验收报告](../acceptance/ch00/AC-00-05.md)。第 1～5 项材料准备已完成，等待用户审阅整项报告；人工整项审阅字段留空，不提前登记通过。
 
-当前分支：`docs/ch00-ac00-05`，工作目录为用户原项目目录；准备基线 `8720de6c2ad8b62f6ad491497984a25bc2d42385`。准备阶段拉取后确认本地 main 与 origin/main 一致，再创建分支；本轮仅创建本地文档 C 和复验结果记录提交，未推送、建 PR 或合并。完整结果与原始证据路径见任务卡。
+当前分支：`docs/ch00-ac00-05`，工作目录为用户原项目目录；准备基线 `8720de6c2ad8b62f6ad491497984a25bc2d42385`。固定 C 为 `275b2eedd4a33b0fec28bc278e9d01a56e9f657d`，第 4 项补录为 `a65a545ee4cbc0c49d7ba670c4068c0af0dcc937`，本轮报告与状态登记另作本地 D，不在 D 内自引用。未推送、建 PR 或合并。
+
+第 5 项报告采用既有验收模板，逐项对应原目标、状态与历史初始记录、不支持表、问题清单、固定 C 的实际命令/数量/结果及限制。progress.json 仅将本项改为 ready_for_review 并指向报告，implementation_commit 保持 C，reviewer/reviewed_at 仍空；PROGRESS 通过 render 更新。问题清单仅同步本项现状；待确认 ADR 和凭据处理条件保留。备份与登记检查在忽略的 `artifacts/ch00/275b2eedd4a33b0fec28bc278e9d01a56e9f657d/report-registration-5mfccaco/`，不混入 C 的原始结果。
+
+第 5 项登记检查：validate --git、render --check、本轮 21 项 Python 回归、git diff --check 和范围核对全部退出 0，27 章/125 项有效、30 个生成视图一致，21 项通过且无失败/错误/跳过，43 个本地链接存在。独立代理只读评审未发现实质问题；仅 6 份登记文档变化，原始 C、清单和其他 AC 不变。检查来自未提交登记工作区，和 C 的干净结果分开，不冒称对 D 做过独立复验。完整记录保存为本地 D，最终 SHA 与 clean 回执另存上述目录；未运行 Rust/CLI、构建、CI 或协议/音频实验，未推送，待用户整项审阅。
 
 第 4 项实际结果：`git clone --no-local --no-checkout` 后检出完整 C；检查前后 clone 的 HEAD 均为 C、status 均空，执行完原工作区也仍 clean。macOS 27.0.1 arm64、Python 3.13.8、Git 2.50.1 上，validate --git、render --check、21 项 unittest、git diff --check 和固定 C 的 git show --check 全部退出 0。27 章/125 项有效、30 份生成视图一致，21 项通过、0 失败/错误/跳过。
 
@@ -15,7 +19,7 @@
 
 第 3 项核对：初始提交 `f014ea61de4aea872742e266ce398a8b06d65f5f` 的 125 项全部 not_started，提交/证据/审阅字段为空；前四项固定提交均真实且为当前 HEAD 的祖先，进度、五份报告和既有人工确认一致。独立代理核对相应本地证据引用存在，AC-00-03 清单 73/73、AC-00-04 清单 42/42 文件均存在；未重算原始哈希或重跑历史实验。问题清单过期描述已修正，8 条记录保留 6 resolved、2 pending；待确认 ADR 和凭据处理的解除条件保留，详见任务卡与 [KNOWN_ISSUES](KNOWN_ISSUES.md)。
 
-第三项通过与整项人工验收分开记录：本项状态保持 in_progress；第 4 项完成后 implementation_commit 登记真实 C，evidence、整项审阅字段仍为空。SCOPE、targets.json、AC-00-01～04 的通过状态和 ADR 状态不变。下一步为第 5 项正式报告，按用户逐项安排；本轮不实现通信代码或推送。
+第三项通过与整项人工验收分开记录：第 4 项完成时本项为 in_progress、implementation_commit 登记真实 C；第 5 项现已补报告并登记 ready_for_review，整项审阅字段仍空。SCOPE、targets.json、AC-00-01～04 的通过状态和 ADR 状态不变。下一步为用户整项审阅，不实现通信代码、推送或自动开始下一 AC。
 
 第 4 项执行前（历史）：本项 8 份准备文档已完整备份并核对，index 为空、无其他改动；备份位于忽略的 `artifacts/ch00/ac00-05/20261021-stage4-preparation-oo4e4di0/`。独立代理只读预审未发现必须修正的实质问题。当时先创建 C，再以完整 C 新建本地独立 clone，实际结果现已在 C 之后登记。
 
