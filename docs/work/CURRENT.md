@@ -3,9 +3,17 @@
 阶段：第 00 章五项目标 AC-00-01～05 均已人工验收通过；INIT-001 也已单独通过。通信核心尚未实现，后续 AC 未开始。
 当前任务：[AC-00-05](tasks/AC-00-05.md) passed。2026-10-21，用户收到[正式验收报告](../acceptance/ch00/AC-00-05.md)、报告提交 D 和整项审阅提示后回复“通过”，已登记人工整项验收。reviewer 为“用户（本会话明确确认）”，reviewed_at 为 2026-10-21。
 
-当前分支：`docs/ch00-ac00-05`，工作目录为用户原项目目录；准备基线 `8720de6c2ad8b62f6ad491497984a25bc2d42385`。固定 C 为 `275b2eedd4a33b0fec28bc278e9d01a56e9f657d`，第 4 项补录为 `a65a545ee4cbc0c49d7ba670c4068c0af0dcc937`，报告 D 为 `e65d84bfccb08e83511c583f23ba3d8c422ddc6c`。本轮人工验收另作本地登记，未推送、建 PR 或合并。
+本轮 Git 收尾授权（2026-10-21）：用户要求“把05剩余的事情处理一下”，据此交付本分支、创建 PR、等待最终 head 的 Ubuntu/macOS CI，全部成功后普通 merge，核对主线 CI 并同步本地 main。执行前实际 origin/main 为准备基线，远端无本分支或 PR，工作区 clean；独立代理只读审阅完整文档差异，无实质问题。后续 AC 不因本轮交付自动开始。
 
-本次人工登记只更新本项的报告、状态、生成视图和工作记录；被测 C、原始证据与未运行限制不变，ADR-0001/0003 仍 Proposed，REVIEW-001 和 LOCAL-001 保留 pending。6 份记录已备份并核对，授权、检查与最终提交回执在忽略的 `artifacts/ch00/275b2eedd4a33b0fec28bc278e9d01a56e9f657d/human-acceptance-gkgsoy0i/`。下一步是本分支 Git 交付或后续 AC 的明确安排，不自动推送或开始下一 AC。
+交付分支：`docs/ch00-ac00-05`，工作目录为用户原项目目录；准备基线 `8720de6c2ad8b62f6ad491497984a25bc2d42385`。固定 C 为 `275b2eedd4a33b0fec28bc278e9d01a56e9f657d`，第 4 项补录为 `a65a545ee4cbc0c49d7ba670c4068c0af0dcc937`，报告 D 为 `e65d84bfccb08e83511c583f23ba3d8c422ddc6c`，人工登记为 `b195be459a1b1917fa5a9f26445b849447b7f93c`。先保存本轮交付说明，再一次推送并创建 PR；最终 head、PR、CI、普通合并、本地/远端 main 和 clean 核对以收尾回执为准，不在本提交内自引用或预写远端成功。
+
+交付预检已在全新本地 clone 明确检出人工登记提交 `b195be459a1b1917fa5a9f26445b849447b7f93c`：doctor、完整 `bash scripts/check.sh` 均退出 0，前后 clean；21 项 Python、2 项 Rust 单元、6 项 CLI 测试及 fmt/Clippy/release 构建通过。此为后续 Git 交付预检，与原始文档 C 的复验范围分开，不证明协议/音频功能。最终交付 head 和合并后 main 的实际双平台 CI 另行核对。
+
+本轮 2 份工作记录已备份，预检、PR 正文、远端操作、CI 和最终收尾回执归档于忽略的 `artifacts/ch00/275b2eedd4a33b0fec28bc278e9d01a56e9f657d/git-closeout-cd97wp2r/`；最终状态读取其中 `final-closeout.json`，不为补 PR 编号反复追加已交付分支。保留历史分支、tag、已有工作树、C/D/人工登记与原始证据；不部署、发布、删除历史或实现下一 AC。
+
+交付记录的 validate --git、render --check、git diff --check 均退出 0，27 章/125 项有效、30 个生成视图一致；未为两份记录重复完整预检，最终 head 与 main 的完整检查以各自实际 CI 为准。
+
+此前人工登记（历史）只更新本项的报告、状态、生成视图和工作记录；被测 C、原始证据与未运行限制不变，ADR-0001/0003 仍 Proposed，REVIEW-001 和 LOCAL-001 保留 pending。6 份记录已备份并核对，授权、检查与最终提交回执在忽略的 `artifacts/ch00/275b2eedd4a33b0fec28bc278e9d01a56e9f657d/human-acceptance-gkgsoy0i/`。当时未执行远端交付，现按本轮 Git 收尾授权处理；仍不开始下一 AC。
 
 本轮人工登记的 validate --git、render --check、git diff --check 及范围/链接核对均退出 0，27 章/125 项有效、30 个生成视图一致、43 个本地链接存在；仅本项状态与人工审阅改变，汇总为 5 passed、120 not_started。独立代理只读核对无实质问题；测试执行 0 项，未重跑 Python/Rust/CLI、构建、CI 或协议/音频实验。结果保存为本地人工登记提交，最终 SHA 与 clean 回执另存上述目录。
 
