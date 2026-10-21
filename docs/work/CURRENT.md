@@ -3,11 +3,17 @@
 阶段：第 00 章五项目标 AC-00-01～05 均已人工验收通过；INIT-001 也已单独通过。通信核心尚未实现，后续 AC 未开始。
 当前任务：[AC-00-05](tasks/AC-00-05.md) passed。2026-10-21，用户收到[正式验收报告](../acceptance/ch00/AC-00-05.md)、报告提交 D 和整项审阅提示后回复“通过”，已登记人工整项验收。reviewer 为“用户（本会话明确确认）”，reviewed_at 为 2026-10-21。
 
+ADR Git 交付授权（2026-10-21）：用户在推送 `docs/confirm-adr-0001-0003`、创建 PR、等 CI 后普通合并、同步本地 main 的四步说明后回复“操作一下”。执行前分支 clean，HEAD 为 `e98a823b29f5d5b086f821ee60ce9ab8904472e1`，实际远端 main 为 `ae7391192e89b78c3edaf364d62af48358c1ef0e`，远端尚无本分支或 PR。先保存本轮三份工作记录，再推送最终 head；最终 PR、CI、合并与本地/远端 main、clean 核对以忽略目录 `artifacts/adr-review/20261021-delivery-adr-0001-0003-d6smxomo/final-closeout.json` 为准，不预写成功或为回填编号反复追加提交。
+
+用户另说明旧凭据内容已遗忘，本轮选择暂缓核实；LOCAL-001 保留 pending，不阻塞本次文档交付和后续离线模型学习安排。此说明不证明旧凭据已失效或撤销；保留原解除条件，不读取私有备份内容。后续 AC 仍未开始，下一步可另行准备 AC-01-01。
+
+本轮交付记录的 `python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 均退出 0：27 章/125 项有效、30 个生成视图一致。范围/链接核对退出 0，仅三份工作记录变化，完整分支仅六份文档变化，43 个本地链接目标存在；独立只读审阅无实质问题。本地测试执行 0 项，未重复 Python/Rust/CLI 回归或构建；最终 head 与合并后 main 的完整检查由各自实际双平台 CI 单独核对。协议/网络/音频实验未运行。
+
 最新补充（2026-10-21）：用户在讨论工程组织与证据制度后回复“同意01 和03”，已单独登记 [ADR-0001](../architecture/adr/0001-small-core.md) 和 [ADR-0003](../architecture/adr/0003-documentation-evidence.md) 为 Accepted，并将 REVIEW-001 记为 resolved。ADR-0001 明确采用单 Cargo 包起步、内部按职责分模块，稳定后按实际需求拆包；同包以后可按需包含 library 和 binary 两个 crate。问题清单现为 7 resolved、1 pending，LOCAL-001 凭据处理仍待用户核实。
 
 本次只登记设计确认，AC-00-05 的固定提交、报告、passed 与既有证据保持不变，后续 AC 仍未开始。登记分支为 `docs/confirm-adr-0001-0003`；修改前六份文档已逐字节备份，确认原话、检查和本地提交回执放在忽略的 `artifacts/adr-review/20261021-confirm-0001-0003-m7ecbtc9/`。下文 ADR 尚 Proposed、两项 pending 等说明属于此前各轮的历史状态。
 
-本次登记的 `python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 均退出 0：27 章/125 项结构有效、30 个生成视图一致。一次性范围/链接检查确认仅六份文档变化、43 个本地链接目标存在、LOCAL-001 原行不变；独立只读审阅无须修正的实质问题。测试执行 0 项，未运行 Python/Rust/CLI 回归、构建、CI 或协议/音频实验；仅保存本地文档提交，未推送。
+ADR 登记检查（历史）：`python3 scripts/roadmap.py validate --git`、`python3 scripts/roadmap.py render --check`、`git diff --check` 均退出 0：27 章/125 项结构有效、30 个生成视图一致。一次性范围/链接检查确认仅六份文档变化、43 个本地链接目标存在、LOCAL-001 原行不变；独立只读审阅无须修正的实质问题。测试执行 0 项，未运行 Python/Rust/CLI 回归、构建、CI 或协议/音频实验；当时仅保存本地文档提交，未推送，现按上述授权交付。
 
 本轮 Git 收尾授权（2026-10-21）：用户要求“把05剩余的事情处理一下”，据此交付本分支、创建 PR、等待最终 head 的 Ubuntu/macOS CI，全部成功后普通 merge，核对主线 CI 并同步本地 main。执行前实际 origin/main 为准备基线，远端无本分支或 PR，工作区 clean；独立代理只读审阅完整文档差异，无实质问题。后续 AC 不因本轮交付自动开始。
 
