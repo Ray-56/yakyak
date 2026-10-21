@@ -45,11 +45,11 @@
     },
     "AC-00-05": {
       "status": "in_progress",
-      "implementation_commit": null,
+      "implementation_commit": "275b2eedd4a33b0fec28bc278e9d01a56e9f657d",
       "evidence": [],
       "reviewer": null,
       "reviewed_at": null,
-      "note": "2026-10-21 用户确认沿用现有验收模板与三条记录规则，随后明确要求完成第2项，已按确认的 SCOPE v1.0 补齐 docs/UNSUPPORTED.md 并添加入口，区分尚未实现与范围排除。在第3项说明后，用户回复“都没有问题，通过”，本次按第3项确认记录；已补做问题、历史初始状态和前四项验收引用的机械核对，未发现实质缺口。初始提交 f014ea61de4aea872742e266ce398a8b06d65f5f 的125项均未开始且证据/审阅字段为空；已通过四项固定提交均为真实且当前HEAD祖先可达，报告与证据引用一致。问题清单过期表述已修正，待确认ADR与凭据处理记录保留。第1～3项完成，状态保持 in_progress；第4～5项固定提交复验和正式报告尚未完成，此确认不代表AC-00-05整项验收或其他ADR Accepted；提交、证据及整项审阅字段保持空值。"
+      "note": "2026-10-21 第1～3项模板采用、不支持功能表及问题/历史证据核对已完成；用户对第3项的“通过”仅按该步骤记录。在第4项执行说明后，用户回复“好的，你来处理”，已固定8份文档为C 275b2eedd4a33b0fec28bc278e9d01a56e9f657d，并以完整C建立独立本地clone。前后clean、HEAD不变，文档校验、30生成视图检查、21项Python回归及两项Git差异检查全部退出0；独立代理核对32份原始证据哈希/字节一致。原始日志、环境、摘要与清单位于 artifacts/ch00/275b2eedd4a33b0fec28bc278e9d01a56e9f657d/documentation-review-5bh228z4/，结果见任务卡第4项。第1～4项完成，第5项正式报告尚未开始；状态保持in_progress，evidence与整项审阅字段为空，不提前登记待审阅或通过。未运行Rust/CLI、构建、CI或协议/音频实验，未推送；待确认ADR与凭据处理记录保留。"
     },
     "AC-01-01": {
       "status": "not_started",
