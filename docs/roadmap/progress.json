@@ -54,12 +54,14 @@
       "note": "2026-10-21 用户收到 AC-00-05 正式验收报告链接、报告提交 D e65d84bfccb08e83511c583f23ba3d8c422ddc6c 及明确整项审阅提示后回复“通过”，据此登记整项 passed。被测 C 保持 275b2eedd4a33b0fec28bc278e9d01a56e9f657d，原始证据、5项检查/21项Python通过结果与未运行限制不变；本次确认与第1项模板、第3项步骤确认分别保留。仅更新本项人工验收与工作记录，其他AC和ADR状态不变，待确认ADR与凭据处理记录保留；不重跑功能测试、不推送或自动开始下一AC。"
     },
     "AC-01-01": {
-      "status": "not_started",
-      "implementation_commit": null,
-      "evidence": [],
-      "reviewer": null,
-      "reviewed_at": null,
-      "note": ""
+      "status": "passed",
+      "implementation_commit": "f604dd50bfc5eb1afceb03ec133f43997720f5e7",
+      "evidence": [
+        "docs/acceptance/ch01/AC-01-01.md"
+      ],
+      "reviewer": "用户（本会话明确确认）",
+      "reviewed_at": "2026-11-18",
+      "note": "2026-11-18 用户在本会话明确确认“已审阅通过”，据此登记 passed。实现提交 f604dd50bfc5eb1afceb03ec133f43997720f5e7 在独立干净检出执行 bash scripts/check.sh，21 项 Python 测试、135 项 Rust 测试、fmt、严格 Clippy 和 release 构建通过。原始证据保存在 artifacts/ac01-01/20261118-commit-recheck-tuqrttvd。验收报告、进度和工作记录随收尾提交归档。"
     },
     "AC-01-02": {
       "status": "not_started",
